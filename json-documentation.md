@@ -123,7 +123,19 @@
             - Result: Also not relevant to overall standings, appears exclusively null
             - Players: Array of objects containing:
               - Id: unique numerical id mapping to player id in **players.json**
-              - Role: role of player, one of "top", "jungle", "mid", "support", "bottom"  
+              - Role: role of player, one of "top", "jungle", "mid", "support", "bottom"
+
+### Mapping_data.json
+##### Each object contains:
+- ESportsGameId: Unique numerical identifier for the game, referenced in **tournaments.json**
+- PlatformGameId: Another identifier used to reference the individual game files
+  - **unclear** if the combination of letters and numbers hold any significance
+- TeamMapping: object containing:
+  - 200: Holds Id of first team, **not confirmed** but presumed to be the red team
+  - 100: Holds Id of second team, **not confirmed** but presumed to be the blue team
+- ParticipantMapping: object containing:
+- Keys from 1 to 10, holding the player IDs of the 10 players
+  - **not confirmed** if the indexing holds any significance
 
 
 
