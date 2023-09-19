@@ -1,6 +1,6 @@
 ## Documentation
-### League.json: Array of Leagues
-##### Each League object contains:
+### League.json
+##### Each Object Contains:
 - Id: numerical identifier for league
 - Name: name of league
   - Some names aren’t very good and may need cleaning- ie. “2023”
@@ -35,6 +35,7 @@
   - Status: Either "selected" or "not_selected", function **unclear**
 - Tournaments: An array of objects where each object contains:
   - Id: a numerical identifier for a tournament hosted by the league
+  - **maps to tournament id in tournament.json**
 
 
 
