@@ -145,15 +145,12 @@ Notes: Rankings is irrelevant at current state, maybe can be implemented into vi
 
 ### Mapping_data.json
 ##### Each object contains:
-- *ESportsGameId*: Unique numerical identifier for the game, referenced in **tournaments.json**
-- *PlatformGameId*: Another identifier used to reference the individual game files
-  - **unclear** if the combination of letters and numbers hold any significance
-- *TeamMapping*: object containing:
-  - *200*: Holds Id of first team, **not confirmed** but presumed to be the red team
-  - *100*: Holds Id of second team, **not confirmed** but presumed to be the blue team
-- ParticipantMapping: object containing:
-- Keys from *1 to 10*, holding the player IDs of the 10 players
-  - **not confirmed** if the indexing holds any significance
+|      Key       | Type   |     Possible Values      | Relevant? | Notes                         |
+|----------------|--------|--------------------------|-----------|-------------------------------|
+| esportsGameId  | String | Any number as String     |  Yes      | Unique Identifer              |
+| platformGameId | String | Maps to game file name   |  Yes      | Unique Identifer              |
+| teamMapping    | Object | {200: String, 100: String} |  Yes    | 200 = red, 100 = blue, *not confirmed* |
+| participantMapping | Object | keys: 1 to 10, each with a player id |  TBD  | maps to *players.json* |
 
 
 
