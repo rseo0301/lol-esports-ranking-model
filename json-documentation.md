@@ -49,10 +49,14 @@ Notes: Likely irrelevant for our model, only for visual component. There is a po
  
 ### Teams.json
 ##### Each object contains:
-- *Team_id*: A unique numerical identifier for the team
-- *Name*: Name of the team
-- *Acronym*: 2, 3, or 4 character acronym of the team
-- *Slug*: uniquely named identifier for the team
+|     Key     | Type   |     Possible Values      | Relevant? | Notes                        |
+|-------------|--------|--------------------------|-----------|------------------------------|
+| team_id     | String | Any number as String     |  Yes      | Unique Identifier            |
+| name        | String | Any                      |  Yes      | name of team                 |
+| acronym     | String | 2/3/4 character acronym  |  TBD      | Could be useful for visual   |
+| slug        | String | Any                      |  Yes      | Unique Identifier            |
+
+Notes: Will likely have many features appended to the team's stats. The features could be a team's average stats across our dataset. We may want to weigh games differently, perhaps based on importance, or restrict the stat's timeframe (e.g. last three months) to keep it more relevant to the team's current strength. 
 
 ### Tournaments.json
 ##### Each object contains:
