@@ -1,19 +1,21 @@
 ## Documentation
 ### League.json
 ##### Each Object Contains:
-- *Id*: numerical identifier for league
-- *Name*: name of league
-  - Some names aren’t very good and may need cleaning- ie. “2023”
-- *Slug*: unique named identifier for league
-  - Naturally a much clearer identifier compared to name
-- *Spor*t: name of esport/game
-  - Only existing value in this dataset is ‘lol’ (League of Legends) as expected
-- *Image*: URL Link image of logo
-- *LightImage*: URL Link of light version of logo
-  - Same URL as ‘Image’ if one does not exist
-- *DarkImage*: URL link of dark version of logo
-  - Same URL as ‘Image’ if one does not exist
-- *Region*: Region of the league. Listed below is all regions present in the dataset.
+| Key               | Type             | Possible Values  |  Relevant? | Notes |
+|-------------------|------------------|------------------|------------|-------|
+| id                |    String        | 18 characters consisting of all digits   |  Yes | Unique identifier |
+| name              |    String        | Any  | Yes  | Some names need specifying ie. "2023" |
+| slug              |    String        | Any  | Yes  | Unique identifier |
+| sport             |    String        | "lol"  | No  | League is the only game being analyzed |
+| image             |    String        | any URL to picture  | TBD  | Could be useful for visual component |
+| lightImage        |    String        | any URL to picture  | TBD  | Same value as 'Image' if it one doesn't exist |
+| darkImage         |    String        | any URL to picture  | TBD  | Same value as 'Image' if it one doesn't exist |
+| region            |    String        | See *(1)*  | Yes  | Could be categorized through one-hot method |
+| priority          |    Integer       | [1, 1000]  | Probably Not, TBD  | Notably, NA = 1, LEC = 3, LCK = 4, LPL = 201 |
+| displayPriority  |    Object        | See *(2)*   | No  | Used in some sort of filtering process |
+| tournaments       |    Array         | { id: string } | Yes | List of tournaments hosted by league, maps to *id* in tournament.json |
+
+*(1) List of Regions*: 
   - NORTH AMERICA
   - BRAZIL
   - KOREA
@@ -27,16 +29,12 @@
   - VIETNAM
   - LATIN AMERICA NORTH
   - LATIN AMERICA SOUTH
-- *Priority*: Integer value, currently **unclear**.
-  - Range of values from 1 ~ 1000, 1000 seems to be for smaller leagues
-  - single digit leagues (NA = 1, LEC = 3, LCK = 4) seems to be bigger for bigger leagues, but LPL = 201
-- *Display Priority*: Object where:
-  - *Position*: Integer value, function **unclear**
-  - *Status*: Either "selected" or "not_selected", function **unclear**
-- *Tournaments*: An array of objects where each object contains:
-  - *Id*: a numerical identifier for a tournament hosted by the league
-  - **maps to id in tournament.json**
 
+*(2) Display Priority:*
+| Key | Type | Possible Values | Relevant? | Notes |
+|-----|------|-----------------|-----------|-------|
+| position| Integer | 1 to 33 | No | Some values have two leagues attached to them
+| status | String | "selected" or "not_selected" | No | Currently, only NA leagues are selected- some sort of filtering already applied |  
 ### Players.json
 ##### Each object contains:
 - *Player_id*: A unique numerical identifier for the player
