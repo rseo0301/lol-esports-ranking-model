@@ -70,6 +70,7 @@ Notes: Will likely have many features appended to the team's stats. The features
 | startDate   | String | yyyy-mm-dd               |  Yes      | Could be useful for visual    |
 | endDate     | String | yyyy-mm-dd               |  Yes      | Could be useful for visual    |
 | stages      | Array  | Object                   |  Yes      | See *(3)*                     |
+| rankings    | Array  | Object                   |  TBD      | See *(9)*                     |
 
 *(3) Stages*
 |     Key     | Type   |     Possible Values      | Relevant? | Notes                         |
@@ -109,6 +110,7 @@ Notes: Will likely have many features appended to the team's stats. The features
 |-------------|--------|--------------------------|-----------|-------------------------------|
 | id          | String | Any number as String     |  No       | Only individual games matter  |
 | type        | String | "normal"                 |  No       | Other possible values not confirmed |
+| state       | String | "completed"              |  No       | No unless some games were not completed (TBD) |
 | mode        | String | "classic"                |  No       | Other possible values not confirmed |
 | Strategy    | Object | {type: "bestOf", count: int} |  TBD  | Not relevant unless putting weight in BO3 |
 | teams       | Array  | one object for each team |  No       | See *(7)*                     |
@@ -126,42 +128,20 @@ Notes: Will likely have many features appended to the team's stats. The features
 *(8) Games*
 |     Key     | Type   |     Possible Values      | Relevant? | Notes                         |
 |-------------|--------|--------------------------|-----------|-------------------------------|
-| name        | String | Any                      |  TBD      | Not too important             |
-| matches     | Array  | Object                   |  Yes      | See *(6)*                     |
-| name        | String | Any                      |  TBD      | Not too important             |
-| matches     | Array  | Object                   |  Yes      | See *(6)*                     |
+| id          | String | Any number as String     |  Yes      | Maps to game data             |
+| state       | String | "completed"              |  No       | No unless some games were not completed (TBD) |
+| number      | int    | Number in match          |  No       |                               |
+| teams       | Array  | One object for each team |  Yes      | Team id, side, and outcome    |
 
-- *Teams*: array of size 2, each object containing:
-  - *Id*: Unique numerical id mapping to team id in **teams.json**, seems to start with blue side
-  - *Side*: "blue" or "red" side, corresponding to the map on Summoner's Rift
-  - *Record*: Object containing:
-    - *Wins, Losses, and Ties* of team heading into the match
-  - *Result*: Object containing:
-    - *Outcome* : "win", "loss" or "tie", overall result of the match
-    - *GameWins*: Number of individual games won by the team in the match
-  - Players: Array of objects containing:
-    - *Id*: unique numerical id mapping to player id in **players.json**
-    - *Role*: role of player, one of "top", "jungle", "mid", "support", "bottom"
-  - *Games*: Array of objects containing:
-    - *Id*: Unique numerical id mapping to game id in **mapping_data.json**
-    - *State*: "completed" or "unneeded" based on if a team has already won the match
-    - *Number*: Number of game played within the match
-    - *Teams*: An array of objects, one for each team, containing:
-       - *Id*: Unique numerical id mapping to team id in **teams.json**, seems to start with blue side
-       - *Side*: "blue" or "red"
-       - *Result*: object containing:
-         - *Outcome*: "win", "loss", or null if the game was not played ("unneeded")
-  - *Rankings*: Array of objects, either empty or containing the number of objects corresponding to the number of teams. Each object contains:
-    - *Ordinal*: Ranking of team(s) in standing
-    - *Teams*: Array containing the team(s, in case of ties) corresponding to ranking. Object contains:
-      - *Id*: Unique numerical id mapping to team id in **teams.json**
-      - *Side*: not relevant to overall standings, and therefore appears exclusively null
-      - *Record*: Object containing:
-        - *"wins", "losses" and "ties"*
-      - *Result*: Also not relevant to overall standings, appears exclusively null
-      - *Players*: Array of objects containing:
-        - *Id*: unique numerical id mapping to player id in **players.json**
-        - *Role*: role of player, one of "top", "jungle", "mid", "support", "bottom"
+*(9) Rankings*
+|     Key     | Type   |     Possible Values      | Relevant? | Notes                         |
+|-------------|--------|--------------------------|-----------|-------------------------------|
+| ordinal     | int    | 1 to number of teams in tournament |  No |                           |
+| teams       | Array  | Objects with team information |  No  | More than 1 in case of ties   |
+| result      | null   | null / other values no confirmed     |   No  |                       |
+| teams       | Array  | One object for each team |  Yes      | Team id, side, and outcome    |
+
+Notes: Rankings is irrelevant at current state, maybe can be implemented into visual component. Seems to be empty array for bracket play
 
 ### Mapping_data.json
 ##### Each object contains:
