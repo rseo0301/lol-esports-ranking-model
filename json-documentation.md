@@ -3,7 +3,7 @@
 ##### Each Object Contains:
 | Key               | Type             | Possible Values  |  Relevant? | Notes |
 |-------------------|------------------|------------------|------------|-------|
-| id                |    String        | 18 characters consisting of all digits   |  Yes | Unique identifier |
+| id                |    String        | Any number as String   |  Yes | Unique identifier |
 | name              |    String        | Any  | Yes  | Some names need specifying ie. "2023" |
 | slug              |    String        | Any  | Yes  | Unique identifier |
 | sport             |    String        | "lol"  | No  | League is the only game being analyzed |
@@ -13,7 +13,7 @@
 | region            |    String        | See *(1)*  | Yes  | Could be categorized through one-hot method |
 | priority          |    Integer       | [1, 1000]  | Probably Not, TBD  | Notably, NA = 1, LEC = 3, LCK = 4, LPL = 201 |
 | displayPriority  |    Object        | See *(2)*   | No  | Used in some sort of filtering process |
-| tournaments       |    Array         | { id: string } | Yes | List of tournaments hosted by league, maps to *id* in tournament.json |
+| tournaments       |    Array         | { id: string } | Yes | List of tournaments hosted by league, maps to tournament.json |
 
 *(1) List of Regions*: 
   - NORTH AMERICA
@@ -37,12 +37,15 @@
 | status | String | "selected" or "not_selected" | No | Currently, only NA leagues are selected- some sort of filtering already applied |  
 ### Players.json
 ##### Each object contains:
-- *Player_id*: A unique numerical identifier for the player
-- *Handle*: The game handle that the player uses in game
-- *First_name*: (Presumed) Legal/Actual first name of player
-- *Last_name*: (Presumed) Legal/Actual last name of player
-- *Home_team_id*: A numerical identifier for the player's current team
-  - **maps to id in teams.json**
+|       Key     | Type   |     Possible Values   | Relevant? | Notes                        |
+|---------------|--------|-----------------------|-----------|------------------------------|
+| player_id     | String | Any number as String  |  Yes      | Unique Identifier            |
+| handle        | String | Any                   |  Yes      | Display name                 |
+| first_name    | String | Any                   |  TBD      | In case of duplicate handle  |
+| last_name     | String | Any                   |  TBD      | In case of duplicate handle  |
+| home_team_id  | String | Any number as String  |  Yes      | maps to teams.json           |
+
+Notes: Likely irrelevant for our model, only for visual component. There is a possibility we use the games data to track all of the player's past teams, as well as gather individual data, but it could get very complicated
  
 ### Teams.json
 ##### Each object contains:
