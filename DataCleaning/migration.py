@@ -8,6 +8,7 @@ __db_user = "data_cleaner"
 __db_password = ""
 __db_name = "games"
 
+# Singleton getter for database connection
 def getDb() -> MySQLConnection:
     global __db, __db_host, __db_port, __db_user, __db_password, __db_name
     if __db == None:
@@ -46,6 +47,7 @@ def resetDatabase() -> None:
         cursor.execute(command)
         db.commit()
 
+# Given the parsed arguments, initialize the relevant database variables
 def initDbVars(args: argparse.Namespace):
     global __db_host, __db_port, __db_user, __db_password, __db_name
     __db_host = args.db_host if args.db_host is not None else __db_host
