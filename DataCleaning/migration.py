@@ -1,3 +1,5 @@
+#  Sets up a database
+
 from mysql.connector import MySQLConnection, connect
 import argparse
 
