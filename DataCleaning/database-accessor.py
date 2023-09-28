@@ -1,67 +1,61 @@
-# Run this script to set up a database
+# Contains all functionality relating to database access
 # Expects that the database exists, and "__db_user" has permissions on that database
-# Migrating up is idempotent (eg. does nothing if database is already set up)
+# Migrating up sets up database, and is idempotent (eg. does nothing if database is already set up)
 # Migrate down to reset database
 
+import string
 from mysql.connector import MySQLConnection, connect
 import argparse
+class Database_accessor:
+    def __init__(self,
+                db_name: string, 
+                db_host: string,
+                db_port: int,
+                db_user: string,
+                db_password: string):
+        self.db_name = db_name if db_name else "games"
+        self.db_host = db_host if db_host else "localhost"
+        self.db_port = db_port if db_port else 3306
+        self.db_user = db_user if db_user else "data_cleaner"
+        self.db_password = db_password if db_password else ""
+        self.db = connect(database=self.db_name,
+                            host=self.db_host,
+                            user=self.db_user,
+                            port=self.db_port,
+                            password=self.db_password
+                            )
+        
+    def migrateUp(self) -> None:
+        db = self.db
+        with db.cursor() as cursor:
+            command = """
+            CREATE TABLE IF NOT EXISTS games
+            (
+                id INT PRIMARY KEY,
+                info JSON,
+                stats_update JSON
+            )
+            """
+            cursor.execute(command)
+            cursor.close()
+            db.commit()
 
-__db = None
-__db_host = "localhost"
-__db_port = 3306
-__db_user = "data_cleaner"
-__db_password = ""
-__db_name = "games"
-
-# Singleton getter for database connection
-def getDb() -> MySQLConnection:
-    global __db, __db_host, __db_port, __db_user, __db_password, __db_name
-    if __db == None:
-        __db = connect(
-            host=__db_host,
-            user=__db_user,
-            port=__db_port,
-            password=__db_password,
-            database=__db_name
-        )
-    return __db
-
-def migrateUp() -> None:
-    db = getDb()
-    with db.cursor() as cursor:
-        command = """
-        CREATE TABLE IF NOT EXISTS games
-        (
-            id INT PRIMARY KEY,
-            info JSON,
-            stats_update JSON
-        )
-        """
-        cursor.execute(command)
-        db.commit()
-
-def resetDatabase() -> None:
-    db = getDb()
-    with db.cursor() as cursor:
-        command = "SHOW TABLES;"
-        cursor.execute(command)
-        command = "SET FOREIGN_KEY_CHECKS=0;"
-        for table in cursor:
-            command += "DROP TABLE IF EXISTS " + table[0] + ";"
-            print(command)
-        cursor.execute(command)
-        db.commit()
-
-# Given the parsed arguments, initialize the relevant database variables
-def initDbVars(args: argparse.Namespace):
-    global __db_host, __db_port, __db_user, __db_password, __db_name
-    __db_host = args.db_host if args.db_host is not None else __db_host
-    __db_port = args.db_port if args.db_port is not None else __db_port
-    __db_user = args.db_user if args.db_user is not None else __db_user
-    __db_password = args.db_password if args.db_password is not None else __db_password
-    __db_name = args.db_name if args.db_name is not None else __db_name
-
-
+    def resetDatabase(self) -> None:
+        db = self.db
+        with db.cursor() as cursor:
+            command = "SET FOREIGN_KEY_CHECKS=0;"
+            cursor.execute(command)
+            command = "SHOW TABLES;"
+            cursor.execute(command)
+            for table in cursor.fetchall():
+                command = "DROP TABLE IF EXISTS " + table[0] + ";"
+                cursor.execute(command)
+            cursor.close()
+            db.commit()
+    
+    def __del__(self):
+        self.db.close()
+            
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument('-m', '--migrate', choices=['up', 'down'], default='up', help='Migrate up to set up the database, migrate down to reset database')
@@ -72,9 +66,13 @@ if __name__ == '__main__':
     parser.add_argument('--db_name', help='database name')
     args = parser.parse_args()
     
-    initDbVars(args)
+    db_accessor = Database_accessor(db_name = args.db_name, 
+                                    db_host = args.db_host,
+                                    db_port = args.db_port,
+                                    db_user = args.db_user,
+                                    db_password = args.db_password)
     match args.migrate:
         case 'up':
-            migrateUp()
+            db_accessor.migrateUp()
         case 'down':
-            resetDatabase()
+            db_accessor.resetDatabase()
