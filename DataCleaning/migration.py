@@ -1,4 +1,7 @@
-#  Sets up a database
+# Run this script to set up a database
+# Expects that the database exists, and "__db_user" has permissions on that database
+# Migrating up is idempotent (eg. does nothing if database is already set up)
+# Migrate down to reset database
 
 from mysql.connector import MySQLConnection, connect
 import argparse
