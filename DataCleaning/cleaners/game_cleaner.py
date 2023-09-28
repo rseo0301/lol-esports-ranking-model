@@ -141,10 +141,10 @@ def _appendToObjectArray(object: Dict, key, value):
     object[key].append(value)
 
 # Uncomment the following code for testing/debugging
-if __name__ == "__main__":
-    filePath = os.path.abspath("game-data.json")
-    with open(filePath, "r") as json_file:
-        game_data = json.load(json_file)
-        game, stats = cleanGameData(game_data)
-        print(game)
+# if __name__ == "__main__":
+#     filePath = os.path.abspath("game-data.json")
+#     with open(filePath, "r") as json_file:
+#         game_data = json.load(json_file)
+#         game, stats = cleanGameData(game_data)
+#         print(game)
 
