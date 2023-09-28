@@ -4,7 +4,8 @@
 import os
 import json
 import argparse
-from cleaners import cleanGameData
+from pathlib import Path
+from cleaners import game_cleaner
 from database_accessor import Database_accessor
 
 if __name__ == '__main__':
@@ -32,8 +33,11 @@ if __name__ == '__main__':
     
     # WIP
     if args.clean_game_data and args.game_data_dir:
-        filePath = os.path.abspath(args.game_data_dir)
-        with open(filePath, "r") as json_file:
-            game_data = json.load(json_file)
-            game, stats = cleanGameData(game_data)
-            print(game)
+        directory_path = Path(os.path.abspath(args.game_data_dir))
+        for file_path in directory_path.iterdir():
+            if not file_path.is_file():
+                continue
+            with open(file_path, "r") as json_file:
+                game_data = json.load(json_file)
+                game, stats = game_cleaner.cleanGameData(game_data)
+                print(game)
