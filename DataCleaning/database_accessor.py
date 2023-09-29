@@ -24,33 +24,37 @@ class Database_accessor:
                             password=self.db_password
                             )
         
-    def migrateUp(self) -> None:
+    def executeSqlCommand(self, command) -> any:
         db = self.db
+        output = None
         with db.cursor() as cursor:
-            command = """
-            CREATE TABLE IF NOT EXISTS games
-            (
-                id INT PRIMARY KEY,
-                info JSON,
-                stats_update JSON
-            )
-            """
             cursor.execute(command)
+            output = cursor.fetchall()
             cursor.close()
             db.commit()
+        return output
+    
+    def migrateUp(self) -> None:
+        command = """
+        CREATE TABLE IF NOT EXISTS games
+        (
+            id INT PRIMARY KEY,
+            info JSON,
+            stats_update JSON
+        )
+        """
+        self.executeSqlCommand(command=command)
 
     def resetDatabase(self) -> None:
-        db = self.db
-        with db.cursor() as cursor:
-            command = "SET FOREIGN_KEY_CHECKS=0;"
-            cursor.execute(command)
-            command = "SHOW TABLES;"
-            cursor.execute(command)
-            for table in cursor.fetchall():
-                command = "DROP TABLE IF EXISTS " + table[0] + ";"
-                cursor.execute(command)
-            cursor.close()
-            db.commit()
+        command = "SET FOREIGN_KEY_CHECKS=0;"
+        self.executeSqlCommand(command=command)
+        command = "SHOW TABLES;"
+        tables = self.executeSqlCommand(command=command)
+        for table in tables:
+            command = "DROP TABLE IF EXISTS " + table[0] + ";"
+            self.executeSqlCommand(command=command)
     
+
+
     def __del__(self):
         self.db.close()
