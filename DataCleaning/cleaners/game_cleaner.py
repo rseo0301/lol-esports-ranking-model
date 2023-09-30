@@ -1,21 +1,22 @@
 # Takes in a "game" JSON object, cleans it, and outputs a JSON object that we can store in our database
 import json
 import os
+from datetime import datetime
 from typing import Dict, List
 
 # Given a gamedata object, clean it, and return a tuple:
 # First element will be dictionary, keyed by event type
 # Second element will be list of stat updates
-def cleanGameData(gameData: List[Dict]) -> tuple[Dict, List]:
+def cleanGameData(gameData: List[Dict]) -> tuple[Dict, Dict, datetime]:
     gameDataRet = {}
-    statsUpdateRet = []
+    statsUpdateRet = {}
     for event in gameData:
         if not isinstance(event, Dict):
             continue
         eventType = event["eventType"].lower()
         match eventType:
             case "stats_update":
-                statsUpdateRet.append(_cleanStatsUpdate(event))
+                _appendToObjectArray(statsUpdateRet, eventType, _cleanStatsUpdate(event))
             case "epic_monster_kill":
                 _appendToObjectArray(gameDataRet, eventType, _cleanEpicMonsterKill(event))
             case "champion_kill":
@@ -32,9 +33,10 @@ def cleanGameData(gameData: List[Dict]) -> tuple[Dict, List]:
                 gameDataRet[eventType] = _cleanGameInfo(event)
             case "game_end":
                 gameDataRet[eventType] = _cleanGameEnd(event)
-
-
-    return (gameDataRet, statsUpdateRet)
+                
+    # eventTime is formatted like this: "2023-07-22T17:14:16.356Z"
+    eventTime = datetime.strptime(gameDataRet['game_info']['eventTime'], '%Y-%m-%dT%H:%M:%S.%fZ')
+    return (gameDataRet, statsUpdateRet, eventTime)
 
 
 def _cleanStatsUpdate(info: Dict) -> Dict:

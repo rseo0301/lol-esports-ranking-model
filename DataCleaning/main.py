@@ -4,9 +4,14 @@
 import os
 import json
 import argparse
+from datetime import datetime
 from pathlib import Path
 from cleaners import game_cleaner
 from database_accessor import Database_accessor
+
+def addGameToDb(db_accessor: Database_accessor, game: dict, stats: dict, eventTime: datetime) -> None:
+    primary_key = game["game_info"]["platformGameId"]
+    db_accessor.addRowToTable(tableName="games", columns=["id", "info", "stats_update", "eventTime"], values=[primary_key, game, stats, eventTime])
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
@@ -25,13 +30,15 @@ if __name__ == '__main__':
                                     db_port = args.db_port,
                                     db_user = args.db_user,
                                     db_password = args.db_password)
+    
+    # Migrations
     match args.migrate:
         case 'up':
             db_accessor.migrateUp()
         case 'down':
             db_accessor.resetDatabase()
-    
-    # WIP
+            
+    # Cleaning data and uploading
     if args.clean_game_data and args.game_data_dir:
         directory_path = Path(os.path.abspath(args.game_data_dir))
         for file_path in directory_path.iterdir():
@@ -39,5 +46,7 @@ if __name__ == '__main__':
                 continue
             with open(file_path, "r") as json_file:
                 game_data = json.load(json_file)
-                game, stats = game_cleaner.cleanGameData(game_data)
+                game, stats, eventTime = game_cleaner.cleanGameData(game_data)
                 print(game)
+                addGameToDb(db_accessor=db_accessor, game=game, stats=stats, eventTime=eventTime)
+                
