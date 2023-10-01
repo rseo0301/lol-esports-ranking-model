@@ -103,13 +103,13 @@ class Database_accessor:
     offset: int = None) -> List[tuple]:
         query = "SELECT {} FROM {}".format(', '.join(columns), tableName)
         if where_clause:
-            query += " WHERE " + where_clause
+            query += f" WHERE {where_clause}"
         if order_clause:
-            query += " ORDER BY " + order_clause
+            query += f" ORDER BY {order_clause}"
         if limit:
-            query += " LIMIT " + str(limit)
+            query += f" LIMIT {limit}"
         if offset:
-            query += " OFFSET " + str(offset)
+            query += f" OFFSET {offset}"
         return self.executeSqlCommand(query)
 
     def __del__(self):
@@ -122,12 +122,10 @@ if __name__ == "__main__":
     directory_path = Path(os.path.abspath("/Users/matthewwu/Desktop/RiotData/games"))
 
     # Getting data
-    """
     result = dao.getDataFromTable("games", ["id", "info"])
-    print(dao.getDataFromTable("games", ["id"]))
-    """
+    print(dao.getDataFromTable(tableName="games", columns=["id"], where_clause="id='ESPORTSTMNT03:3199178'", limit=1))
 
-
+"""
     for file_path in directory_path.iterdir():
         if not file_path.is_file():
             continue
@@ -137,3 +135,4 @@ if __name__ == "__main__":
             primary_key = game["game_info"]["platformGameId"]
             print(primary_key)
             dao.addRowToTable(tableName="games", columns=["id", "info", "stats_update", "eventTime"], values=[primary_key, game, stats, eventTime])
+"""
