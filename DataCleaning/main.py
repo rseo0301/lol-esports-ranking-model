@@ -1,13 +1,13 @@
-# Runs migration on the specified database
-# Given a directory filled with game data json objects
-# Clean it and upload it to the database
+# Main utility script for all "data cleaning" related tasks
+# This includes migration, cleaning, and uploading to database
+# See arguments list for usage, or run 'python main.py --help'
 import os
 import json
 import argparse
 from datetime import datetime
 from pathlib import Path
 import shutil
-from cleaners import game_cleaner
+from cleaners import game_cleaner, esports_data_cleaner
 from database_accessor import Database_accessor
 from dataRetrieval.getData import download_esports_files, download_games
 
@@ -26,6 +26,24 @@ def addGamesToDb(db_accessor: Database_accessor, games_directory: str):
             game, stats, eventTime = game_cleaner.cleanGameData(game_data)
             addGameToDb(db_accessor=db_accessor, game=game, stats=stats, eventTime=eventTime)
 
+def addMappingToDb(db_accessor: Database_accessor, mapping: dict):
+    primary_key = mapping["platformGameId"]
+    print(f"Adding mapping {primary_key} to database")
+    db_accessor.addRowToTable(tableName="mapping_data", columns=["id", "mapping"], values=[primary_key, mapping])
+
+def addEsportsDataToDb(db_accessor: Database_accessor, esports_data_directory: str):
+    directory_path = Path(esports_data_directory)
+    for file_path in directory_path.iterdir():
+        if not file_path.is_file():
+            continue
+        with open(file_path, "r") as json_file:
+            data = json.load(json_file)
+            match (file_path.name):
+                case 'mapping_data.json':
+                    cleaned_mapping_data = esports_data_cleaner.cleanMappingData(data)
+                    for mapping in cleaned_mapping_data:
+                        addMappingToDb(db_accessor=db_accessor, mapping=mapping)
+
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument('--db_host', help='database host')
@@ -36,6 +54,7 @@ if __name__ == '__main__':
     parser.add_argument('-m', '--migrate', choices=['up', 'down', ''], default='', help='Migrate up to set up the database, migrate down to reset database')
     parser.add_argument('--game_data_dir', help='If specified, will clean all game files located in directory holding raw game data (json files)')
     parser.add_argument('--download_and_clean', help='Will automatically download and clean all data. Deletes data after processing to save memory.', action="store_true", default=False)
+    parser.add_argument('--download_and_clean_esports', help='Will automatically download and clean esports data (not game data).', action="store_true", default=False)
 
 
     args = parser.parse_args()
@@ -45,6 +64,7 @@ if __name__ == '__main__':
                                     db_port = args.db_port,
                                     db_user = args.db_user,
                                     db_password = args.db_password)
+    download_directory = f"{Path(__file__).parent.resolve()}/dataRetrieval/temp"
 
 
     # Migrations
@@ -60,7 +80,6 @@ if __name__ == '__main__':
     
     # Automatically download and clean game data
     if args.download_and_clean:
-        download_directory = f"{Path(__file__).parent.resolve()}/dataRetrieval/temp"
         download_esports_files(destinationDirectory=download_directory)
         with open(f"{download_directory}/esports-data/tournaments.json", "r") as json_file:
             tournaments_data = json.load(json_file)
@@ -70,3 +89,9 @@ if __name__ == '__main__':
                 addGamesToDb(db_accessor=db_accessor, games_directory=os.path.abspath(f"{download_directory}/games"))
                 print(f"Clearing out games directory: {download_directory}/games")
                 shutil.rmtree(f"{download_directory}/games")
+    
+    # Adds esports data to db
+    if args.download_and_clean_esports or args.download_and_clean:
+        download_esports_files(destinationDirectory=download_directory)
+        addEsportsDataToDb(db_accessor=db_accessor, esports_data_directory=f"{download_directory}/esports-data")
+
