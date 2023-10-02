@@ -44,27 +44,69 @@ class Database_accessor:
     
 
     def migrateUp(self) -> None:
-        command = """
-        CREATE TABLE IF NOT EXISTS games
-        (
-            id VARCHAR(128) PRIMARY KEY,
-            eventTime DATETIME,
-            info JSON,
-            stats_update JSON
-        )
-        """
-        self.executeSqlCommand(command=command)
-        command = """
-        CREATE TABLE IF NOT EXISTS cumulative_data
-        (
-            id VARCHAR(128) PRIMARY KEY,
-            scale_by_90 JSON,
-            CONSTRAINT match_game_id
-            FOREIGN KEY (id)
-            REFERENCES games (id)
-        )
-        """
-        self.executeSqlCommand(command=command)
+        def _createCumulativeDataTable():
+            command = """
+            CREATE TABLE IF NOT EXISTS cumulative_data
+            (
+                id VARCHAR(128) PRIMARY KEY,
+                scale_by_90 JSON
+            )
+            """
+            self.executeSqlCommand(command=command)
+
+            command = """
+                SELECT NULL FROM INFORMATION_SCHEMA.TABLE_CONSTRAINTS
+                WHERE CONSTRAINT_SCHEMA = DATABASE()
+                AND TABLE_NAME = 'cumulative_data'
+                AND CONSTRAINT_NAME = 'match_game_id';
+            """
+            matchGameIdConstraintExists = self.executeSqlCommand(command=command)
+            if not matchGameIdConstraintExists:
+                command = """
+                    ALTER TABLE cumulative_data
+                    ADD CONSTRAINT match_game_id
+                    FOREIGN KEY (id)
+                    REFERENCES games (id)
+                """
+                self.executeSqlCommand(command=command)
+
+        def _createMappingTable():
+            command = """
+            CREATE TABLE IF NOT EXISTS mapping_data
+            (
+                id VARCHAR(128) PRIMARY KEY,
+                mapping JSON
+            )
+            """
+            self.executeSqlCommand(command=command)
+
+        def _createGamesTable():
+            command = """
+            CREATE TABLE IF NOT EXISTS games
+            (
+                id VARCHAR(128) PRIMARY KEY,
+                eventTime DATETIME,
+                info JSON,
+                stats_update JSON
+            )
+            """
+            self.executeSqlCommand(command=command)
+            command = """
+                SELECT NULL FROM INFORMATION_SCHEMA.STATISTICS
+                WHERE table_schema = DATABASE() AND table_name = 'games' AND index_name = 'eventTime'
+            """
+            eventTimeIndexExists = self.executeSqlCommand(command=command)
+            if not eventTimeIndexExists:
+                command = """
+                    ALTER TABLE games
+                    ADD INDEX eventTime (eventTime);
+                """
+                self.executeSqlCommand(command=command)
+
+
+        _createGamesTable()
+        _createMappingTable()
+        _createCumulativeDataTable()
 
 
     def resetDatabase(self) -> None:
