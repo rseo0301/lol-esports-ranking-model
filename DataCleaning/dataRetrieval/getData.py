@@ -10,8 +10,8 @@ from io import BytesIO
 S3_BUCKET_URL = "https://power-rankings-dataset-gprhack.s3.us-west-2.amazonaws.com"
 
 
-def _download_gzip_and_write_to_json(file_name):
-    local_file_name = file_name.replace(":", "_")
+def _download_gzip_and_write_to_json(file_name: str, destination_directory: str = "."):
+    local_file_name = destination_directory + "/" + file_name.replace(":", "_")
     # If file already exists locally do not re-download game
     if os.path.isfile(f"{local_file_name}.json"):
         return
@@ -30,15 +30,15 @@ def _download_gzip_and_write_to_json(file_name):
         print(f"Failed to download {file_name}")
 
 
-def download_esports_files():
+def download_esports_files(destinationDirectory: str = "."):
     directory = "esports-data"
-    if not os.path.exists(directory):
-        os.makedirs(directory)
+    if not os.path.exists(f"{destinationDirectory}/{directory}"):
+        os.makedirs(f"{destinationDirectory}/{directory}")
 
     esports_data_files = ["leagues", "tournaments",
                           "players", "teams", "mapping_data"]
     for file_name in esports_data_files:
-        _download_gzip_and_write_to_json(f"{directory}/{file_name}")
+        _download_gzip_and_write_to_json(file_name=f"{directory}/{file_name}", destination_directory=destinationDirectory)
 
 
 def download_games(year: int, tournamentId: str):
@@ -59,7 +59,7 @@ def download_games(year: int, tournamentId: str):
     game_counter = 0
 
     for tournament in tournaments_data:
-        # MATTHEW I ONLY WANT TO DOWNLOAD 2 TOURNAMENTS
+        # MATTHEW edit
         if tournament["id"] != tournamentId:
             continue
         start_date = tournament.get("startDate", "")
@@ -88,6 +88,7 @@ def download_games(year: int, tournamentId: str):
                                    {round((time.time() - start_time)/60, 2)} minutes"
                                 )
         break
+
 
 """
 if __name__ == "__main__":

@@ -8,6 +8,7 @@ from datetime import datetime
 from pathlib import Path
 from cleaners import game_cleaner
 from database_accessor import Database_accessor
+from dataRetrieval.getData import download_esports_files, download_games
 
 def addGameToDb(db_accessor: Database_accessor, game: dict, stats: dict, eventTime: datetime) -> None:
     primary_key = game["game_info"]["platformGameId"]
@@ -31,6 +32,9 @@ if __name__ == '__main__':
                                     db_user = args.db_user,
                                     db_password = args.db_password)
     
+    download_esports_files(destinationDirectory=f"{Path(__file__).parent.resolve()}/dataRetrieval/temp")
+    quit()
+
     # Migrations
     match args.migrate:
         case 'up':
