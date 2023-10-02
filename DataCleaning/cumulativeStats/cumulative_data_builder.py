@@ -1,8 +1,5 @@
 # Class to build up "cumulative stats" for each team
 
-from tokenize import Number
-
-
 class Cumulative_Stats_Builder:
     def __init__(self) -> Cumulative_Stats_Builder:
         self.team_stats = {}
@@ -39,8 +36,8 @@ class Cumulative_Stats_Builder:
     def _updateTeamCumulativeStats(self, team_id: str, game_info: dict, stats_info: dict) -> dict:
         # Add handling for if this is the first game this team has played
         new_n_games: int = self.team_stats[team_id]['n_games'] + 1
-        old_weighted_count: Number = self.team_stats[team_id]['weighted_count']
-        new_weighted_count: Number = old_weighted_count + (0.9**new_n_games)
+        old_weighted_count: float = self.team_stats[team_id]['weighted_count']
+        new_weighted_count: float = old_weighted_count + (0.9**new_n_games)
         new_cumulative_stats = {}
         for key, value in self.getCumulativeStatsForTeam(team_id=team_id).items():
             # Check if this works for all keys. They might not all be numerical
