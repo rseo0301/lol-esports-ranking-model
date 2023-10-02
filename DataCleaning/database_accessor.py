@@ -103,9 +103,53 @@ class Database_accessor:
                 """
                 self.executeSqlCommand(command=command)
 
+        def _createLeaguesTable():
+            command = """
+            CREATE TABLE IF NOT EXISTS leagues
+            (
+                id VARCHAR(128) PRIMARY KEY,
+                league JSON
+            )
+            """
+            self.executeSqlCommand(command=command)
 
-        _createGamesTable()
+        def _createPlayersTable():
+            command = """
+            CREATE TABLE IF NOT EXISTS players
+            (
+                id VARCHAR(128) PRIMARY KEY,
+                player JSON
+            )
+            """
+            self.executeSqlCommand(command=command)
+
+        def _createTeamsTable():
+            command = """
+            CREATE TABLE IF NOT EXISTS teams
+            (
+                id VARCHAR(128) PRIMARY KEY,
+                team JSON
+            )
+            """
+            self.executeSqlCommand(command=command)
+
+        def _createTournamentsTable():
+            command = """
+            CREATE TABLE IF NOT EXISTS tournaments
+            (
+                id VARCHAR(128) PRIMARY KEY,
+                tournament JSON
+            )
+            """
+            self.executeSqlCommand(command=command)
+
+
+        _createLeaguesTable
         _createMappingTable()
+        _createPlayersTable()
+        _createTeamsTable()
+        _createTournamentsTable()
+        _createGamesTable()
         _createCumulativeDataTable()
 
 
