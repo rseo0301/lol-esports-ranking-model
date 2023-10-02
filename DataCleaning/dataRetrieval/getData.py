@@ -41,16 +41,16 @@ def download_esports_files(destinationDirectory: str = "."):
         _download_gzip_and_write_to_json(file_name=f"{directory}/{file_name}", destination_directory=destinationDirectory)
 
 
-def download_games(year: int, tournamentId: str):
+def download_games(year: int, tournament_id: str, destination_directory="."):
     start_time = time.time()
-    with open("esports-data/tournaments.json", "r") as json_file:
+    with open(f"{destination_directory}/esports-data/tournaments.json", "r") as json_file:
         tournaments_data = json.load(json_file)
-    with open("esports-data/mapping_data.json", "r") as json_file:
+    with open(f"{destination_directory}/esports-data/mapping_data.json", "r") as json_file:
         mappings_data = json.load(json_file)
 
     directory = "games"
-    if not os.path.exists(directory):
-        os.makedirs(directory)
+    if not os.path.exists(f"{destination_directory}/{directory}"):
+        os.makedirs(f"{destination_directory}/{directory}")
 
     mappings = {
         esports_game["esportsGameId"]: esports_game for esports_game in mappings_data
@@ -60,7 +60,7 @@ def download_games(year: int, tournamentId: str):
 
     for tournament in tournaments_data:
         # MATTHEW edit
-        if tournament["id"] != tournamentId:
+        if tournament["id"] != tournament_id:
             continue
         start_date = tournament.get("startDate", "")
         if start_date.startswith(str(year)):
@@ -79,7 +79,8 @@ def download_games(year: int, tournamentId: str):
                                     continue
 
                                 _download_gzip_and_write_to_json(
-                                    f"{directory}/{platform_game_id}")
+                                    file_name=f"{directory}/{platform_game_id}",
+                                    destination_directory=destination_directory)
                                 game_counter += 1
 
                             if game_counter % 10 == 0:
