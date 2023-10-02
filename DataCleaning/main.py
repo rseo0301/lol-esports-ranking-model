@@ -1,6 +1,7 @@
 # Main utility script for all "data cleaning" related tasks
 # This includes migration, cleaning, and uploading to database
-# See arguments list for usage, or run 'python main.py --help'
+# This script is meant to be run from the command line
+# See arguments for usage, or run 'python main.py --help'
 import os
 import json
 import argparse
@@ -11,12 +12,20 @@ from cleaners import game_cleaner, esports_data_cleaner
 from database_accessor import Database_accessor
 from dataRetrieval.getData import download_esports_files, download_games
 
-def addGameToDb(db_accessor: Database_accessor, game: dict, stats: dict, eventTime: datetime) -> None:
+_db_accessor: Database_accessor = None
+
+# Assuming that dbAccessor will be initialized in "main" (after command line args are parsed)
+def getDbAccessor() -> Database_accessor:
+    global _db_accessor
+    return _db_accessor
+
+def addGameToDb(game: dict, stats: dict, eventTime: datetime) -> None:
+    db_accessor: Database_accessor = getDbAccessor()
     primary_key = game["game_info"]["platformGameId"]
     print(f"Adding game {primary_key} to database")
     db_accessor.addRowToTable(tableName="games", columns=["id", "info", "stats_update", "eventTime"], values=[primary_key, game, stats, eventTime])
 
-def addGamesToDb(db_accessor: Database_accessor, games_directory: str):
+def addGamesToDb(games_directory: str):
     directory_path = Path(games_directory)
     for file_path in directory_path.iterdir():
         if not file_path.is_file():
@@ -24,14 +33,15 @@ def addGamesToDb(db_accessor: Database_accessor, games_directory: str):
         with open(file_path, "r") as json_file:
             game_data = json.load(json_file)
             game, stats, eventTime = game_cleaner.cleanGameData(game_data)
-            addGameToDb(db_accessor=db_accessor, game=game, stats=stats, eventTime=eventTime)
+            addGameToDb(game=game, stats=stats, eventTime=eventTime)
 
-def addMappingToDb(db_accessor: Database_accessor, mapping: dict):
+def addMappingToDb(mapping: dict):
+    db_accessor: Database_accessor = getDbAccessor()
     primary_key = mapping["platformGameId"]
     print(f"Adding mapping {primary_key} to database")
     db_accessor.addRowToTable(tableName="mapping_data", columns=["id", "mapping"], values=[primary_key, mapping])
 
-def addEsportsDataToDb(db_accessor: Database_accessor, esports_data_directory: str):
+def addEsportsDataToDb(esports_data_directory: str):
     directory_path = Path(esports_data_directory)
     for file_path in directory_path.iterdir():
         if not file_path.is_file():
@@ -42,7 +52,7 @@ def addEsportsDataToDb(db_accessor: Database_accessor, esports_data_directory: s
                 case 'mapping_data.json':
                     cleaned_mapping_data = esports_data_cleaner.cleanMappingData(data)
                     for mapping in cleaned_mapping_data:
-                        addMappingToDb(db_accessor=db_accessor, mapping=mapping)
+                        addMappingToDb(mapping=mapping)
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
@@ -59,11 +69,12 @@ if __name__ == '__main__':
 
     args = parser.parse_args()
     
-    db_accessor = Database_accessor(db_name = args.db_name, 
+    _db_accessor = Database_accessor(db_name = args.db_name, 
                                     db_host = args.db_host,
                                     db_port = args.db_port,
                                     db_user = args.db_user,
                                     db_password = args.db_password)
+    db_accessor = getDbAccessor()
     download_directory = f"{Path(__file__).parent.resolve()}/dataRetrieval/temp"
 
 
@@ -76,7 +87,7 @@ if __name__ == '__main__':
             
     # Manually specified games data directory
     if args.game_data_dir:
-        addGamesToDb(db_accessor=db_accessor, games_directory=os.path.abspath(args.game_data_dir))
+        addGamesToDb(games_directory=os.path.abspath(args.game_data_dir))
     
     # Automatically download and clean game data
     if args.download_and_clean:
@@ -86,12 +97,12 @@ if __name__ == '__main__':
             # Process games one tournament at a time, then remove them to save space
             for tournament in tournaments_data:
                 download_games(year=2023, tournament_id=tournament["id"], destination_directory=download_directory)
-                addGamesToDb(db_accessor=db_accessor, games_directory=os.path.abspath(f"{download_directory}/games"))
+                addGamesToDb(games_directory=os.path.abspath(f"{download_directory}/games"))
                 print(f"Clearing out games directory: {download_directory}/games")
                 shutil.rmtree(f"{download_directory}/games")
     
     # Adds esports data to db
     if args.download_and_clean_esports or args.download_and_clean:
         download_esports_files(destinationDirectory=download_directory)
-        addEsportsDataToDb(db_accessor=db_accessor, esports_data_directory=f"{download_directory}/esports-data")
+        addEsportsDataToDb(esports_data_directory=f"{download_directory}/esports-data")
 
