@@ -144,7 +144,7 @@ class Database_accessor:
             self.executeSqlCommand(command=command)
 
 
-        _createLeaguesTable
+        _createLeaguesTable()
         _createMappingTable()
         _createPlayersTable()
         _createTeamsTable()
