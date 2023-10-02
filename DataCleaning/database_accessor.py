@@ -54,6 +54,17 @@ class Database_accessor:
         )
         """
         self.executeSqlCommand(command=command)
+        command = """
+        CREATE TABLE IF NOT EXISTS cumulative_data
+        (
+            id VARCHAR(128) PRIMARY KEY,
+            scale_by_90 JSON,
+            CONSTRAINT match_game_id
+            FOREIGN KEY (id)
+            REFERENCES games (id)
+        )
+        """
+        self.executeSqlCommand(command=command)
 
 
     def resetDatabase(self) -> None:
