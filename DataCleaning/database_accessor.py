@@ -12,7 +12,7 @@ from cleaners import game_cleaner
 from pathlib import Path
 import os
 
-class Database_accessor:
+class Database_Accessor:
     def __init__(self,
                 db_name: str = None, 
                 db_host: str = None,
@@ -215,7 +215,7 @@ class Database_accessor:
 
 # This is for testing:
 if __name__ == "__main__":
-    dao = Database_accessor()
+    dao = Database_Accessor()
     directory_path = Path(os.path.abspath("/Users/matthewwu/Desktop/RiotData/games"))
 
     # Getting data
