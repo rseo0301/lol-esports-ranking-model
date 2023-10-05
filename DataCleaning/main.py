@@ -163,6 +163,7 @@ if __name__ == '__main__':
         db_accessor.getDataFromTable(tableName="games", columns=["id"], order_clause="eventTime ASC", limit=10, offset=gameCount)
     
     # TESTING this should be gated by args
+    """
     db_accessor = Database_Accessor(db_name = "games", 
                                     db_host = "riot-hackathon-db.c880zspfzfsi.us-west-2.rds.amazonaws.com",
                                     db_user = "data_cleaner")
@@ -180,4 +181,4 @@ if __name__ == '__main__':
             print(id)
         gameCount += len(games)
     print(games)
-
+    """
