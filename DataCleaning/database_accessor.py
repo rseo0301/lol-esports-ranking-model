@@ -209,6 +209,7 @@ class Database_Accessor:
             query += f" OFFSET {offset}"
         return self.executeSqlCommand(query)
 
+
     def __del__(self):
         self.db.close()
 

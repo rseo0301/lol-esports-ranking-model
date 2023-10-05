@@ -8,6 +8,7 @@ import argparse
 from datetime import datetime
 from pathlib import Path
 import shutil
+from cumulativeStats.cumulative_data_builder import Cumulative_Stats_Builder
 from cleaners import game_cleaner, esports_data_cleaner
 from database_accessor import Database_Accessor
 from dataRetrieval.getData import download_esports_files, download_games
@@ -112,6 +113,7 @@ if __name__ == '__main__':
     parser.add_argument('--esports_data_dir', help='If specified, will clean all esports data files located in directory holding raw esports data (json files)')
     parser.add_argument('--download_and_clean', help='Will automatically download and clean all data. Deletes data after processing to save memory.', action="store_true", default=False)
     parser.add_argument('--download_and_clean_esports', help='Will automatically download and clean esports data (not game data).', action="store_true", default=False)
+    parser.add_argument('--build_cumulative_stats', help='Build the cumulative stats using the data available in the database.', action="store_true", default=False)
     args = parser.parse_args()
     
     _db_accessor = Database_Accessor(db_name = args.db_name, 
@@ -154,4 +156,28 @@ if __name__ == '__main__':
     if args.download_and_clean_esports or args.download_and_clean:
         download_esports_files(destinationDirectory=download_directory)
         addEsportsDataToDb(esports_data_directory=f"{download_directory}/esports-data")
+    
+    # Build cumulative stats
+    if args.build_cumulative_stats:
+        gameCount: int = 0
+        db_accessor.getDataFromTable(tableName="games", columns=["id"], order_clause="eventTime ASC", limit=10, offset=gameCount)
+    
+    # TESTING this should be gated by args
+    db_accessor = Database_Accessor(db_name = "games", 
+                                    db_host = "riot-hackathon-db.c880zspfzfsi.us-west-2.rds.amazonaws.com",
+                                    db_user = "data_cleaner")
+    gameCount: int = 0
+    cumulative_stats_builder: Cumulative_Stats_Builder = Cumulative_Stats_Builder(db_accessor=db_accessor)
+    # Keep track of the current cumulative stats of each team
+    teams_cumulative_stats = {}
+    while(True):
+        games = db_accessor.getDataFromTable(tableName="games", columns=["id", "info", "stats_update"], order_clause="eventTime ASC", limit=10, offset=gameCount)
+        if len(games) == 0:
+            break
+        for id, game_info, stats_update in games:
+            # Do some processing on the games
+            # CUMULATIVE STATS BUILDER
+            print(id)
+        gameCount += len(games)
+    print(games)
 

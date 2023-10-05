@@ -3,8 +3,9 @@ import sys
 import os
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 import json
-from database_accessor import Database_Accessor
 from typing import Tuple
+from database_accessor import Database_Accessor
+from util import getTeamIdsFromGameInfo
 class Cumulative_Stats_Builder:
     def __init__(self, db_accessor: Database_Accessor):
         self.db_accessor = db_accessor
@@ -26,22 +27,14 @@ class Cumulative_Stats_Builder:
         """
         
     def addGamePlayed(self, game_info: dict, stats_info: dict) -> Tuple[dict, dict]:
-        team1_id, team2_id = self._getTeamIdFromGameInfo(game_info)
+        team1_id, team2_id = getTeamIdsFromGameInfo(db_accessor=self.db_accessor, game_info=game_info)
         self._updateTeamCumulativeStats(team_id=team1_id, game_info=game_info, stats_info=stats_info)
         self._updateTeamCumulativeStats(team_id=team2_id, game_info=game_info, stats_info=stats_info)
         return (self.getCumulativeStatsForTeam(team1_id), self.getCumulativeStatsForTeam(team2_id))
 
     def getCumulativeStatsForTeam(self, team_id: str) -> dict:
         return self.team_stats[team_id]['cumulativeStats']
-    
-    def _getTeamIdsFromGameInfo(self, game_info: dict) -> Tuple[str, str]:
-        db_accessor: Database_Accessor = self.db_accessor
-        platformGameId = game_info['game_info']['platformGameId']
-        teamMapping = db_accessor.getDataFromTable(
-            tableName='mapping_data', 
-            columns=['mapping'], 
-            where_clause=f"id={platformGameId}")
-        return ("team-1-id", "team-2-id")
+
 
     # Update the cumulative stats for the given team_id
     # after they have played a game that resulted in 'game_info' and 'stats_info'
