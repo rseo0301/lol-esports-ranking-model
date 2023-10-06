@@ -41,19 +41,28 @@ class Cumulative_Stats_Builder:
                     gold_differential_at_14: number,
                     gold_differential_per_minute: number,
                     ...
-                }
+                },
+                wins_weighted_count: int,
+                losses_weighted_count: int
             },
             ...
         }
         """
     
 
+    # Updates the cumulative stats for the teams involved in the game described by game_info and stats_info
     def addGamePlayed(self, game_info: dict, stats_info: dict) -> Tuple[dict, dict]:
         team1_id, team2_id = getTeamIdsFromGameInfo(db_accessor=self.db_accessor, game_info=game_info)
         team1_cumulative_stats, team2_cumulative_stats = self._parseCumulativeStatsFromData(game_info=game_info, stats_info=stats_info)
         
         self._updateTeamCumulativeStats(team_id=team1_id, cumulative_stats=team1_cumulative_stats)
         self._updateTeamCumulativeStats(team_id=team2_id, cumulative_stats=team2_cumulative_stats)
+        if self._get_winning_team(game_info=game_info) == 100:
+            self.team_stats[team1_id]['wins_weighted_count'] = self._calculate_next_weighted_count(self.team_stats[team1_id]['losses_weighted_count'])
+            self.team_stats[team2_id]['losses_weighted_count'] = self._calculate_next_weighted_count(self.team_stats[team2_id]['losses_weighted_count'])
+        if self._get_winning_team(game_info=game_info) == 200:
+            self.team_stats[team1_id]['losses_weighted_count'] = self._calculate_next_weighted_count(self.team_stats[team1_id]['losses_weighted_count'])
+            self.team_stats[team2_id]['wins_weighted_count'] = self._calculate_next_weighted_count(self.team_stats[team2_id]['losses_weighted_count'])
         return self.getCumulativeStatsForTeam(team1_id), self.getCumulativeStatsForTeam(team2_id)
 
 
@@ -65,24 +74,16 @@ class Cumulative_Stats_Builder:
     # Update the team's cumulative stats
     def _updateTeamCumulativeStats(self, team_id: str, cumulative_stats: dict) -> dict:
         if team_id not in self.team_stats:
-            default_stats = {}
-            for key in CUMULATIVE_STATS_KEYS:
-                match key:
-                    case 'region':
-                        default_stats[key] = None
-                    case other:
-                        default_stats[key] = 0
-            self.team_stats[team_id] = {}
-            self.team_stats[team_id]['cumulativeStats'] = default_stats
-            self.team_stats[team_id]['n_games'] = 0
-            self.team_stats[team_id]['weighted_count'] = 0
+            self._init_cumulative_stats_for_team(team_id)
         
 
         new_n_games: int = self.team_stats[team_id]['n_games'] + 1
         old_weighted_count: float = self.team_stats[team_id]['weighted_count']
-        new_weighted_count: float = old_weighted_count*0.9 + 1
+        new_weighted_count: float = self._calculate_next_weighted_count(old_weighted_count)
         new_cumulative_stats = {}
         for key, value in self.getCumulativeStatsForTeam(team_id=team_id).items():
+            if key not in new_cumulative_stats:
+                continue
             if key == 'region':
                 new_cumulative_stats[key] = cumulative_stats[key]
                 continue
@@ -92,10 +93,37 @@ class Cumulative_Stats_Builder:
         self.team_stats[team_id]['weighted_count'] = new_weighted_count
         self.team_stats[team_id]['cumulativeStats'] = new_cumulative_stats
         return new_cumulative_stats
+
+
+    # Given a weighted count, calculate the "new" weighted count, after adding 1 more game
+    def _calculate_next_weighted_count(self, old_weighted_count):
+        return old_weighted_count*0.9 + 1
+
+    # Return the winning team, given game_info
+    def _get_winning_team(self, game_info: dict) -> int:
+        return game_info['game_end']['winningTeam']
+
+
+    # Initialize team_id in self.team_stats
+    def _init_cumulative_stats_for_team(self, team_id):
+        default_stats = {}
+        for key in CUMULATIVE_STATS_KEYS:
+            match key:
+                case 'region':
+                    default_stats[key] = None
+                case other:
+                    default_stats[key] = 0
+        self.team_stats[team_id] = {}
+        self.team_stats[team_id]['cumulativeStats'] = default_stats
+        self.team_stats[team_id]['n_games'] = 0
+        self.team_stats[team_id]['weighted_count'] = 0
+        self.team_stats[team_id]['wins_weighted_count'] = 0
+        self.team_stats[team_id]['losses_weighted_count'] = 0
         
 
     # Given game and stats info, convert it into cumulative stats format
     # Will return cumulative stats for (team1, team2)
+    # In other words, build "cumulative stats" as if this is the only game these teams have played
     def _parseCumulativeStatsFromData(self, game_info: dict, stats_info: dict) -> Tuple[dict, dict]:
         team1_stats = {}
         team2_stats = {}
@@ -157,17 +185,19 @@ class Cumulative_Stats_Builder:
             return turrets_destroyed[0]['teamID']
         
         def get_vision_score_per_minute() -> Tuple[float, float]:
-            return 0, 0
+            game_length_minutes = game_info['game_end']['gameTime']/60
+            participants = stats_info['stats_update'][-1]['participants']
+            team1_total_vision_score = sum([participant['stats']['VISION_SCORE'] for participant in participants[:5]])
+            team2_total_vision_score = sum([participant['stats']['VISION_SCORE'] for participant in participants[5:]])
+            return team1_total_vision_score/game_length_minutes, team2_total_vision_score/game_length_minutes
 
-        def get_time_for_win() -> Tuple[float, float]:
-            return 0, 0
-            pass
-        
+        def get_game_time_minutes() -> int:
+            return (game_info['game_end']['gameTime'] * 0.001) / 60
+            
         def unfinished() -> Tuple[float, float]:
             return 0, 0
             
-
-
+            
 
         if get_first_blood_team() == 100:
             addStatsToTeams(key='first_blood_rate', values=(1, 0))
@@ -183,17 +213,27 @@ class Cumulative_Stats_Builder:
             addStatsToTeams(key='first_tower_rate', values=(1, 0))
         elif get_first_turret_team() == 200:
             addStatsToTeams(key='first_tower_rate', values=(0, 1))
-            
         addStatsToTeams(key='vision_score_per_minute', values=get_vision_score_per_minute())
-        addStatsToTeams(key='avg_time_per_win', values=unfinished())
-        addStatsToTeams(key='avg_time_per_loss', values=unfinished())
-        addStatsToTeams(key='overall_winrate', values=unfinished())
+        game_time_minutes = get_game_time_minutes()
+        if self._get_winning_team(game_info=game_info) == 100:
+            team1_stats['avg_time_per_win'] = game_time_minutes
+            team2_stats['avg_time_per_loss'] = game_time_minutes
+            addStatsToTeams(key='overall_winrate', values=(1,0))
+        if self._get_winning_team(game_info=game_info) == 200:
+            team1_stats['avg_time_per_loss'] = game_time_minutes
+            team2_stats['avg_time_per_win'] = game_time_minutes
+            addStatsToTeams(key='overall_winrate', values=(0, 1))
+
+
         addStatsToTeams(key='gold_diff_per_min', values=unfinished())
         addStatsToTeams(key='gold_diff_at_14', values=unfinished())
         addStatsToTeams(key='region', values=("Some Region", "Some Other Region"))
         
         # Sanity check
-        if set(team1_stats.keys()) != set(CUMULATIVE_STATS_KEYS):
+        expected_keys = set(CUMULATIVE_STATS_KEYS)
+        expected_keys.remove("avg_time_per_win")
+        expected_keys.remove("avg_time_per_loss")
+        if not expected_keys.issubset(set(team1_stats.keys())) or not expected_keys.issubset(set(team2_stats.keys())):
             error("Error in cumulative_data_builder: while parsing cumulative stats from gamedata, parsed keys don't match CUMULATIVE_STATS_KEYS")
 
         return team1_stats, team2_stats
