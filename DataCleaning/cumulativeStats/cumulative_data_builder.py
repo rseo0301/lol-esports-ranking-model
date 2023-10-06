@@ -193,7 +193,7 @@ class Cumulative_Stats_Builder:
         addStatsToTeams(key='region', values="Some Region")
         
         # Sanity check
-        if team1_stats.keys() != CUMULATIVE_STATS_KEYS:
+        if set(team1_stats.keys()) != set(CUMULATIVE_STATS_KEYS):
             error("Error in cumulative_data_builder: while parsing cumulative stats from gamedata, parsed keys don't match CUMULATIVE_STATS_KEYS")
 
         return team1_stats, team2_stats

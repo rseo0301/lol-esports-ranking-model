@@ -8,6 +8,7 @@ import argparse
 from datetime import datetime
 from pathlib import Path
 import shutil
+from util import getTeamIdsFromGameInfo
 from cumulativeStats.cumulative_data_builder import Cumulative_Stats_Builder
 from cleaners import game_cleaner, esports_data_cleaner
 from database_accessor import Database_Accessor
@@ -159,26 +160,30 @@ if __name__ == '__main__':
     
     # Build cumulative stats
     if args.build_cumulative_stats:
+        db_accessor = getDbAccessor()
         gameCount: int = 0
-        db_accessor.getDataFromTable(tableName="games", columns=["id"], order_clause="eventTime ASC", limit=10, offset=gameCount)
-    
-    # TESTING this should be gated by args
-    """
-    db_accessor = Database_Accessor(db_name = "games", 
-                                    db_host = "riot-hackathon-db.c880zspfzfsi.us-west-2.rds.amazonaws.com",
-                                    db_user = "data_cleaner")
-    gameCount: int = 0
-    cumulative_stats_builder: Cumulative_Stats_Builder = Cumulative_Stats_Builder(db_accessor=db_accessor)
-    # Keep track of the current cumulative stats of each team
-    teams_cumulative_stats = {}
-    while(True):
-        games = db_accessor.getDataFromTable(tableName="games", columns=["id", "info", "stats_update"], order_clause="eventTime ASC", limit=10, offset=gameCount)
-        if len(games) == 0:
-            break
-        for id, game_info, stats_update in games:
-            # Do some processing on the games
-            # CUMULATIVE STATS BUILDER
-            print(id)
-        gameCount += len(games)
-    print(games)
-    """
+        cumulative_stats_builder: Cumulative_Stats_Builder = Cumulative_Stats_Builder(db_accessor=db_accessor)
+        # Keep track of the current cumulative stats of each team
+        teams_cumulative_stats = {}
+        while(True):
+            games = db_accessor.getDataFromTable(tableName="games", columns=["id", "info", "stats_update"], order_clause="eventTime ASC", limit=10, offset=gameCount)
+            if len(games) == 0:
+                break
+            for game_id, game_info, stats_update in games:
+                game_info, stats_update = json.loads(game_info), json.loads(stats_update)
+                team1_id, team2_id = getTeamIdsFromGameInfo(db_accessor=db_accessor, game_info=game_info)
+
+                # First, tell the database about each team's cumulative stats going into the game
+                cumulative_stats = {}
+                if team1_id in teams_cumulative_stats:
+                    cumulative_stats['team_1'] = teams_cumulative_stats[team1_id]
+                if team2_id in teams_cumulative_stats:
+                    cumulative_stats['team_2'] = teams_cumulative_stats[team2_id]
+                print(f"Writing cumulative stats for game {game_info['game_info']['platformGameId']}")
+                db_accessor.addRowToTable(tableName='cumulative_data', columns=['id', 'scale_by_90'], values=[game_id, cumulative_stats])
+
+                # Then, update each team's cumulative stats after playing this game
+                team1_cumulative_stats, team2_cumulative_stats = cumulative_stats_builder.addGamePlayed(game_info=game_info, stats_info=stats_update)
+                cumulative_stats[team1_id], cumulative_stats[team2_id] = team1_cumulative_stats, team2_cumulative_stats
+            gameCount += len(games)
+        print(f"{gameCount} games written to cumulative stats table")

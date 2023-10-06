@@ -165,7 +165,7 @@ class Database_Accessor:
     
     # Insert a row into the table `tableName`, with the specified columns, and associated values.
     # If the row already exists, will replace it if "replaceOnDuplicate" is specified
-    def addRowToTable(self, tableName: str, columns: List[str], values: List[dict or int or str], replaceOnDuplicate=True) -> None:
+    def addRowToTable(self, tableName: str, columns: List[str], values: List[dict | int | str], replaceOnDuplicate=True) -> None:
         if len(columns) != len(values):
             raise ValueError("Number of columns does not match number of values.")
         
