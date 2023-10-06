@@ -155,7 +155,17 @@ class Cumulative_Stats_Builder:
         def get_first_turret_team() -> int:
             turrets_destroyed = [event for event in game_info['building_destroyed'] if event['buildingType'] == 'turret']
             return turrets_destroyed[0]['teamID']
+        
+        def get_vision_score_per_minute() -> Tuple[float, float]:
+            return 0, 0
 
+        def get_time_for_win() -> Tuple[float, float]:
+            return 0, 0
+            pass
+        
+        def unfinished() -> Tuple[float, float]:
+            return 0, 0
+            
 
 
 
@@ -174,13 +184,13 @@ class Cumulative_Stats_Builder:
         elif get_first_turret_team() == 200:
             addStatsToTeams(key='first_tower_rate', values=(0, 1))
             
-        addStatsToTeams(key='vision_score_per_minute', values=get_avg_assists_per_kill())
-        addStatsToTeams(key='avg_time_per_win', values=get_avg_assists_per_kill())
-        addStatsToTeams(key='avg_time_per_loss', values=get_avg_assists_per_kill())
-        addStatsToTeams(key='overall_winrate', values=get_avg_assists_per_kill())
-        addStatsToTeams(key='gold_diff_per_min', values=get_avg_assists_per_kill())
-        addStatsToTeams(key='gold_diff_at_14', values=get_avg_assists_per_kill())
-        addStatsToTeams(key='region', values=get_avg_assists_per_kill())
+        addStatsToTeams(key='vision_score_per_minute', values=get_vision_score_per_minute())
+        addStatsToTeams(key='avg_time_per_win', values=unfinished())
+        addStatsToTeams(key='avg_time_per_loss', values=unfinished())
+        addStatsToTeams(key='overall_winrate', values=unfinished())
+        addStatsToTeams(key='gold_diff_per_min', values=unfinished())
+        addStatsToTeams(key='gold_diff_at_14', values=unfinished())
+        addStatsToTeams(key='region', values="Some Region")
         
         # Sanity check
         if team1_stats.keys() != CUMULATIVE_STATS_KEYS:
