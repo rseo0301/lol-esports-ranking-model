@@ -3,7 +3,7 @@ from database_accessor import Database_Accessor
 import json
 from typing import Tuple
 
-# Could probably build a cache for mapping table
+# TODO Could probably build a cache for mapping table
 def getTeamIdsFromGameInfo(db_accessor: Database_Accessor, game_info: dict) -> Tuple[str, str]:
     platformGameId = game_info['game_info']['platformGameId']
     mapping_data = db_accessor.getDataFromTable(
