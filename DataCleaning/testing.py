@@ -4,12 +4,19 @@ import json
 import argparse
 from pathlib import Path
 
+from database_accessor import Database_Accessor
+
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument('--game_data_dir', help='Stub')
     parser.add_argument('--esports_data_dir', help='If specified, shorten all data files in esports data directory to first 50 elements')
+    parser.add_argument('--show_cumulative_data', help='Prints out cumulative data', action='store_true')
+
     args = parser.parse_args()
+    db_accessor: Database_Accessor = Database_Accessor(db_name = 'games', 
+    db_host = 'riot-hackathon-db.c880zspfzfsi.us-west-2.rds.amazonaws.com', 
+    db_user = 'data_cleaner')
     
     
     # Shorten data objects in esports data directory
@@ -25,3 +32,10 @@ if __name__ == '__main__':
                 with open(file_path, 'w') as json_file:
                     json.dump(arr, json_file)
                     print(f"{file_path} written")
+
+    if args.show_cumulative_data:
+        gameCount: int = 0
+        cumulative_stats = db_accessor.getDataFromTable(tableName="cumulative_data", columns=["id", "scale_by_90"], limit=10, offset=gameCount)
+        for id, stats in cumulative_stats:
+            stats = json.loads(stats)
+            print(stats)

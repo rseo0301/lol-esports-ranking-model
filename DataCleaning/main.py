@@ -160,6 +160,7 @@ if __name__ == '__main__':
     
     # Build cumulative stats
     if args.build_cumulative_stats:
+        _db_accessor = Database_Accessor(db_host='riot-hackathon-db.c880zspfzfsi.us-west-2.rds.amazonaws.com')
         db_accessor = getDbAccessor()
         gameCount: int = 0
         cumulative_stats_builder: Cumulative_Stats_Builder = Cumulative_Stats_Builder(db_accessor=db_accessor)
@@ -180,10 +181,10 @@ if __name__ == '__main__':
                 if team2_id in teams_cumulative_stats:
                     cumulative_stats['team_2'] = teams_cumulative_stats[team2_id]
                 print(f"Writing cumulative stats for game {game_info['game_info']['platformGameId']}")
-                db_accessor.addRowToTable(tableName='cumulative_data', columns=['id', 'scale_by_90'], values=[game_id, cumulative_stats])
+                db_accessor.addRowToTable(tableName='cumulative_data', columns=['id', 'scale_by_90'], values=[game_id, cumulative_stats], replaceOnDuplicate=True)
 
                 # Then, update each team's cumulative stats after playing this game
                 team1_cumulative_stats, team2_cumulative_stats = cumulative_stats_builder.addGamePlayed(game_info=game_info, stats_info=stats_update)
-                cumulative_stats[team1_id], cumulative_stats[team2_id] = team1_cumulative_stats, team2_cumulative_stats
+                teams_cumulative_stats[team1_id], teams_cumulative_stats[team2_id] = team1_cumulative_stats, team2_cumulative_stats
             gameCount += len(games)
         print(f"{gameCount} games written to cumulative stats table")

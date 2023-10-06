@@ -190,7 +190,7 @@ class Cumulative_Stats_Builder:
         addStatsToTeams(key='overall_winrate', values=unfinished())
         addStatsToTeams(key='gold_diff_per_min', values=unfinished())
         addStatsToTeams(key='gold_diff_at_14', values=unfinished())
-        addStatsToTeams(key='region', values="Some Region")
+        addStatsToTeams(key='region', values=("Some Region"))
         
         # Sanity check
         if set(team1_stats.keys()) != set(CUMULATIVE_STATS_KEYS):
