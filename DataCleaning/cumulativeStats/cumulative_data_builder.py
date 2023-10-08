@@ -74,29 +74,26 @@ class Cumulative_Stats_Builder:
         new_n_games: int = self.team_stats[team_id]['n_games'] + 1
         old_weighted_count: float = self.team_stats[team_id]['weighted_count']
         new_weighted_count: float = self._calculate_next_weighted_count(old_weighted_count)
+        old_cumulative_stats = self.getCumulativeStatsForTeam(team_id=team_id)
         new_cumulative_stats = {}
-        for key, value in self.getCumulativeStatsForTeam(team_id=team_id).items():
+        for key in CUMULATIVE_STATS_KEYS:
             if key not in cumulative_stats:
+                new_cumulative_stats[key] = old_cumulative_stats[key]
                 continue
             if key == 'region':
                 new_cumulative_stats[key] = cumulative_stats[key]
                 continue
-            new_cumulative_stats[key] = (value*old_weighted_count*0.9 + cumulative_stats[key])/new_weighted_count
+            new_cumulative_stats[key] = (old_cumulative_stats[key]*old_weighted_count*0.9 + cumulative_stats[key])/new_weighted_count
         
         self.team_stats[team_id]['n_games'] = new_n_games
         self.team_stats[team_id]['weighted_count'] = new_weighted_count
         self.team_stats[team_id]['cumulativeStats'] = new_cumulative_stats
 
-        # TODO update win/loss weighted counts
-        """
-        if self._get_winning_team(game_info=game_info) == 100:
-            self.team_stats[team1_id]['wins_weighted_count'] = self._calculate_next_weighted_count(self.team_stats[team1_id]['wins_weighted_count'])
-            self.team_stats[team2_id]['losses_weighted_count'] = self._calculate_next_weighted_count(self.team_stats[team2_id]['losses_weighted_count'])
-        if self._get_winning_team(game_info=game_info) == 200:
-            self.team_stats[team1_id]['losses_weighted_count'] = self._calculate_next_weighted_count(self.team_stats[team1_id]['losses_weighted_count'])
-            self.team_stats[team2_id]['wins_weighted_count'] = self._calculate_next_weighted_count(self.team_stats[team2_id]['wins_weighted_count'])
-        
-        """
+        # Update win/loss weighted counts
+        if 'avg_time_per_win' in cumulative_stats:
+            self.team_stats[team_id]['wins_weighted_count'] = self._calculate_next_weighted_count(self.team_stats[team_id]['wins_weighted_count'])
+        elif 'avg_time_per_loss' in cumulative_stats:
+            self.team_stats[team_id]['losses_weighted_count'] = self._calculate_next_weighted_count(self.team_stats[team_id]['losses_weighted_count'])
 
         return new_cumulative_stats
 
@@ -104,6 +101,7 @@ class Cumulative_Stats_Builder:
     # Given a weighted count, calculate the "new" weighted count, after adding 1 more game
     def _calculate_next_weighted_count(self, old_weighted_count):
         return old_weighted_count*0.9 + 1
+
 
     # Return the winning team, given game_info
     def _get_winning_team(self, game_info: dict) -> int:
