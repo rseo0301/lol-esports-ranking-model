@@ -122,7 +122,7 @@ def buildTeamRegionMapping() -> None:
             for tournament in league['tournaments']:
                 tournament_to_region[tournament['id']] = region
         
-        # Second, build up mapping from team -> region
+    # Second, build up mapping from team -> region
     team_to_region: dict = {}
     n_tournaments: int = 0
     while(True):
@@ -135,6 +135,8 @@ def buildTeamRegionMapping() -> None:
                 warning(f"Can not find region/league associated with tournament:\n   Tournament ID: {tournament['id']}\n   Tournament name: {tournament['name']}")
                 continue
             region = tournament_to_region[tournament['id']]
+            if region.lower() == "international":
+                continue
             tournament = json.loads(tournament_data[0])
             for stage in tournament['stages']:
                 for section in stage['sections']:
@@ -142,7 +144,7 @@ def buildTeamRegionMapping() -> None:
                         for team in matches['teams']:
                             team_to_region[team['id']] = region
         
-        # Lastly, write {teamID: region} to database
+    # Lastly, write {teamID: region} to database
     for id, region in team_to_region.items():
         db_accessor.addRowToTable(tableName="team_region_mapping", columns=["id", "region"], values=[id, region])
     print("Finished building region mapping table")
