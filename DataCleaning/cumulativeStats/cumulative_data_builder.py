@@ -200,8 +200,18 @@ class Cumulative_Stats_Builder:
         def get_game_time_minutes() -> int:
             return (game_info['game_end']['gameTime'] * 0.001) / 60
             
-        def unfinished() -> Tuple[float, float]:
-            return 0, 0
+        def get_gold_diff_per_min() -> Tuple[float, float]:
+            stats_at_game_end = next(event for event in stats_info['stats_update'] if event['gameOver'] == True)
+            game_length_min = stats_at_game_end['gameTime'] * 0.001 / 60
+            team1_gold, team2_gold = stats_at_game_end['teams'][0]['totalGold'], stats_at_game_end['teams'][1]['totalGold']
+            team1_avg_gold_diff = (team1_gold - team2_gold) / game_length_min
+            return team1_avg_gold_diff, -team1_avg_gold_diff
+
+        def get_gold_diff_at_14() -> Tuple[int, int]:
+            stats_at_14 = next(event for event in stats_info['stats_update'] if event['gameTime'] >= 14*60*1000)
+            team1_gold, team2_gold = stats_at_14['teams'][0]['totalGold'], stats_at_14['teams'][1]['totalGold']
+            team1_gold_diff = team1_gold - team2_gold
+            return team1_gold_diff, -team1_gold_diff
             
             
 
@@ -229,10 +239,9 @@ class Cumulative_Stats_Builder:
             team1_stats['avg_time_per_loss'] = game_time_minutes
             team2_stats['avg_time_per_win'] = game_time_minutes
             addStatsToTeams(key='overall_winrate', values=(0, 1))
+        addStatsToTeams(key='gold_diff_per_min', values=get_gold_diff_per_min())
+        addStatsToTeams(key='gold_diff_at_14', values=get_gold_diff_at_14())
 
-
-        addStatsToTeams(key='gold_diff_per_min', values=unfinished())
-        addStatsToTeams(key='gold_diff_at_14', values=unfinished())
         addStatsToTeams(key='region', values=("Some Region", "Some Other Region"))
         
         # Sanity check

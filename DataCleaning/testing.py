@@ -33,9 +33,13 @@ if __name__ == '__main__':
                     json.dump(arr, json_file)
                     print(f"{file_path} written")
 
-    if args.show_cumulative_data:
+    if True or args.show_cumulative_data:
         gameCount: int = 0
-        cumulative_stats = db_accessor.getDataFromTable(tableName="cumulative_data", columns=["id", "scale_by_90"], limit=10, offset=gameCount)
-        for id, stats in cumulative_stats:
-            stats = json.loads(stats)
-            print(stats)
+        while(True):
+            cumulative_stats = db_accessor.getDataFromTable(tableName="cumulative_data", columns=["id", "scale_by_90"], limit=10, offset=gameCount)
+            if not cumulative_stats:
+                break
+            for id, stats in cumulative_stats:
+                stats = json.loads(stats)
+                print(stats)
+            gameCount += len(cumulative_stats)
