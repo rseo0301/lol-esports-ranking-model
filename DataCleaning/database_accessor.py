@@ -3,6 +3,10 @@
 # Migrating up sets up database, and is idempotent (eg. does nothing if database is already set up)
 # Migrate down to reset database
 
+import os
+import sys
+current_script_directory = os.path.dirname(os.path.abspath(__file__))
+sys.path.append(current_script_directory)
 from datetime import datetime
 import pytz
 from typing import List
@@ -10,7 +14,6 @@ from mysql.connector import connect
 import json
 from cleaners import game_cleaner
 from pathlib import Path
-import os
 
 class Database_Accessor:
     def __init__(self,
