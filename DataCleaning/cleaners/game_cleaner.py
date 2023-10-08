@@ -1,4 +1,5 @@
 # Takes in a "game" JSON object, cleans it, and outputs a JSON object that we can store in our database
+from distutils.log import warn
 import json
 import os
 from datetime import datetime
@@ -6,7 +7,7 @@ from typing import Dict, List
 
 class Game_Cleaner:
     def __init__(self):
-        pass
+        self.skipped_games = []
 
     # Given a gamedata object, clean it, and return a tuple:
     # First element will be dictionary, keyed by event type
@@ -15,40 +16,45 @@ class Game_Cleaner:
         gameDataRet = {}
         statsUpdateRet = {}
 
-        # Filter out all stats_update events, except for the 14 minute mark and game end
-        # TODO should paramaterize this somewhere
-        stats_at_14 = next(event for event in gameData if (event['eventType'].lower() == 'stats_update' and event['gameTime'] >= 14*60*1000))
-        stats_at_game_end = next(event for event in gameData if (event['eventType'].lower() == 'stats_update' and event['gameOver'] == True))
-        gameData = [event for event in gameData if event['eventType'].lower() != 'stats_update']
-        gameData += [stats_at_14, stats_at_game_end]
-        
-        for event in gameData:
-            if not isinstance(event, Dict):
-                continue
-            eventType = event["eventType"].lower()
-            match eventType:
-                case "stats_update":
-                    self._appendToObjectArray(statsUpdateRet, eventType, self._cleanStatsUpdate(event))
-                case "epic_monster_kill":
-                    self._appendToObjectArray(gameDataRet, eventType, self._cleanEpicMonsterKill(event))
-                case "champion_kill":
-                    self._appendToObjectArray(gameDataRet, eventType, self._cleanChampionKill(event))
-                case "ward_placed":
-                    self._appendToObjectArray(gameDataRet, eventType, self._cleanWardPlaced(event))
-                case "ward_killed":
-                    self._appendToObjectArray(gameDataRet, eventType, self._cleanWardKilled(event))
-                case "turret_plate_destroyed":
-                    self._appendToObjectArray(gameDataRet, eventType, self._cleanTurretPlateDestroyed(event))
-                case "building_destroyed":
-                    self._appendToObjectArray(gameDataRet, eventType, self._cleanBuildingDestroyed(event))
-                case "game_info":
-                    gameDataRet[eventType] = self._cleanGameInfo(event)
-                case "game_end":
-                    gameDataRet[eventType] = self._cleanGameEnd(event)
-                    
-        # eventTime is formatted like this: "2023-07-22T17:14:16.356Z"
-        eventTime = datetime.strptime(gameDataRet['game_info']['eventTime'], '%Y-%m-%dT%H:%M:%S.%fZ')
-        return (gameDataRet, statsUpdateRet, eventTime)
+        try:
+            # Filter out all stats_update events, except for the 14 minute mark and game end
+            # TODO should paramaterize this somewhere
+            stats_at_14 = next(event for event in gameData if (event['eventType'].lower() == 'stats_update' and event['gameTime'] >= 14*60*1000))
+            stats_at_game_end = next(event for event in gameData if (event['eventType'].lower() == 'stats_update' and event['gameOver'] == True))
+            gameData = [event for event in gameData if event['eventType'].lower() != 'stats_update']
+            gameData += [stats_at_14, stats_at_game_end]
+            
+            for event in gameData:
+                if not isinstance(event, Dict):
+                    continue
+                eventType = event["eventType"].lower()
+                match eventType:
+                    case "stats_update":
+                        self._appendToObjectArray(statsUpdateRet, eventType, self._cleanStatsUpdate(event))
+                    case "epic_monster_kill":
+                        self._appendToObjectArray(gameDataRet, eventType, self._cleanEpicMonsterKill(event))
+                    case "champion_kill":
+                        self._appendToObjectArray(gameDataRet, eventType, self._cleanChampionKill(event))
+                    case "ward_placed":
+                        self._appendToObjectArray(gameDataRet, eventType, self._cleanWardPlaced(event))
+                    case "ward_killed":
+                        self._appendToObjectArray(gameDataRet, eventType, self._cleanWardKilled(event))
+                    case "turret_plate_destroyed":
+                        self._appendToObjectArray(gameDataRet, eventType, self._cleanTurretPlateDestroyed(event))
+                    case "building_destroyed":
+                        self._appendToObjectArray(gameDataRet, eventType, self._cleanBuildingDestroyed(event))
+                    case "game_info":
+                        gameDataRet[eventType] = self._cleanGameInfo(event)
+                    case "game_end":
+                        gameDataRet[eventType] = self._cleanGameEnd(event)
+                        
+            # eventTime is formatted like this: "2023-07-22T17:14:16.356Z"
+            eventTime = datetime.strptime(gameDataRet['game_info']['eventTime'], '%Y-%m-%dT%H:%M:%S.%fZ')
+            return (gameDataRet, statsUpdateRet, eventTime)
+        except Exception as e:
+            gameID = gameData[0].get('platformGameId', 'game_id_not_found')
+            warn(f"An error occurred while processing game {gameID}: {e}")
+            self.skipped_games.append(gameID)
 
 
     def _cleanStatsUpdate(self, info: Dict) -> Dict:
@@ -153,6 +159,12 @@ class Game_Cleaner:
         if key not in object.keys():
             object[key] = []
         object[key].append(value)
+
+    def __del__(self):
+        if len(self.skipped_games) == 0:
+            return
+        warn("The following games could not be properly parsed, and so were skipped: " + ', '.join(self.skipped_games))
+
 
 # Uncomment the following code for testing/debugging
 # if __name__ == "__main__":
