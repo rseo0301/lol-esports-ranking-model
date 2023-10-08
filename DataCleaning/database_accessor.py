@@ -32,7 +32,7 @@ class Database_Accessor:
                             )
 
 
-    def executeSqlCommand(self, command, args: List[str] = []) -> any:
+    """ def executeSqlCommand(self, command, args: List[str] = []) -> any:
         db = self.db
         output = None
         with db.cursor() as cursor:
@@ -40,7 +40,20 @@ class Database_Accessor:
             output = cursor.fetchall()
             cursor.close()
             db.commit()
+        return output """
+    
+    def executeSqlCommand(self, command, args: List[str] = []) -> any:
+        db = self.db
+        output = None
+        cursor = db.cursor()
+        try:
+            cursor.execute(command, args)
+            output = cursor.fetchall()
+            db.commit()
+        finally:
+            cursor.close()
         return output
+
     
 
     def migrateUp(self) -> None:
