@@ -10,10 +10,12 @@ import time
 from datetime import datetime
 from pathlib import Path
 import shutil
+from cleaners.esports_data_cleaner import Esports_Cleaner
 from util import getWinningTeam
 from util import getTeamIdsFromGameInfo
 from cumulativeStats.cumulative_data_builder import Cumulative_Stats_Builder
-from cleaners import game_cleaner, esports_data_cleaner
+from cleaners.game_cleaner import Game_Cleaner
+from cleaners.esports_data_cleaner import Esports_Cleaner
 from database_accessor import Database_Accessor
 from dataRetrieval.getData import download_esports_files, download_games
 
@@ -33,6 +35,7 @@ def addGamesToDb(games_directory: str):
         db_accessor.addRowToTable(tableName="games", columns=["id", "info", "stats_update", "eventTime"], values=[primary_key, game, stats, eventTime])
 
     directory_path = Path(games_directory)
+    game_cleaner: Game_Cleaner = Game_Cleaner()
     for file_path in directory_path.iterdir():
         if not file_path.is_file():
             continue
@@ -76,6 +79,7 @@ def addEsportsDataToDb(esports_data_directory: str):
 
 
     directory_path = Path(esports_data_directory)
+    esports_data_cleaner: Esports_Cleaner = Esports_Cleaner()
     for file_path in directory_path.iterdir():
         if not file_path.is_file():
             continue
