@@ -2,6 +2,7 @@
 # This includes migration, cleaning, and uploading to database
 # This script is meant to be run from the command line
 # See arguments for usage, or run 'python main.py --help'
+from distutils.log import error
 from logging import warning
 import os
 import json
@@ -237,20 +238,6 @@ if __name__ == '__main__':
         addEsportsDataToDb(esports_data_directory=args.esports_data_dir)
         timings['Clean esports data directory'] = time.time() - start_time
     
-    # Automatically download and clean game data
-    if args.download_and_clean:
-        start_time = time.time()
-        download_esports_files(destinationDirectory=download_directory)
-        with open(f"{download_directory}/esports-data/tournaments.json", "r") as json_file:
-            leagues_data = json.load(json_file)
-            # Process games one tournament at a time, then remove them to save space
-            for tournament in leagues_data:
-                download_games(year=2023, tournament_id=tournament["id"], destination_directory=download_directory)
-                addGamesToDb(games_directory=os.path.abspath(f"{download_directory}/games"))
-                print(f"Clearing out games directory: {download_directory}/games")
-                shutil.rmtree(f"{download_directory}/games")
-        timings['Download and clean game data'] = time.time() - start_time
-
     # Automatically download and clean esports data
     if args.download_and_clean_esports or args.download_and_clean:
         start_time = time.time()
@@ -258,6 +245,33 @@ if __name__ == '__main__':
         addEsportsDataToDb(esports_data_directory=f"{download_directory}/esports-data")
         timings['Download and clean esports data'] = time.time() - start_time
     
+
+    # Automatically download and clean game data
+    if args.download_and_clean:
+        start_time = time.time()
+        download_esports_files(destinationDirectory=download_directory)
+        with open(f"{download_directory}/esports-data/tournaments.json", "r") as json_file:
+            tournament_data = json.load(json_file)
+            # Process games one tournament at a time, then remove them to save space
+            for tournament in tournament_data:
+                n_retries = 0
+                max_retries = 5
+                while(n_retries < max_retries):
+                    try:
+                        download_games(year=2023, tournament_id=tournament["id"], destination_directory=download_directory)
+                        addGamesToDb(games_directory=os.path.abspath(f"{download_directory}/games"))
+                        print(f"Clearing out games directory: {download_directory}/games")
+                        shutil.rmtree(f"{download_directory}/games")
+                        break
+                    except Exception as e:
+                        n_retries += 1
+                        warning(f"Encountered error while processing tournament {tournament['id']}, retrying: {e}")
+                        if n_retries >= max_retries:
+                            error(f"Max retries exceeded. Skipping tournament {tournament['id']}")
+
+        timings['Download and clean game data'] = time.time() - start_time
+
+
     # Build region mapping table (map each team to a region)
     if args.build_region_mapping:
         start_time = time.time()
