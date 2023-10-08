@@ -201,8 +201,9 @@ if __name__ == '__main__':
                                 team_to_region[team['id']] = region
         
         # Lastly, write {teamID: region} to database
-        for id, region in team_to_region:
+        for id, region in team_to_region.items():
             db_accessor.addRowToTable(tableName="team_region_mapping", columns=["id", "region"], values=[id, region])
+
 
     # Build cumulative stats
     if args.build_cumulative_stats:

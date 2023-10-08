@@ -124,6 +124,7 @@ class Cumulative_Stats_Builder:
     # Will return cumulative stats for (team1, team2)
     # In other words, build "cumulative stats" as if this is the only game these teams have played
     def _parseCumulativeStatsFromData(self, game_info: dict, stats_info: dict) -> Tuple[dict, dict]:
+        team1_id, team2_id = getTeamIdsFromGameInfo(db_accessor=self.db_accessor, game_info=game_info)
         team1_stats = {}
         team2_stats = {}
         team_info = stats_info['stats_update'][-1]['teams']
@@ -206,6 +207,16 @@ class Cumulative_Stats_Builder:
             team1_gold_diff = team1_gold - team2_gold
             return team1_gold_diff, -team1_gold_diff
             
+        
+        def getTeamRegions() -> Tuple[str, str]:
+            team1_region, team2_region = "region not found", "region not found"
+            team1_region_data = self.db_accessor.getDataFromTable(tableName="team_region_mapping", columns=["region"], where_clause=f"id={team1_id}")
+            if team1_region_data:
+                team1_region = team1_region_data[0]
+            team2_region_data = self.db_accessor.getDataFromTable(tableName="team_region_mapping", columns=["region"], where_clause=f"id={team2_id}")
+            if team2_region_data:
+                team2_region = team2_region_data[0]
+            return team1_region, team2_region
             
 
         if get_first_blood_team() == 100:
@@ -234,8 +245,7 @@ class Cumulative_Stats_Builder:
             addStatsToTeams(key='overall_winrate', values=(0, 1))
         addStatsToTeams(key='gold_diff_per_min', values=get_gold_diff_per_min())
         addStatsToTeams(key='gold_diff_at_14', values=get_gold_diff_at_14())
-
-        addStatsToTeams(key='region', values=("Some Region", "Some Other Region"))
+        addStatsToTeams(key='region', values=getTeamRegions())
         
         # Sanity check
         expected_keys = set(CUMULATIVE_STATS_KEYS)
