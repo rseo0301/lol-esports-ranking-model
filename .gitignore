@@ -1,1 +1,6 @@
 **/__pycache__
+**/temp
+**/.DS_Store
+
+.vscode
+.idea
