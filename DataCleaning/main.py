@@ -6,6 +6,7 @@ from logging import warning
 import os
 import json
 import argparse
+import time
 from datetime import datetime
 from pathlib import Path
 import shutil
@@ -104,6 +105,79 @@ def addEsportsDataToDb(esports_data_directory: str):
 
 
 
+def buildTeamRegionMapping() -> None:
+    db_accessor = getDbAccessor()
+    # First, build up mapping from tournament -> region
+    tournament_to_region: dict = {}
+    n_leagues: int = 0
+    while(True):
+        leagues_data = db_accessor.getDataFromTable(tableName="leagues", columns=["league"], limit=10, offset=n_leagues)
+        if len(leagues_data) == 0:
+            break
+        n_leagues += len(leagues_data)
+        for league_data in leagues_data:
+            league = json.loads(league_data[0])
+            region = league['region']
+            for tournament in league['tournaments']:
+                tournament_to_region[tournament['id']] = region
+        
+        # Second, build up mapping from team -> region
+    team_to_region: dict = {}
+    n_tournaments: int = 0
+    while(True):
+        tournaments_data = db_accessor.getDataFromTable(tableName="tournaments", columns=["tournament"], limit=10, offset=n_tournaments)
+        if len(tournaments_data) == 0:
+            break
+        n_tournaments += len(tournaments_data)
+        for tournament_data in tournaments_data:
+            if tournament['id'] not in tournament_to_region:
+                warning(f"Can not find region/league associated with tournament:\n   Tournament ID: {tournament['id']}\n   Tournament name: {tournament['name']}")
+                continue
+            region = tournament_to_region[tournament['id']]
+            tournament = json.loads(tournament_data[0])
+            for stage in tournament['stages']:
+                for section in stage['sections']:
+                    for matches in section['matches']:
+                        for team in matches['teams']:
+                            team_to_region[team['id']] = region
+        
+        # Lastly, write {teamID: region} to database
+    for id, region in team_to_region.items():
+        db_accessor.addRowToTable(tableName="team_region_mapping", columns=["id", "region"], values=[id, region])
+
+
+def buildCumulativeStats():
+    db_accessor = getDbAccessor()
+    gameCount: int = 0
+    cumulative_stats_builder: Cumulative_Stats_Builder = Cumulative_Stats_Builder(db_accessor=db_accessor)
+        # Keep track of the current cumulative stats of each team
+    teams_cumulative_stats = {}
+    while(True):
+        games = db_accessor.getDataFromTable(tableName="games", columns=["id", "info", "stats_update"], order_clause="eventTime ASC", limit=10, offset=gameCount)
+        if len(games) == 0:
+            break
+        for game_id, game_info, stats_update in games:
+            game_info, stats_update = json.loads(game_info), json.loads(stats_update)
+            team1_id, team2_id = getTeamIdsFromGameInfo(db_accessor=db_accessor, game_info=game_info)
+
+                # First, tell the database about each team's cumulative stats going into the game
+            cumulative_stats = {}
+            if team1_id in teams_cumulative_stats:
+                cumulative_stats['team_1'] = teams_cumulative_stats[team1_id]
+            if team2_id in teams_cumulative_stats:
+                cumulative_stats['team_2'] = teams_cumulative_stats[team2_id]
+            cumulative_stats['meta'] = {
+                    'winning_team': getWinningTeam(game_info=game_info)
+                }
+            print(f"Writing cumulative stats for game {game_info['game_info']['platformGameId']}")
+            db_accessor.addRowToTable(tableName='cumulative_data', columns=['id', 'scale_by_90'], values=[game_id, cumulative_stats], replaceOnDuplicate=True)
+
+                # Then, update each team's cumulative stats after playing this game
+            team1_cumulative_stats, team2_cumulative_stats = cumulative_stats_builder.addGamePlayed(game_info=game_info, stats_info=stats_update)
+            teams_cumulative_stats[team1_id], teams_cumulative_stats[team2_id] = team1_cumulative_stats, team2_cumulative_stats
+        gameCount += len(games)
+    print(f"{gameCount} games written to cumulative stats table")
+
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument('--db_host', help='database host')
@@ -126,28 +200,37 @@ if __name__ == '__main__':
                                     db_user = args.db_user,
                                     db_password = args.db_password)
     # Testing db_accessor
-    _db_accessor = Database_Accessor(db_name = 'games', db_host = 'riot-hackathon-db.c880zspfzfsi.us-west-2.rds.amazonaws.com', db_user = 'data_cleaner')
+    # _db_accessor = Database_Accessor(db_name = 'games', db_host = 'riot-hackathon-db.c880zspfzfsi.us-west-2.rds.amazonaws.com', db_user = 'data_cleaner')
     db_accessor = getDbAccessor()
     download_directory = f"{Path(__file__).parent.resolve()}/dataRetrieval/temp"
+    timings = {}
 
 
     # Migrations
-    match args.migrate:
-        case 'up':
-            db_accessor.migrateUp()
-        case 'down':
-            db_accessor.resetDatabase()
+    if args.migrate:
+        start_time = time.time()
+        match args.migrate:
+            case 'up':
+                db_accessor.migrateUp()
+            case 'down':
+                db_accessor.resetDatabase()
+        timings['Migration'] = time.time() - start_time
             
     # Clean and upload games data in specified games data directory
     if args.game_data_dir:
+        start_time = time.time()
         addGamesToDb(games_directory=args.game_data_dir)
+        timings['Clean game data directory'] = time.time() - start_time
     
     # Clean and upload esports data in specified esports data directory
     if args.esports_data_dir:
+        start_time = time.time()
         addEsportsDataToDb(esports_data_directory=args.esports_data_dir)
+        timings['Clean esports data directory'] = time.time() - start_time
     
     # Automatically download and clean game data
     if args.download_and_clean:
+        start_time = time.time()
         download_esports_files(destinationDirectory=download_directory)
         with open(f"{download_directory}/esports-data/tournaments.json", "r") as json_file:
             leagues_data = json.load(json_file)
@@ -157,84 +240,29 @@ if __name__ == '__main__':
                 addGamesToDb(games_directory=os.path.abspath(f"{download_directory}/games"))
                 print(f"Clearing out games directory: {download_directory}/games")
                 shutil.rmtree(f"{download_directory}/games")
-    
+        timings['Download and clean game data'] = time.time() - start_time
+
     # Automatically download and clean esports data
     if args.download_and_clean_esports or args.download_and_clean:
+        start_time = time.time()
         download_esports_files(destinationDirectory=download_directory)
         addEsportsDataToDb(esports_data_directory=f"{download_directory}/esports-data")
+        timings['Download and clean esports data'] = time.time() - start_time
     
-
     # Build region mapping table (map each team to a region)
     if args.build_region_mapping:
-        # First, build up mapping from tournament -> region
-        tournament_to_region: dict = {}
-        n_leagues: int = 0
-        while(True):
-            leagues_data = db_accessor.getDataFromTable(tableName="leagues", columns=["league"], limit=10, offset=n_leagues)
-            if len(leagues_data) == 0:
-                break
-            n_leagues += len(leagues_data)
-            for league_data in leagues_data:
-                league = json.loads(league_data[0])
-                region = league['region']
-                for tournament in league['tournaments']:
-                    tournament_to_region[tournament['id']] = region
-        
-        # Second, build up mapping from team -> region
-        team_to_region: dict = {}
-        n_tournaments: int = 0
-        while(True):
-            tournaments_data = db_accessor.getDataFromTable(tableName="tournaments", columns=["tournament"], limit=10, offset=n_tournaments)
-            if len(tournaments_data) == 0:
-                break
-            n_tournaments += len(tournaments_data)
-            for tournament_data in tournaments_data:
-                if tournament['id'] not in tournament_to_region:
-                    warning(f"Can not find region/league associated with tournament:\n   Tournament ID: {tournament['id']}\n   Tournament name: {tournament['name']}")
-                    continue
-                region = tournament_to_region[tournament['id']]
-                tournament = json.loads(tournament_data[0])
-                for stage in tournament['stages']:
-                    for section in stage['sections']:
-                        for matches in section['matches']:
-                            for team in matches['teams']:
-                                team_to_region[team['id']] = region
-        
-        # Lastly, write {teamID: region} to database
-        for id, region in team_to_region.items():
-            db_accessor.addRowToTable(tableName="team_region_mapping", columns=["id", "region"], values=[id, region])
-
+        start_time = time.time()
+        buildTeamRegionMapping()
+        timings['Build team-to-region mapping table'] = time.time() - start_time
 
     # Build cumulative stats
     if args.build_cumulative_stats:
-        _db_accessor = Database_Accessor(db_host='riot-hackathon-db.c880zspfzfsi.us-west-2.rds.amazonaws.com')
-        db_accessor = getDbAccessor()
-        gameCount: int = 0
-        cumulative_stats_builder: Cumulative_Stats_Builder = Cumulative_Stats_Builder(db_accessor=db_accessor)
-        # Keep track of the current cumulative stats of each team
-        teams_cumulative_stats = {}
-        while(True):
-            games = db_accessor.getDataFromTable(tableName="games", columns=["id", "info", "stats_update"], order_clause="eventTime ASC", limit=10, offset=gameCount)
-            if len(games) == 0:
-                break
-            for game_id, game_info, stats_update in games:
-                game_info, stats_update = json.loads(game_info), json.loads(stats_update)
-                team1_id, team2_id = getTeamIdsFromGameInfo(db_accessor=db_accessor, game_info=game_info)
+        start_time = time.time()
+        buildCumulativeStats()
+        timings['Build cumulative stats table'] = time.time() - start_time
+    
 
-                # First, tell the database about each team's cumulative stats going into the game
-                cumulative_stats = {}
-                if team1_id in teams_cumulative_stats:
-                    cumulative_stats['team_1'] = teams_cumulative_stats[team1_id]
-                if team2_id in teams_cumulative_stats:
-                    cumulative_stats['team_2'] = teams_cumulative_stats[team2_id]
-                cumulative_stats['meta'] = {
-                    'winning_team': getWinningTeam(game_info=game_info)
-                }
-                print(f"Writing cumulative stats for game {game_info['game_info']['platformGameId']}")
-                db_accessor.addRowToTable(tableName='cumulative_data', columns=['id', 'scale_by_90'], values=[game_id, cumulative_stats], replaceOnDuplicate=True)
-
-                # Then, update each team's cumulative stats after playing this game
-                team1_cumulative_stats, team2_cumulative_stats = cumulative_stats_builder.addGamePlayed(game_info=game_info, stats_info=stats_update)
-                teams_cumulative_stats[team1_id], teams_cumulative_stats[team2_id] = team1_cumulative_stats, team2_cumulative_stats
-            gameCount += len(games)
-        print(f"{gameCount} games written to cumulative stats table")
+    print("Timings for tasks completed:")
+    for task_name, timing in timings.items():
+        n_spaces = max(40 - len(task_name), 0)
+        print(f"{task_name}: " + (' '*n_spaces) + f"{timing:.2f} seconds")
