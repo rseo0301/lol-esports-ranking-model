@@ -15,6 +15,9 @@ def getTeamIdsFromGameInfo(db_accessor: Database_Accessor, game_info: dict) -> T
     teamMapping = json.loads(mapping_data[0][0])["teamMapping"]
     return teamMapping["100"], teamMapping["200"]
 
+# Return the winning team, given game_info
+def getWinningTeam(game_info: dict) -> int:
+    return game_info['game_end']['winningTeam']
 
 # Debugging and testing:
 if __name__ == "__main__":

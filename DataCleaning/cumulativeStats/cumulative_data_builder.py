@@ -8,7 +8,7 @@ sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 import json
 from typing import Tuple
 from database_accessor import Database_Accessor
-from util import getTeamIdsFromGameInfo
+from util import getTeamIdsFromGameInfo, getWinningTeam
 
 CUMULATIVE_STATS_KEYS = [
     'first_blood_rate',
@@ -101,11 +101,6 @@ class Cumulative_Stats_Builder:
     # Given a weighted count, calculate the "new" weighted count, after adding 1 more game
     def _calculate_next_weighted_count(self, old_weighted_count):
         return old_weighted_count*0.9 + 1
-
-
-    # Return the winning team, given game_info
-    def _get_winning_team(self, game_info: dict) -> int:
-        return game_info['game_end']['winningTeam']
 
 
     # Initialize team_id in self.team_stats
@@ -229,11 +224,11 @@ class Cumulative_Stats_Builder:
             addStatsToTeams(key='first_tower_rate', values=(0, 1))
         addStatsToTeams(key='vision_score_per_minute', values=get_vision_score_per_minute())
         game_time_minutes = get_game_time_minutes()
-        if self._get_winning_team(game_info=game_info) == 100:
+        if getWinningTeam(game_info=game_info) == 100:
             team1_stats['avg_time_per_win'] = game_time_minutes
             team2_stats['avg_time_per_loss'] = game_time_minutes
             addStatsToTeams(key='overall_winrate', values=(1,0))
-        if self._get_winning_team(game_info=game_info) == 200:
+        if getWinningTeam(game_info=game_info) == 200:
             team1_stats['avg_time_per_loss'] = game_time_minutes
             team2_stats['avg_time_per_win'] = game_time_minutes
             addStatsToTeams(key='overall_winrate', values=(0, 1))

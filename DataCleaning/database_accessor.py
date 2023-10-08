@@ -143,6 +143,15 @@ class Database_Accessor:
             """
             self.executeSqlCommand(command=command)
 
+        def _createTeamRegionMappingTable():
+            command = """
+            CREATE TABLE IF NOT EXISTS team_region_mapping
+            (
+                id VARCHAR(128) PRIMARY KEY,
+                region VARCHAR(128)
+            )
+            """
+            self.executeSqlCommand(command=command)
 
         _createLeaguesTable()
         _createMappingTable()
@@ -151,6 +160,8 @@ class Database_Accessor:
         _createTournamentsTable()
         _createGamesTable()
         _createCumulativeDataTable()
+        _createTeamRegionMappingTable()
+        print("Finished migrating up")
 
 
     def resetDatabase(self) -> None:

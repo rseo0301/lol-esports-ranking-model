@@ -2,12 +2,14 @@
 # This includes migration, cleaning, and uploading to database
 # This script is meant to be run from the command line
 # See arguments for usage, or run 'python main.py --help'
+from logging import warning
 import os
 import json
 import argparse
 from datetime import datetime
 from pathlib import Path
 import shutil
+from util import getWinningTeam
 from util import getTeamIdsFromGameInfo
 from cumulativeStats.cumulative_data_builder import Cumulative_Stats_Builder
 from cleaners import game_cleaner, esports_data_cleaner
@@ -114,6 +116,7 @@ if __name__ == '__main__':
     parser.add_argument('--esports_data_dir', help='If specified, will clean all esports data files located in directory holding raw esports data (json files)')
     parser.add_argument('--download_and_clean', help='Will automatically download and clean all data. Deletes data after processing to save memory.', action="store_true", default=False)
     parser.add_argument('--download_and_clean_esports', help='Will automatically download and clean esports data (not game data).', action="store_true", default=False)
+    parser.add_argument('--build_region_mapping', help='Build the region mapping table, using the data available in the database.', action="store_true", default=False)
     parser.add_argument('--build_cumulative_stats', help='Build the cumulative stats using the data available in the database.', action="store_true", default=False)
     args = parser.parse_args()
     
@@ -122,6 +125,8 @@ if __name__ == '__main__':
                                     db_port = args.db_port,
                                     db_user = args.db_user,
                                     db_password = args.db_password)
+    # Testing db_accessor
+    _db_accessor = Database_Accessor(db_name = 'games', db_host = 'riot-hackathon-db.c880zspfzfsi.us-west-2.rds.amazonaws.com', db_user = 'data_cleaner')
     db_accessor = getDbAccessor()
     download_directory = f"{Path(__file__).parent.resolve()}/dataRetrieval/temp"
 
@@ -145,9 +150,9 @@ if __name__ == '__main__':
     if args.download_and_clean:
         download_esports_files(destinationDirectory=download_directory)
         with open(f"{download_directory}/esports-data/tournaments.json", "r") as json_file:
-            tournaments_data = json.load(json_file)
+            leagues_data = json.load(json_file)
             # Process games one tournament at a time, then remove them to save space
-            for tournament in tournaments_data:
+            for tournament in leagues_data:
                 download_games(year=2023, tournament_id=tournament["id"], destination_directory=download_directory)
                 addGamesToDb(games_directory=os.path.abspath(f"{download_directory}/games"))
                 print(f"Clearing out games directory: {download_directory}/games")
@@ -158,6 +163,47 @@ if __name__ == '__main__':
         download_esports_files(destinationDirectory=download_directory)
         addEsportsDataToDb(esports_data_directory=f"{download_directory}/esports-data")
     
+
+    # Build region mapping table (map each team to a region)
+    if args.build_region_mapping:
+        # First, build up mapping from tournament -> region
+        tournament_to_region: dict = {}
+        n_leagues: int = 0
+        while(True):
+            leagues_data = db_accessor.getDataFromTable(tableName="leagues", columns=["league"], limit=10, offset=n_leagues)
+            if len(leagues_data) == 0:
+                break
+            n_leagues += len(leagues_data)
+            for league_data in leagues_data:
+                league = json.loads(league_data[0])
+                region = league['region']
+                for tournament in league['tournaments']:
+                    tournament_to_region[tournament['id']] = region
+        
+        # Second, build up mapping from team -> region
+        team_to_region: dict = {}
+        n_tournaments: int = 0
+        while(True):
+            tournaments_data = db_accessor.getDataFromTable(tableName="tournaments", columns=["tournament"], limit=10, offset=n_tournaments)
+            if len(tournaments_data) == 0:
+                break
+            n_tournaments += len(tournaments_data)
+            for tournament_data in tournaments_data:
+                if tournament['id'] not in tournament_to_region:
+                    warning(f"Can not find region/league associated with tournament:\n   Tournament ID: {tournament['id']}\n   Tournament name: {tournament['name']}")
+                    continue
+                region = tournament_to_region[tournament['id']]
+                tournament = json.loads(tournament_data[0])
+                for stage in tournament['stages']:
+                    for section in stage['sections']:
+                        for matches in section['matches']:
+                            for team in matches['teams']:
+                                team_to_region[team['id']] = region
+        
+        # Lastly, write {teamID: region} to database
+        for id, region in team_to_region:
+            db_accessor.addRowToTable(tableName="team_region_mapping", columns=["id", "region"], values=[id, region])
+
     # Build cumulative stats
     if args.build_cumulative_stats:
         _db_accessor = Database_Accessor(db_host='riot-hackathon-db.c880zspfzfsi.us-west-2.rds.amazonaws.com')
@@ -180,6 +226,9 @@ if __name__ == '__main__':
                     cumulative_stats['team_1'] = teams_cumulative_stats[team1_id]
                 if team2_id in teams_cumulative_stats:
                     cumulative_stats['team_2'] = teams_cumulative_stats[team2_id]
+                cumulative_stats['meta'] = {
+                    'winning_team': getWinningTeam(game_info=game_info)
+                }
                 print(f"Writing cumulative stats for game {game_info['game_info']['platformGameId']}")
                 db_accessor.addRowToTable(tableName='cumulative_data', columns=['id', 'scale_by_90'], values=[game_id, cumulative_stats], replaceOnDuplicate=True)
 
