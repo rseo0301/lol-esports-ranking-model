@@ -110,6 +110,7 @@ def buildTeamRegionMapping() -> None:
     # First, build up mapping from tournament -> region
     tournament_to_region: dict = {}
     n_leagues: int = 0
+    print("Starting to build region mapping table")
     while(True):
         leagues_data = db_accessor.getDataFromTable(tableName="leagues", columns=["league"], limit=10, offset=n_leagues)
         if len(leagues_data) == 0:
@@ -144,6 +145,7 @@ def buildTeamRegionMapping() -> None:
         # Lastly, write {teamID: region} to database
     for id, region in team_to_region.items():
         db_accessor.addRowToTable(tableName="team_region_mapping", columns=["id", "region"], values=[id, region])
+    print("Finished building region mapping table")
 
 
 def buildCumulativeStats():
@@ -176,6 +178,7 @@ def buildCumulativeStats():
             team1_cumulative_stats, team2_cumulative_stats = cumulative_stats_builder.addGamePlayed(game_info=game_info, stats_info=stats_update)
             teams_cumulative_stats[team1_id], teams_cumulative_stats[team2_id] = team1_cumulative_stats, team2_cumulative_stats
         gameCount += len(games)
+        print(f"Written cumulative stats for {gameCount} games.")
     print(f"{gameCount} games written to cumulative stats table")
 
 if __name__ == '__main__':
