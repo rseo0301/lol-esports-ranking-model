@@ -10,6 +10,14 @@ from typing import Dict, List
 def cleanGameData(gameData: List[Dict]) -> tuple[Dict, Dict, datetime]:
     gameDataRet = {}
     statsUpdateRet = {}
+
+    # Filter out all stats_update events, except for the 14 minute mark and game end
+    # TODO should paramaterize this somewhere
+    stats_at_14 = next(event for event in gameData if (event['eventType'].lower() == 'stats_update' and event['gameTime'] >= 14*60*1000))
+    stats_at_game_end = next(event for event in gameData if (event['eventType'].lower() == 'stats_update' and event['gameOver'] == True))
+    gameData = [event for event in gameData if event['eventType'].lower() != 'stats_update']
+    gameData += [stats_at_14, stats_at_game_end]
+    
     for event in gameData:
         if not isinstance(event, Dict):
             continue
