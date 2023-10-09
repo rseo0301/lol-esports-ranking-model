@@ -200,6 +200,7 @@ if __name__ == '__main__':
     parser.add_argument('--esports_data_dir', help='If specified, will clean all esports data files located in directory holding raw esports data (json files)')
     parser.add_argument('--download_and_clean', help='Will automatically download and clean all data. Deletes data after processing to save memory.', action="store_true", default=False)
     parser.add_argument('--download_and_clean_esports', help='Will automatically download and clean esports data (not game data).', action="store_true", default=False)
+    parser.add_argument('--download_and_clean_games', help='Will automatically download and clean game data (not esports data. Assumed esports data is already set up).', action="store_true", default=False)
     parser.add_argument('--build_region_mapping', help='Build the region mapping table, using the data available in the database.', action="store_true", default=False)
     parser.add_argument('--build_cumulative_stats', help='Build the cumulative stats using the data available in the database.', action="store_true", default=False)
     args = parser.parse_args()
@@ -247,7 +248,7 @@ if __name__ == '__main__':
     
 
     # Automatically download and clean game data
-    if args.download_and_clean:
+    if args.download_and_clean or args.download_and_clean_games:
         start_time = time.time()
         download_esports_files(destinationDirectory=download_directory)
         with open(f"{download_directory}/esports-data/tournaments.json", "r") as json_file:
@@ -255,13 +256,14 @@ if __name__ == '__main__':
             # Process games one tournament at a time, then remove them to save space
             for tournament in tournament_data:
                 n_retries = 0
-                max_retries = 5
+                max_retries = 3
                 while(n_retries < max_retries):
+                    if os.path.exists(f"{download_directory}/games"):
+                        print(f"Clearing out games directory: {download_directory}/games")
+                        shutil.rmtree(f"{download_directory}/games")
                     try:
                         download_games(year=2023, tournament_id=tournament["id"], destination_directory=download_directory)
                         addGamesToDb(games_directory=os.path.abspath(f"{download_directory}/games"))
-                        print(f"Clearing out games directory: {download_directory}/games")
-                        shutil.rmtree(f"{download_directory}/games")
                         break
                     except Exception as e:
                         n_retries += 1
