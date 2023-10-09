@@ -109,7 +109,6 @@ def addEsportsDataToDb(esports_data_directory: str):
                         addTournamentToDb(data=entry)
 
 
-
 def buildTeamRegionMapping() -> None:
     db_accessor = getDbAccessor()
     # First, build up mapping from tournament -> region
@@ -188,6 +187,29 @@ def buildCumulativeStats():
         print(f"Written cumulative stats for {gameCount} games.")
     print(f"{gameCount} games written to cumulative stats table")
 
+
+def downloadAndCleanGames(download_directory: str) -> None:
+    download_esports_files(destinationDirectory=download_directory)
+    with open(f"{download_directory}/esports-data/tournaments.json", "r") as json_file:
+        tournament_data = json.load(json_file)
+            # Process games one tournament at a time, then remove them to save space
+        for tournament in tournament_data:
+            n_retries = 0
+            max_retries = 3
+            while(n_retries < max_retries):
+                if os.path.exists(f"{download_directory}/games"):
+                    print(f"Clearing out games directory: {download_directory}/games")
+                    shutil.rmtree(f"{download_directory}/games")
+                try:
+                    download_games(year=2023, tournament_id=tournament["id"], destination_directory=download_directory)
+                    addGamesToDb(games_directory=os.path.abspath(f"{download_directory}/games"))
+                    break
+                except Exception as e:
+                    n_retries += 1
+                    warning(f"Encountered error while processing tournament {tournament['id']}, retrying: {e}")
+                    if n_retries >= max_retries:
+                        error(f"Max retries exceeded. Skipping tournament {tournament['id']}")
+
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument('--db_host', help='database host')
@@ -216,78 +238,60 @@ if __name__ == '__main__':
     download_directory = f"{Path(__file__).parent.resolve()}/dataRetrieval/temp"
     timings = {}
 
+    try:
+        # Migrations
+        if args.migrate:
+            start_time = time.time()
+            match args.migrate:
+                case 'up':
+                    db_accessor.migrateUp()
+                case 'down':
+                    db_accessor.resetDatabase()
+            timings['Migration'] = time.time() - start_time
+                
+        # Clean and upload games data in specified games data directory
+        if args.game_data_dir:
+            start_time = time.time()
+            addGamesToDb(games_directory=args.game_data_dir)
+            timings['Clean game data directory'] = time.time() - start_time
+        
+        # Clean and upload esports data in specified esports data directory
+        if args.esports_data_dir:
+            start_time = time.time()
+            addEsportsDataToDb(esports_data_directory=args.esports_data_dir)
+            timings['Clean esports data directory'] = time.time() - start_time
+        
+        # Automatically download and clean esports data
+        if args.download_and_clean_esports or args.download_and_clean:
+            start_time = time.time()
+            download_esports_files(destinationDirectory=download_directory)
+            addEsportsDataToDb(esports_data_directory=f"{download_directory}/esports-data")
+            timings['Download and clean esports data'] = time.time() - start_time
+        
 
-    # Migrations
-    if args.migrate:
-        start_time = time.time()
-        match args.migrate:
-            case 'up':
-                db_accessor.migrateUp()
-            case 'down':
-                db_accessor.resetDatabase()
-        timings['Migration'] = time.time() - start_time
-            
-    # Clean and upload games data in specified games data directory
-    if args.game_data_dir:
-        start_time = time.time()
-        addGamesToDb(games_directory=args.game_data_dir)
-        timings['Clean game data directory'] = time.time() - start_time
-    
-    # Clean and upload esports data in specified esports data directory
-    if args.esports_data_dir:
-        start_time = time.time()
-        addEsportsDataToDb(esports_data_directory=args.esports_data_dir)
-        timings['Clean esports data directory'] = time.time() - start_time
-    
-    # Automatically download and clean esports data
-    if args.download_and_clean_esports or args.download_and_clean:
-        start_time = time.time()
-        download_esports_files(destinationDirectory=download_directory)
-        addEsportsDataToDb(esports_data_directory=f"{download_directory}/esports-data")
-        timings['Download and clean esports data'] = time.time() - start_time
-    
+        # Automatically download and clean game data
+        if args.download_and_clean or args.download_and_clean_games:
+            start_time = time.time()
+            downloadAndCleanGames(download_directory=download_directory)
 
-    # Automatically download and clean game data
-    if args.download_and_clean or args.download_and_clean_games:
-        start_time = time.time()
-        download_esports_files(destinationDirectory=download_directory)
-        with open(f"{download_directory}/esports-data/tournaments.json", "r") as json_file:
-            tournament_data = json.load(json_file)
-            # Process games one tournament at a time, then remove them to save space
-            for tournament in tournament_data:
-                n_retries = 0
-                max_retries = 3
-                while(n_retries < max_retries):
-                    if os.path.exists(f"{download_directory}/games"):
-                        print(f"Clearing out games directory: {download_directory}/games")
-                        shutil.rmtree(f"{download_directory}/games")
-                    try:
-                        download_games(year=2023, tournament_id=tournament["id"], destination_directory=download_directory)
-                        addGamesToDb(games_directory=os.path.abspath(f"{download_directory}/games"))
-                        break
-                    except Exception as e:
-                        n_retries += 1
-                        warning(f"Encountered error while processing tournament {tournament['id']}, retrying: {e}")
-                        if n_retries >= max_retries:
-                            error(f"Max retries exceeded. Skipping tournament {tournament['id']}")
-
-        timings['Download and clean game data'] = time.time() - start_time
+            timings['Download and clean game data'] = time.time() - start_time
 
 
-    # Build region mapping table (map each team to a region)
-    if args.build_region_mapping:
-        start_time = time.time()
-        buildTeamRegionMapping()
-        timings['Build team-to-region mapping table'] = time.time() - start_time
+        # Build region mapping table (map each team to a region)
+        if args.build_region_mapping:
+            start_time = time.time()
+            buildTeamRegionMapping()
+            timings['Build team-to-region mapping table'] = time.time() - start_time
 
-    # Build cumulative stats
-    if args.build_cumulative_stats:
-        start_time = time.time()
-        buildCumulativeStats()
-        timings['Build cumulative stats table'] = time.time() - start_time
-    
-
-    print("Timings for tasks completed:")
-    for task_name, timing in timings.items():
-        n_spaces = max(40 - len(task_name), 0)
-        print(f"{task_name}: " + (' '*n_spaces) + f"{timing:.2f} seconds")
+        # Build cumulative stats
+        if args.build_cumulative_stats:
+            start_time = time.time()
+            buildCumulativeStats()
+            timings['Build cumulative stats table'] = time.time() - start_time
+    except Exception as e:
+        error(e)
+    finally:
+        print("Timings for tasks completed:")
+        for task_name, timing in timings.items():
+            n_spaces = max(40 - len(task_name), 0)
+            print(f"{task_name}: " + (' '*n_spaces) + f"{timing:.2f} seconds")
