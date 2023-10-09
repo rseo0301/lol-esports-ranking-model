@@ -2,6 +2,7 @@
 # This includes migration, cleaning, and uploading to database
 # This script is meant to be run from the command line
 # See arguments for usage, or run 'python main.py --help'
+from distutils.log import error
 from logging import warning
 import os
 import json
@@ -10,10 +11,12 @@ import time
 from datetime import datetime
 from pathlib import Path
 import shutil
+from cleaners.esports_data_cleaner import Esports_Cleaner
 from util import getWinningTeam
 from util import getTeamIdsFromGameInfo
 from cumulativeStats.cumulative_data_builder import Cumulative_Stats_Builder
-from cleaners import game_cleaner, esports_data_cleaner
+from cleaners.game_cleaner import Game_Cleaner
+from cleaners.esports_data_cleaner import Esports_Cleaner
 from database_accessor import Database_Accessor
 from dataRetrieval.getData import download_esports_files, download_games
 
@@ -33,6 +36,7 @@ def addGamesToDb(games_directory: str):
         db_accessor.addRowToTable(tableName="games", columns=["id", "info", "stats_update", "eventTime"], values=[primary_key, game, stats, eventTime])
 
     directory_path = Path(games_directory)
+    game_cleaner: Game_Cleaner = Game_Cleaner()
     for file_path in directory_path.iterdir():
         if not file_path.is_file():
             continue
@@ -76,6 +80,7 @@ def addEsportsDataToDb(esports_data_directory: str):
 
 
     directory_path = Path(esports_data_directory)
+    esports_data_cleaner: Esports_Cleaner = Esports_Cleaner()
     for file_path in directory_path.iterdir():
         if not file_path.is_file():
             continue
@@ -104,12 +109,12 @@ def addEsportsDataToDb(esports_data_directory: str):
                         addTournamentToDb(data=entry)
 
 
-
 def buildTeamRegionMapping() -> None:
     db_accessor = getDbAccessor()
     # First, build up mapping from tournament -> region
     tournament_to_region: dict = {}
     n_leagues: int = 0
+    print("Starting to build region mapping table")
     while(True):
         leagues_data = db_accessor.getDataFromTable(tableName="leagues", columns=["league"], limit=10, offset=n_leagues)
         if len(leagues_data) == 0:
@@ -121,7 +126,7 @@ def buildTeamRegionMapping() -> None:
             for tournament in league['tournaments']:
                 tournament_to_region[tournament['id']] = region
         
-        # Second, build up mapping from team -> region
+    # Second, build up mapping from team -> region
     team_to_region: dict = {}
     n_tournaments: int = 0
     while(True):
@@ -134,6 +139,8 @@ def buildTeamRegionMapping() -> None:
                 warning(f"Can not find region/league associated with tournament:\n   Tournament ID: {tournament['id']}\n   Tournament name: {tournament['name']}")
                 continue
             region = tournament_to_region[tournament['id']]
+            if region.lower() == "international":
+                continue
             tournament = json.loads(tournament_data[0])
             for stage in tournament['stages']:
                 for section in stage['sections']:
@@ -141,9 +148,10 @@ def buildTeamRegionMapping() -> None:
                         for team in matches['teams']:
                             team_to_region[team['id']] = region
         
-        # Lastly, write {teamID: region} to database
+    # Lastly, write {teamID: region} to database
     for id, region in team_to_region.items():
         db_accessor.addRowToTable(tableName="team_region_mapping", columns=["id", "region"], values=[id, region])
+    print("Finished building region mapping table")
 
 
 def buildCumulativeStats():
@@ -176,7 +184,31 @@ def buildCumulativeStats():
             team1_cumulative_stats, team2_cumulative_stats = cumulative_stats_builder.addGamePlayed(game_info=game_info, stats_info=stats_update)
             teams_cumulative_stats[team1_id], teams_cumulative_stats[team2_id] = team1_cumulative_stats, team2_cumulative_stats
         gameCount += len(games)
+        print(f"Written cumulative stats for {gameCount} games.")
     print(f"{gameCount} games written to cumulative stats table")
+
+
+def downloadAndCleanGames(download_directory: str) -> None:
+    download_esports_files(destinationDirectory=download_directory)
+    with open(f"{download_directory}/esports-data/tournaments.json", "r") as json_file:
+        tournament_data = json.load(json_file)
+            # Process games one tournament at a time, then remove them to save space
+        for tournament in tournament_data:
+            n_retries = 0
+            max_retries = 3
+            while(n_retries < max_retries):
+                if os.path.exists(f"{download_directory}/games"):
+                    print(f"Clearing out games directory: {download_directory}/games")
+                    shutil.rmtree(f"{download_directory}/games")
+                try:
+                    download_games(year=2023, tournament_id=tournament["id"], destination_directory=download_directory)
+                    addGamesToDb(games_directory=os.path.abspath(f"{download_directory}/games"))
+                    break
+                except Exception as e:
+                    n_retries += 1
+                    warning(f"Encountered error while processing tournament {tournament['id']}, retrying: {e}")
+                    if n_retries >= max_retries:
+                        error(f"Max retries exceeded. Skipping tournament {tournament['id']}")
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
@@ -190,6 +222,7 @@ if __name__ == '__main__':
     parser.add_argument('--esports_data_dir', help='If specified, will clean all esports data files located in directory holding raw esports data (json files)')
     parser.add_argument('--download_and_clean', help='Will automatically download and clean all data. Deletes data after processing to save memory.', action="store_true", default=False)
     parser.add_argument('--download_and_clean_esports', help='Will automatically download and clean esports data (not game data).', action="store_true", default=False)
+    parser.add_argument('--download_and_clean_games', help='Will automatically download and clean game data (not esports data. Assumed esports data is already set up).', action="store_true", default=False)
     parser.add_argument('--build_region_mapping', help='Build the region mapping table, using the data available in the database.', action="store_true", default=False)
     parser.add_argument('--build_cumulative_stats', help='Build the cumulative stats using the data available in the database.', action="store_true", default=False)
     args = parser.parse_args()
@@ -205,64 +238,60 @@ if __name__ == '__main__':
     download_directory = f"{Path(__file__).parent.resolve()}/dataRetrieval/temp"
     timings = {}
 
+    try:
+        # Migrations
+        if args.migrate:
+            start_time = time.time()
+            match args.migrate:
+                case 'up':
+                    db_accessor.migrateUp()
+                case 'down':
+                    db_accessor.resetDatabase()
+            timings['Migration'] = time.time() - start_time
+                
+        # Clean and upload games data in specified games data directory
+        if args.game_data_dir:
+            start_time = time.time()
+            addGamesToDb(games_directory=args.game_data_dir)
+            timings['Clean game data directory'] = time.time() - start_time
+        
+        # Clean and upload esports data in specified esports data directory
+        if args.esports_data_dir:
+            start_time = time.time()
+            addEsportsDataToDb(esports_data_directory=args.esports_data_dir)
+            timings['Clean esports data directory'] = time.time() - start_time
+        
+        # Automatically download and clean esports data
+        if args.download_and_clean_esports or args.download_and_clean:
+            start_time = time.time()
+            download_esports_files(destinationDirectory=download_directory)
+            addEsportsDataToDb(esports_data_directory=f"{download_directory}/esports-data")
+            timings['Download and clean esports data'] = time.time() - start_time
+        
 
-    # Migrations
-    if args.migrate:
-        start_time = time.time()
-        match args.migrate:
-            case 'up':
-                db_accessor.migrateUp()
-            case 'down':
-                db_accessor.resetDatabase()
-        timings['Migration'] = time.time() - start_time
-            
-    # Clean and upload games data in specified games data directory
-    if args.game_data_dir:
-        start_time = time.time()
-        addGamesToDb(games_directory=args.game_data_dir)
-        timings['Clean game data directory'] = time.time() - start_time
-    
-    # Clean and upload esports data in specified esports data directory
-    if args.esports_data_dir:
-        start_time = time.time()
-        addEsportsDataToDb(esports_data_directory=args.esports_data_dir)
-        timings['Clean esports data directory'] = time.time() - start_time
-    
-    # Automatically download and clean game data
-    if args.download_and_clean:
-        start_time = time.time()
-        download_esports_files(destinationDirectory=download_directory)
-        with open(f"{download_directory}/esports-data/tournaments.json", "r") as json_file:
-            leagues_data = json.load(json_file)
-            # Process games one tournament at a time, then remove them to save space
-            for tournament in leagues_data:
-                download_games(year=2023, tournament_id=tournament["id"], destination_directory=download_directory)
-                addGamesToDb(games_directory=os.path.abspath(f"{download_directory}/games"))
-                print(f"Clearing out games directory: {download_directory}/games")
-                shutil.rmtree(f"{download_directory}/games")
-        timings['Download and clean game data'] = time.time() - start_time
+        # Automatically download and clean game data
+        if args.download_and_clean or args.download_and_clean_games:
+            start_time = time.time()
+            downloadAndCleanGames(download_directory=download_directory)
 
-    # Automatically download and clean esports data
-    if args.download_and_clean_esports or args.download_and_clean:
-        start_time = time.time()
-        download_esports_files(destinationDirectory=download_directory)
-        addEsportsDataToDb(esports_data_directory=f"{download_directory}/esports-data")
-        timings['Download and clean esports data'] = time.time() - start_time
-    
-    # Build region mapping table (map each team to a region)
-    if args.build_region_mapping:
-        start_time = time.time()
-        buildTeamRegionMapping()
-        timings['Build team-to-region mapping table'] = time.time() - start_time
+            timings['Download and clean game data'] = time.time() - start_time
 
-    # Build cumulative stats
-    if args.build_cumulative_stats:
-        start_time = time.time()
-        buildCumulativeStats()
-        timings['Build cumulative stats table'] = time.time() - start_time
-    
 
-    print("Timings for tasks completed:")
-    for task_name, timing in timings.items():
-        n_spaces = max(40 - len(task_name), 0)
-        print(f"{task_name}: " + (' '*n_spaces) + f"{timing:.2f} seconds")
+        # Build region mapping table (map each team to a region)
+        if args.build_region_mapping:
+            start_time = time.time()
+            buildTeamRegionMapping()
+            timings['Build team-to-region mapping table'] = time.time() - start_time
+
+        # Build cumulative stats
+        if args.build_cumulative_stats:
+            start_time = time.time()
+            buildCumulativeStats()
+            timings['Build cumulative stats table'] = time.time() - start_time
+    except Exception as e:
+        error(e)
+    finally:
+        print("Timings for tasks completed:")
+        for task_name, timing in timings.items():
+            n_spaces = max(40 - len(task_name), 0)
+            print(f"{task_name}: " + (' '*n_spaces) + f"{timing:.2f} seconds")
