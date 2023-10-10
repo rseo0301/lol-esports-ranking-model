@@ -192,15 +192,20 @@ class Database_Accessor:
                 # Convert time to UTC 0 time and then convert to string
                 values[index] = pytz.timezone('UTC').localize(value).strftime("%Y-%m-%d %H:%M:%S")
         
-        columns = ', '.join(columns)
         valuesPlaceholder = ', '.join(['%s'] * len(values))
         query = ""
+        args = None
         if (replaceOnDuplicate):
-             query = "REPLACE INTO {} ({}) VALUES ({});"
+            duplicate_pairs = []
+            for column in columns:
+                duplicate_pairs += [column + "=%s"]
+            query = "INSERT INTO {} ({}) VALUES ({}) ON DUPLICATE KEY UPDATE " + ', '.join(duplicate_pairs) + ';'
+            args=tuple(values + values)
         else:
             query = "INSERT IGNORE INTO {} ({}) VALUES ({});"
-        query = query.format(tableName, columns, valuesPlaceholder)
-        self.executeSqlCommand(command=query, args=tuple(values))
+            args=tuple(values)
+        query = query.format(tableName, ', '.join(columns), valuesPlaceholder)
+        self.executeSqlCommand(command=query, args=args)
 
 
     # Get "columns" from table "tableName"
