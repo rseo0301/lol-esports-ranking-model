@@ -194,21 +194,22 @@ def downloadAndCleanGames(download_directory: str) -> None:
         tournament_data = json.load(json_file)
             # Process games one tournament at a time, then remove them to save space
         for tournament in tournament_data:
-            n_retries = 0
-            max_retries = 3
-            while(n_retries < max_retries):
-                if os.path.exists(f"{download_directory}/games"):
-                    print(f"Clearing out games directory: {download_directory}/games")
-                    shutil.rmtree(f"{download_directory}/games")
-                try:
-                    download_games(year=2023, tournament_id=tournament["id"], destination_directory=download_directory)
-                    addGamesToDb(games_directory=os.path.abspath(f"{download_directory}/games"))
-                    break
-                except Exception as e:
-                    n_retries += 1
-                    warning(f"Encountered error while processing tournament {tournament['id']}, retrying: {e}")
-                    if n_retries >= max_retries:
-                        error(f"Max retries exceeded. Skipping tournament {tournament['id']}")
+            for year in range(2009, 2023):
+                n_retries = 0
+                max_retries = 3
+                while(n_retries < max_retries):
+                    if os.path.exists(f"{download_directory}/games"):
+                        print(f"Clearing out games directory: {download_directory}/games")
+                        shutil.rmtree(f"{download_directory}/games")
+                    try:
+                        download_games(year=year, tournament_id=tournament["id"], destination_directory=download_directory)
+                        addGamesToDb(games_directory=os.path.abspath(f"{download_directory}/games"))
+                        break
+                    except Exception as e:
+                        n_retries += 1
+                        warning(f"Encountered error while processing tournament {tournament['id']}, retrying: {e}")
+                        if n_retries >= max_retries:
+                            error(f"Max retries exceeded. Skipping tournament {tournament['id']}")
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
