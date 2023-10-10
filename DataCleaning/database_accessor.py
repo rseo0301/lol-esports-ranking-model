@@ -193,17 +193,14 @@ class Database_Accessor:
                 values[index] = pytz.timezone('UTC').localize(value).strftime("%Y-%m-%d %H:%M:%S")
         
         valuesPlaceholder = ', '.join(['%s'] * len(values))
-        query = ""
-        args = None
+        query = "INSERT IGNORE INTO {} ({}) VALUES ({})"
+        args=tuple(values)
         if (replaceOnDuplicate):
             duplicate_pairs = []
             for column in columns:
                 duplicate_pairs += [column + "=%s"]
-            query = "INSERT INTO {} ({}) VALUES ({}) ON DUPLICATE KEY UPDATE " + ', '.join(duplicate_pairs) + ';'
+            query += " ON DUPLICATE KEY UPDATE " + ', '.join(duplicate_pairs)
             args=tuple(values + values)
-        else:
-            query = "INSERT IGNORE INTO {} ({}) VALUES ({});"
-            args=tuple(values)
         query = query.format(tableName, ', '.join(columns), valuesPlaceholder)
         self.executeSqlCommand(command=query, args=args)
 
