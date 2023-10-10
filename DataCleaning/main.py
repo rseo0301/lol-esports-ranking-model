@@ -194,7 +194,7 @@ def downloadAndCleanGames(download_directory: str) -> None:
         tournament_data = json.load(json_file)
             # Process games one tournament at a time, then remove them to save space
         for tournament in tournament_data:
-            for year in range(2009, 2023):
+            for year in range(2009, 2024):
                 n_retries = 0
                 max_retries = 3
                 while(n_retries < max_retries):
