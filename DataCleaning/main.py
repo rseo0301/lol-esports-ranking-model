@@ -165,24 +165,27 @@ def buildCumulativeStats():
         if len(games) == 0:
             break
         for game_id, game_info, stats_update in games:
-            game_info, stats_update = json.loads(game_info), json.loads(stats_update)
-            team1_id, team2_id = getTeamIdsFromGameInfo(db_accessor=db_accessor, game_info=game_info)
+            try:
+                game_info, stats_update = json.loads(game_info), json.loads(stats_update)
+                team1_id, team2_id = getTeamIdsFromGameInfo(db_accessor=db_accessor, game_info=game_info)
 
                 # First, tell the database about each team's cumulative stats going into the game
-            cumulative_stats = {}
-            if team1_id in teams_cumulative_stats:
-                cumulative_stats['team_1'] = teams_cumulative_stats[team1_id]
-            if team2_id in teams_cumulative_stats:
-                cumulative_stats['team_2'] = teams_cumulative_stats[team2_id]
-            cumulative_stats['meta'] = {
-                    'winning_team': getWinningTeam(game_info=game_info)
-                }
-            print(f"Writing cumulative stats for game {game_info['game_info']['platformGameId']}")
-            db_accessor.addRowToTable(tableName='cumulative_data', columns=['id', 'scale_by_90'], values=[game_id, cumulative_stats], replaceOnDuplicate=True)
+                cumulative_stats = {}
+                if team1_id in teams_cumulative_stats:
+                    cumulative_stats['team_1'] = teams_cumulative_stats[team1_id]
+                if team2_id in teams_cumulative_stats:
+                    cumulative_stats['team_2'] = teams_cumulative_stats[team2_id]
+                cumulative_stats['meta'] = {
+                        'winning_team': getWinningTeam(game_info=game_info)
+                    }
+                print(f"Writing cumulative stats for game {game_info['game_info']['platformGameId']}")
+                db_accessor.addRowToTable(tableName='cumulative_data', columns=['id', 'scale_by_90'], values=[game_id, cumulative_stats], replaceOnDuplicate=True)
 
                 # Then, update each team's cumulative stats after playing this game
-            team1_cumulative_stats, team2_cumulative_stats = cumulative_stats_builder.addGamePlayed(game_info=game_info, stats_info=stats_update)
-            teams_cumulative_stats[team1_id], teams_cumulative_stats[team2_id] = team1_cumulative_stats, team2_cumulative_stats
+                team1_cumulative_stats, team2_cumulative_stats = cumulative_stats_builder.addGamePlayed(game_info=game_info, stats_info=stats_update)
+                teams_cumulative_stats[team1_id], teams_cumulative_stats[team2_id] = team1_cumulative_stats, team2_cumulative_stats
+            except Exception as e:
+                warning(f"Error building cumulative stats for game {game_info['game_info']['platformGameId']} -- skipping game")
         gameCount += len(games)
         print(f"Written cumulative stats for {gameCount} games.")
     print(f"{gameCount} games written to cumulative stats table")
