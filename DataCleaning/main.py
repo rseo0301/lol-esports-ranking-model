@@ -112,9 +112,9 @@ def addEsportsDataToDb(esports_data_directory: str):
 def buildTeamRegionMapping() -> None:
     db_accessor = getDbAccessor()
     # First, build up mapping from tournament -> region
-    tournament_to_region: dict = {}
+    league_to_region: dict = {}
     n_leagues: int = 0
-    print("Starting to build region mapping table")
+    print("Starting to build league-to-region mapping table")
     while(True):
         leagues_data = db_accessor.getDataFromTable(tableName="leagues", columns=["league"], limit=10, offset=n_leagues)
         if len(leagues_data) == 0:
@@ -123,8 +123,7 @@ def buildTeamRegionMapping() -> None:
         for league_data in leagues_data:
             league = json.loads(league_data[0])
             region = league['region']
-            for tournament in league['tournaments']:
-                tournament_to_region[tournament['id']] = region
+            league_to_region[league['id']] = region
         
     # Second, build up mapping from team -> region
     team_to_region: dict = {}
@@ -135,13 +134,13 @@ def buildTeamRegionMapping() -> None:
             break
         n_tournaments += len(tournaments_data)
         for tournament_data in tournaments_data:
-            if tournament['id'] not in tournament_to_region:
+            tournament = json.loads(tournament_data[0])
+            if tournament['leagueId'] not in league_to_region:
                 warning(f"Can not find region/league associated with tournament:\n   Tournament ID: {tournament['id']}\n   Tournament name: {tournament['name']}")
                 continue
-            region = tournament_to_region[tournament['id']]
+            region = league_to_region[tournament['leagueId']]
             if region.lower() == "international":
                 continue
-            tournament = json.loads(tournament_data[0])
             for stage in tournament['stages']:
                 for section in stage['sections']:
                     for matches in section['matches']:
