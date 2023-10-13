@@ -112,9 +112,9 @@ def addEsportsDataToDb(esports_data_directory: str):
 def buildTeamRegionMapping() -> None:
     db_accessor = getDbAccessor()
     # First, build up mapping from tournament -> region
-    tournament_to_region: dict = {}
+    league_to_region: dict = {}
     n_leagues: int = 0
-    print("Starting to build region mapping table")
+    print("Starting to build league-to-region mapping table")
     while(True):
         leagues_data = db_accessor.getDataFromTable(tableName="leagues", columns=["league"], limit=10, offset=n_leagues)
         if len(leagues_data) == 0:
@@ -123,8 +123,7 @@ def buildTeamRegionMapping() -> None:
         for league_data in leagues_data:
             league = json.loads(league_data[0])
             region = league['region']
-            for tournament in league['tournaments']:
-                tournament_to_region[tournament['id']] = region
+            league_to_region[league['id']] = region
         
     # Second, build up mapping from team -> region
     team_to_region: dict = {}
@@ -135,13 +134,13 @@ def buildTeamRegionMapping() -> None:
             break
         n_tournaments += len(tournaments_data)
         for tournament_data in tournaments_data:
-            if tournament['id'] not in tournament_to_region:
+            tournament = json.loads(tournament_data[0])
+            if tournament['leagueId'] not in league_to_region:
                 warning(f"Can not find region/league associated with tournament:\n   Tournament ID: {tournament['id']}\n   Tournament name: {tournament['name']}")
                 continue
-            region = tournament_to_region[tournament['id']]
+            region = league_to_region[tournament['leagueId']]
             if region.lower() == "international":
                 continue
-            tournament = json.loads(tournament_data[0])
             for stage in tournament['stages']:
                 for section in stage['sections']:
                     for matches in section['matches']:
@@ -165,24 +164,27 @@ def buildCumulativeStats():
         if len(games) == 0:
             break
         for game_id, game_info, stats_update in games:
-            game_info, stats_update = json.loads(game_info), json.loads(stats_update)
-            team1_id, team2_id = getTeamIdsFromGameInfo(db_accessor=db_accessor, game_info=game_info)
+            try:
+                game_info, stats_update = json.loads(game_info), json.loads(stats_update)
+                team1_id, team2_id = getTeamIdsFromGameInfo(db_accessor=db_accessor, game_info=game_info)
 
                 # First, tell the database about each team's cumulative stats going into the game
-            cumulative_stats = {}
-            if team1_id in teams_cumulative_stats:
-                cumulative_stats['team_1'] = teams_cumulative_stats[team1_id]
-            if team2_id in teams_cumulative_stats:
-                cumulative_stats['team_2'] = teams_cumulative_stats[team2_id]
-            cumulative_stats['meta'] = {
-                    'winning_team': getWinningTeam(game_info=game_info)
-                }
-            print(f"Writing cumulative stats for game {game_info['game_info']['platformGameId']}")
-            db_accessor.addRowToTable(tableName='cumulative_data', columns=['id', 'scale_by_90'], values=[game_id, cumulative_stats], replaceOnDuplicate=True)
+                cumulative_stats = {}
+                if team1_id in teams_cumulative_stats:
+                    cumulative_stats['team_1'] = teams_cumulative_stats[team1_id]
+                if team2_id in teams_cumulative_stats:
+                    cumulative_stats['team_2'] = teams_cumulative_stats[team2_id]
+                cumulative_stats['meta'] = {
+                        'winning_team': getWinningTeam(game_info=game_info)
+                    }
+                print(f"Writing cumulative stats for game {game_info['game_info']['platformGameId']}")
+                db_accessor.addRowToTable(tableName='cumulative_data', columns=['id', 'scale_by_90'], values=[game_id, cumulative_stats], replaceOnDuplicate=True)
 
                 # Then, update each team's cumulative stats after playing this game
-            team1_cumulative_stats, team2_cumulative_stats = cumulative_stats_builder.addGamePlayed(game_info=game_info, stats_info=stats_update)
-            teams_cumulative_stats[team1_id], teams_cumulative_stats[team2_id] = team1_cumulative_stats, team2_cumulative_stats
+                team1_cumulative_stats, team2_cumulative_stats = cumulative_stats_builder.addGamePlayed(game_info=game_info, stats_info=stats_update)
+                teams_cumulative_stats[team1_id], teams_cumulative_stats[team2_id] = team1_cumulative_stats, team2_cumulative_stats
+            except Exception as e:
+                warning(f"Error building cumulative stats for game {game_info['game_info']['platformGameId']} -- skipping game")
         gameCount += len(games)
         print(f"Written cumulative stats for {gameCount} games.")
     print(f"{gameCount} games written to cumulative stats table")
@@ -194,21 +196,22 @@ def downloadAndCleanGames(download_directory: str) -> None:
         tournament_data = json.load(json_file)
             # Process games one tournament at a time, then remove them to save space
         for tournament in tournament_data:
-            n_retries = 0
-            max_retries = 3
-            while(n_retries < max_retries):
-                if os.path.exists(f"{download_directory}/games"):
-                    print(f"Clearing out games directory: {download_directory}/games")
-                    shutil.rmtree(f"{download_directory}/games")
-                try:
-                    download_games(year=2023, tournament_id=tournament["id"], destination_directory=download_directory)
-                    addGamesToDb(games_directory=os.path.abspath(f"{download_directory}/games"))
-                    break
-                except Exception as e:
-                    n_retries += 1
-                    warning(f"Encountered error while processing tournament {tournament['id']}, retrying: {e}")
-                    if n_retries >= max_retries:
-                        error(f"Max retries exceeded. Skipping tournament {tournament['id']}")
+            for year in range(2009, 2024):
+                n_retries = 0
+                max_retries = 3
+                while(n_retries < max_retries):
+                    if os.path.exists(f"{download_directory}/games"):
+                        print(f"Clearing out games directory: {download_directory}/games")
+                        shutil.rmtree(f"{download_directory}/games")
+                    try:
+                        download_games(year=year, tournament_id=tournament["id"], destination_directory=download_directory)
+                        addGamesToDb(games_directory=os.path.abspath(f"{download_directory}/games"))
+                        break
+                    except Exception as e:
+                        n_retries += 1
+                        warning(f"Encountered error while processing tournament {tournament['id']}, retrying: {e}")
+                        if n_retries >= max_retries:
+                            error(f"Max retries exceeded. Skipping tournament {tournament['id']}")
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()

@@ -1,2 +1,10 @@
-mysql-connector-python
-pytz
+autopep8==2.0.4
+certifi==2023.7.22
+charset-normalizer==3.2.0
+idna==3.4
+mysql-connector-python==8.1.0
+protobuf==4.21.12
+pycodestyle==2.11.0
+pytz==2023.3.post1
+requests==2.31.0
+urllib3==2.0.5
