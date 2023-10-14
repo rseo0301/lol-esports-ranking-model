@@ -1,4 +1,5 @@
 
+from enum import Enum
 import sys
 import os
 
@@ -99,7 +100,7 @@ def fetch_team_data(db_accessors, team_id):
 def get_rankings_data(tournament_json):
     return tournament_json["stages"][0]["sections"][0]["rankings"]
 
-@app.route('/tournamentStandings/<tournament_id>', methods=['GET'])
+@app.route('/tournamentStandings/<int:tournament_id>', methods=['GET'])
 def generate_tournaments_standings(tournament_id):
     db_accessors = initialize_db_accessors()
     tournament_json = fetch_tournament_data(db_accessors, tournament_id)
@@ -118,7 +119,7 @@ def generate_tournaments_standings(tournament_id):
 
     return jsonify(newData)
 
-@app.route("/leagueTeams/<leagues_id>", methods=["GET"])
+@app.route("/leagueTeams/<int:leagues_id>", methods=["GET"])
 def generate_league_teams(leagues_id):
     db_accessors = initialize_db_accessors()
     league_json = fetch_leagues_data(db_accessors,leagues_id)
@@ -155,6 +156,29 @@ def generate_leagues():
         leagueArr.append(updatedData)
     sorted_leagueArr = sorted(leagueArr, key=lambda x: x["priority"])
     return jsonify(sorted_leagueArr)
+
+"""
+    ML mock endpoints
+"""
+machineLearningModel=["Bayesian Model","Logistic Regression", "Random Forest"]
+
+@app.route("/model/tournamentsStandings/<tournament_id>")
+def generate_tournament_standings_by_model(tournament_id):
+     model_id = request.args.get("model_id")
+     model_type = machineLearningModel[int(model_id)]
+     model: Ranking_Model = None
+     if model_type == "Bayesian Model":
+         model = Mock_Ranking_Model()
+         bayesian_model = model.get_tournament_rankings(tournament_id,"test")
+         return jsonify({"model":model_type,"data":bayesian_model})
+     if model_type == "Logistic Regression":
+         model = Mock_Ranking_Model()
+         logistic_regression_model_data = model.get_tournament_rankings(tournament_id,"test")
+         return jsonify({"model":model_type,"data":logistic_regression_model_data})
+     if model_type == "Random Forest":
+         model = Mock_Ranking_Model()
+         random_forest_model_data = model.get_tournament_rankings(tournament_id,"test")
+         return jsonify({"model":model_type,"data":random_forest_model_data})
 
 # pseudo-code on how to use mock model. CODE HAS SYNTAX ERRORS
 """
