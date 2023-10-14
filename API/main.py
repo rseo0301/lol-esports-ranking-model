@@ -21,6 +21,8 @@ from flask import send_file
 app = Flask(__name__)
 CORS(app) 
 
+__dao: Database_Accessor = None
+
 # Get icons from Leaguepedia API
 def get_filename_url_to_open(site: EsportsClient, filename, team, width=None):
     response = site.client.api(
@@ -59,14 +61,17 @@ def get_icon(team):
         return send_file(f"icons/{team}.png", mimetype='image/png')
     except Exception as e:
         return jsonify({"error": str(e)})
-
+        
 # Database accessor
-def initialize_db_accessors():
-    return Database_Accessor(
-        db_name="games",
-        db_host="riot-hackathon-db.c880zspfzfsi.us-west-2.rds.amazonaws.com",
-        db_user="data_cleaner",
-    )
+def getDao():
+    global __dao
+    if not __dao:
+        __dao = Database_Accessor(
+            db_name="games",
+            db_host="riot-hackathon-db.c880zspfzfsi.us-west-2.rds.amazonaws.com",
+            db_user="data_cleaner",
+            )
+    return __dao
 
 # Fetching leagues data from db
 def fetch_leagues_data(db_accessors, leagues_id):
@@ -102,7 +107,7 @@ def get_rankings_data(tournament_json):
 
 @app.route('/tournamentStandings/<int:tournament_id>', methods=['GET'])
 def generate_tournaments_standings(tournament_id):
-    db_accessors = initialize_db_accessors()
+    db_accessors = getDao()
     tournament_json = fetch_tournament_data(db_accessors, tournament_id)
     rankings = tournament_json["stages"][0]["sections"][0]["rankings"]
     newData = []
@@ -121,7 +126,7 @@ def generate_tournaments_standings(tournament_id):
 
 @app.route("/leagueTeams/<int:leagues_id>", methods=["GET"])
 def generate_league_teams(leagues_id):
-    db_accessors = initialize_db_accessors()
+    db_accessors = getDao()
     league_json = fetch_leagues_data(db_accessors,leagues_id)
     # getting the most recent tournament id
     recent_tournament_id = league_json["tournaments"][0]["id"]
@@ -139,7 +144,7 @@ def generate_league_teams(leagues_id):
 # This is for the folders
 @app.route("/leagues", methods=["GET"])
 def generate_leagues():
-    db_accessors = initialize_db_accessors()
+    db_accessors = getDao()
     leagues_data = db_accessors.getDataFromTable(
         tableName="leagues",
         columns=["league"])
@@ -180,14 +185,30 @@ def generate_tournament_standings_by_model(tournament_id):
          random_forest_model_data = model.get_tournament_rankings(tournament_id,"test")
          return jsonify({"model":model_type,"data":random_forest_model_data})
 
-# pseudo-code on how to use mock model. CODE HAS SYNTAX ERRORS
-"""
-    model: Ranking_Model = None
-    if (model_id = "logistic_regression"):
-        model = Mock_Ranking_Model()
-    model: Ranking_Model = Mock_Ranking_Model
-    model.get_custom_rankings({})
-"""
+
+
+@app.route("/leagueTournaments/<league_id>", methods=["GET"])
+def generate_league_tournaments(league_id: str):
+    dao = getDao()
+    league_data = dao.getDataFromTable(tableName="leagues", columns=["league"], where_clause=f"id={league_id}")
+    league_tournaments = json.loads(league_data[0][0])['tournaments']
+    tournament_ids = [t['id'] for t in league_tournaments]
+    where_filter = [f"id='{id}'" for id in tournament_ids]
+    tournaments_data = dao.getDataFromTable(tableName="tournaments", columns=['tournament'], where_clause=" OR ".join(where_filter))
+    ret = []
+    for tournament_data in tournaments_data:
+        tournament = json.loads(tournament_data[0])
+        ret.append({
+            "id": tournament['id'],
+            "name": tournament['name'],
+            'startDate': tournament['startDate']
+        })
+    ret = sorted(ret, key=lambda x: x["startDate"])
+    return {
+        'tournaments': ret
+    }
+
+
 
     
 
