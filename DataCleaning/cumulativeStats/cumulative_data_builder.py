@@ -150,12 +150,14 @@ class Cumulative_Stats_Builder:
         
         def get_avg_kd_ratio() -> Tuple[float, float]:
             team1_kills, team2_kills = get_team_kills()
-            team1_deaths, team2_deaths = team1_info['deaths'], team2_info['deaths']
+            team1_deaths, team2_deaths = max(team1_info['deaths'], 1), max(team2_info['deaths'], 1)
             return float(team1_kills/team1_deaths), float(team2_kills/team2_deaths)
 
         def get_avg_assists_per_kill() -> Tuple[float, float]:
             team1_kills, team2_kills = get_team_kills()
-            team1_assists, team2_assists = team1_info['assists'], team2_info['assists']
+            team1_kills = max(team1_kills, 1)
+            team2_kills = max(team2_kills, 1)
+            team1_assists, team2_assists = team1_info['assists'], max(team2_info['assists'], 1)
             return float(team1_assists/team1_kills), float(team2_assists/team2_kills)
         
         def get_barons_per_game() -> Tuple[int, int]:
@@ -264,7 +266,7 @@ class Cumulative_Stats_Builder:
 if __name__=="__main__":
     dao: Database_Accessor = Database_Accessor(
         db_name="games", 
-        # db_host="riot-hackathon-db.c880zspfzfsi.us-west-2.rds.amazonaws.com",
+        db_host="riot-hackathon-db.c880zspfzfsi.us-west-2.rds.amazonaws.com",
         db_port=3306, 
         db_user="data_cleaner",
         db_password="")
@@ -274,6 +276,10 @@ if __name__=="__main__":
     columns=["info", "stats_update"], 
     order_clause="eventTime ASC", 
     limit=10)
+    # ESPORTSTMNT06:2763130
+    games = dao.getDataFromTable(tableName="games", 
+    columns=["info", "stats_update"],
+    where_clause="id='ESPORTSTMNT06:2763130' or id='ESPORTSTMNT03:3083538'")
 
     for game in games:
         game_info = json.loads(game[0])
