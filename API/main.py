@@ -1,4 +1,5 @@
 
+import argparse
 from enum import Enum
 import sys
 import os
@@ -251,5 +252,9 @@ def generate_custom_rankings():
     
 
 if __name__ == '__main__':
-     app.run(debug=True)
+    parser = argparse.ArgumentParser()
+    parser.add_argument('-p', '--production', help='Set this flag to run the flask app in production mode', action="store_true", default=False)
+    args = parser.parse_args()
+
+    app.run(debug = not args.production)
 
