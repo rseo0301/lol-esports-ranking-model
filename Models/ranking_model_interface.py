@@ -23,3 +23,7 @@ class Ranking_Model(ABC):
     @abstractmethod
     def get_global_rankings(self, n_teams: int = 20) -> List[dict]:
         pass
+
+    @abstractmethod
+    def get_custom_rankings(self, teams: dict) -> List[dict]:
+        pass

@@ -3,6 +3,9 @@ import sys
 import os
 sys.path.append(os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', 'DataCleaning'))
 from database_accessor import Database_Accessor
+sys.path.append(os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', 'Models'))
+from ranking_model_interface import Ranking_Model
+from mock_ranking_model import Mock_Ranking_Model
 
 import json
 from flask import Flask, request, jsonify
@@ -67,6 +70,17 @@ def generateTournamentData(id):
                                    where_clause=f"id={id}")
     tournament = json.loads(tournament_data[0][0])
     return jsonify(tournament)
+
+# pseudo-code on how to use mock model. CODE HAS SYNTAX ERRORS
+"""
+    model: Ranking_Model = None
+    if (model_id = "logistic_regression"):
+        model = Mock_Ranking_Model()
+    model: Ranking_Model = Mock_Ranking_Model
+    model.get_custom_rankings({})
+"""
+
+    
 
 if __name__ == '__main__':
      app.run(debug=True)
