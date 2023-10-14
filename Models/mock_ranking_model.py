@@ -46,9 +46,11 @@ class Mock_Ranking_Model(Ranking_Model):
     def get_global_rankings(self, n_teams: int = 20) -> List[dict]:
         return self._generate_random_response(n_teams=n_teams)
     
-    # TODO fix this pls
     def get_custom_rankings(self, teams: dict) -> List[dict]:
-        return teams
+        ret = self._generate_random_response(len(teams))
+        for i in range(len(teams)):
+            ret[i]['team_id'] = teams[i]['team_id']
+        return ret
 
     def _generate_random_response(self, n_teams: int = 20) -> List[dict]:
         # teamID is 17 numbers
