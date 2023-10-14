@@ -59,17 +59,6 @@ def get_icon(team):
     except Exception as e:
         return jsonify({"error": str(e)})
 
-
-@app.route('/tournamentStandings/<tournament_id>', methods=['GET'])
-def generate_tournaments_standings(tournament_id):
-    db_accessors = initialize_db_accessors()
-    tournament_json = fetch_tournament_data(db_accessors, tournament_id)
-    updated_rankings = generate_updated_rankings(db_accessors, tournament_json)
-    result = format_tournament_data(tournament_json, updated_rankings)
-    return jsonify(result)
-
-
-
 # Database accessor
 def initialize_db_accessors():
     return Database_Accessor(
@@ -77,6 +66,15 @@ def initialize_db_accessors():
         db_host="riot-hackathon-db.c880zspfzfsi.us-west-2.rds.amazonaws.com",
         db_user="data_cleaner",
     )
+
+# Fetching leagues data from db
+def fetch_leagues_data(db_accessors, leagues_id):
+    league_data = db_accessors.getDataFromTable(
+        tableName="leagues",
+        columns=["league"],
+         where_clause=f"id={leagues_id}"
+    )
+    return json.loads(league_data[0][0])
 
 # Fetching tournament data from db
 def fetch_tournament_data(db_accessors, tournament_id):
@@ -96,27 +94,49 @@ def fetch_team_data(db_accessors, team_id):
     )
     return json.loads(team_data[0][0])
 
-# Generate updated rankings
-def generate_updated_rankings(db_accessors, tournament_json):
+
+# Get rankings using tournaments json
+def get_rankings_data(tournament_json):
+    return tournament_json["stages"][0]["sections"][0]["rankings"]
+
+@app.route('/tournamentStandings/<tournament_id>', methods=['GET'])
+def generate_tournaments_standings(tournament_id):
+    db_accessors = initialize_db_accessors()
+    tournament_json = fetch_tournament_data(db_accessors, tournament_id)
     rankings = tournament_json["stages"][0]["sections"][0]["rankings"]
-    updated_rankings = []
+    newData = []
+    updatedRankings = []
     for team in rankings:
         updated_ranking = {
             "ranking": team["ordinal"],
             "team_info": fetch_team_data(db_accessors, team["teams"][0]["id"]),
             "record": team["teams"][0]["record"]
         }
-        updated_rankings.append(updated_ranking)
-    return updated_rankings
+        updatedRankings.append(updated_ranking)
+    newData.append({"tournamentName": tournament_json["slug"],"tournamentStandings": updatedRankings})
+    
 
-#  Formating the output object
-def format_tournament_data(tournament_json, updated_rankings):
-    return [
-        {
-            "tournamentName": tournament_json["slug"],
-            "tournamentStandings": updated_rankings
+    return jsonify(newData)
+
+@app.route("/leagueTeams/<leagues_id>", methods=["GET"])
+def generate_league_teams(leagues_id):
+    db_accessors = initialize_db_accessors()
+    league_json = fetch_leagues_data(db_accessors,leagues_id)
+    # getting the most recent tournament id
+    recent_tournament_id = league_json["tournaments"][0]["id"]
+    tournament_json = fetch_tournament_data(db_accessors, recent_tournament_id)
+    rankings = get_rankings_data(tournament_json)
+    teamList=[]
+    for team in rankings:
+        updatedTeamObject = {
+            "id": team["teams"][0]["id"],
+            "team_info":fetch_team_data(db_accessors, team["teams"][0]["id"])
         }
-    ]
+        
+        teamList.append(updatedTeamObject)
+    return jsonify(teamList)
+
+
 
 # pseudo-code on how to use mock model. CODE HAS SYNTAX ERRORS
 """
