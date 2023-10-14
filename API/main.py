@@ -61,7 +61,8 @@ def get_icon(team):
         return send_file(f"icons/{team}.png", mimetype='image/png')
     except Exception as e:
         return jsonify({"error": str(e)})
-        
+
+ 
 # Database accessor
 def getDao():
     global __dao
@@ -73,6 +74,21 @@ def getDao():
             )
     return __dao
 
+
+def get_model(model_name: str):
+    if not model_name:
+        return Mock_Ranking_Model()
+    match model_name.lower():
+        case "bayesian":
+            return Mock_Ranking_Model()
+        case "logisticregression":
+            return Mock_Ranking_Model()
+        case "randomforest":
+            return Mock_Ranking_Model()
+        case _:
+            return Mock_Ranking_Model()
+
+
 # Fetching leagues data from db
 def fetch_leagues_data(db_accessors, leagues_id):
     league_data = db_accessors.getDataFromTable(
@@ -82,6 +98,7 @@ def fetch_leagues_data(db_accessors, leagues_id):
     )
     return json.loads(league_data[0][0])
 
+
 # Fetching tournament data from db
 def fetch_tournament_data(db_accessors, tournament_id):
     tournament_data = db_accessors.getDataFromTable(
@@ -90,6 +107,7 @@ def fetch_tournament_data(db_accessors, tournament_id):
         where_clause=f"id={tournament_id}"
     )
     return json.loads(tournament_data[0][0])
+
 
 # Fetching team data from db
 def fetch_team_data(db_accessors, team_id):
@@ -104,6 +122,7 @@ def fetch_team_data(db_accessors, team_id):
 # Get rankings using tournaments json
 def get_rankings_data(tournament_json):
     return tournament_json["stages"][0]["sections"][0]["rankings"]
+
 
 @app.route('/tournamentStandings/<int:tournament_id>', methods=['GET'])
 def generate_tournaments_standings(tournament_id):
@@ -124,6 +143,7 @@ def generate_tournaments_standings(tournament_id):
 
     return jsonify(newData)
 
+
 @app.route("/leagueTeams/<int:leagues_id>", methods=["GET"])
 def generate_league_teams(leagues_id):
     db_accessors = getDao()
@@ -140,6 +160,7 @@ def generate_league_teams(leagues_id):
         }
         teamList.append(updatedTeamObject)
     return jsonify(teamList)
+
 
 # This is for the folders
 @app.route("/leagues", methods=["GET"])
@@ -162,10 +183,12 @@ def generate_leagues():
     sorted_leagueArr = sorted(leagueArr, key=lambda x: x["priority"])
     return jsonify(sorted_leagueArr)
 
+
 """
     ML mock endpoints
 """
 machineLearningModel=["Bayesian Model","Logistic Regression", "Random Forest"]
+
 
 @app.route("/model/tournamentsStandings/<tournament_id>")
 def generate_tournament_standings_by_model(tournament_id):
@@ -184,7 +207,6 @@ def generate_tournament_standings_by_model(tournament_id):
          model = Mock_Ranking_Model()
          random_forest_model_data = model.get_tournament_rankings(tournament_id,"test")
          return jsonify({"model":model_type,"data":random_forest_model_data})
-
 
 
 @app.route("/leagueTournaments/<league_id>", methods=["GET"])
@@ -207,6 +229,15 @@ def generate_league_tournaments(league_id: str):
     return {
         'tournaments': ret
     }
+
+
+@app.route("/model/globalRankings", methods=["GET"])
+def generate_model_global_rankings():
+    model_name = request.args.get('model')
+    n_teams = request.args.get('n_teams')
+    model = get_model(model_name=model_name)
+    return model.get_global_rankings(n_teams=int(n_teams))
+
 
 
 
