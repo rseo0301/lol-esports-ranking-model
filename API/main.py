@@ -1,5 +1,10 @@
-import json
+
+import sys
+import os
+sys.path.append(os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', 'DataCleaning'))
 from database_accessor import Database_Accessor
+
+import json
 from flask import Flask, request, jsonify
 from mwrogue.esports_client import EsportsClient
 import urllib.request
@@ -10,6 +15,7 @@ from flask import send_file
 app = Flask(__name__)
 CORS(app) 
 
+# Get icons from Leaguepedia API
 def get_filename_url_to_open(site: EsportsClient, filename, team, width=None):
     response = site.client.api(
         action="query",
@@ -31,6 +37,7 @@ def get_filename_url_to_open(site: EsportsClient, filename, team, width=None):
     urllib.request.urlretrieve(url, f"icons/{team}.png")
     return url +".jpg"
 
+# Get icon for team
 @app.route('/api/icon/<team>', methods=['GET'])
 def get_icon(team):
     site = EsportsClient("lol")
@@ -55,11 +62,11 @@ db_accessors = Database_Accessor(
 
 @app.route('/api/generate_tournament_data/<id>', methods=['GET'])
 def generateTournamentData(id):
-    db = db_accessors.getDataFromTable(tableName="tournaments", 
+    tournament_data = db_accessors.getDataFromTable(tableName="tournaments", 
                                    columns=["tournament"], 
                                    where_clause=f"id={id}")
-    print(db)
-    return jsonify(db)
+    tournament = json.loads(tournament_data[0][0])
+    return jsonify(tournament)
 
 if __name__ == '__main__':
      app.run(debug=True)
