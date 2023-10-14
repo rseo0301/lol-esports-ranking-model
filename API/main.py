@@ -132,11 +132,29 @@ def generate_league_teams(leagues_id):
             "id": team["teams"][0]["id"],
             "team_info":fetch_team_data(db_accessors, team["teams"][0]["id"])
         }
-        
         teamList.append(updatedTeamObject)
     return jsonify(teamList)
 
-
+# This is for the folders
+@app.route("/leagues", methods=["GET"])
+def generate_leagues():
+    db_accessors = initialize_db_accessors()
+    leagues_data = db_accessors.getDataFromTable(
+        tableName="leagues",
+        columns=["league"])
+    leagueArr=[]
+    for league in leagues_data:
+        league_object = json.loads(league[0])
+        updatedData={
+            "name":league_object["name"],
+            "leagues_id": league_object ["id"],
+            "image": league_object["image"],
+            "priority":league_object["priority"],
+            "region": league_object["region"]
+        }
+        leagueArr.append(updatedData)
+    sorted_leagueArr = sorted(leagueArr, key=lambda x: x["priority"])
+    return jsonify(sorted_leagueArr)
 
 # pseudo-code on how to use mock model. CODE HAS SYNTAX ERRORS
 """
