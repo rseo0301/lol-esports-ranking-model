@@ -239,28 +239,6 @@ def generate_model_global_rankings():
     return model.get_global_rankings(n_teams=int(n_teams))
 
 
-"""
-GET model/customRankings?model_id=
-input:
-{
-	teams: [“team1_id”, “team2_id”, …]
-}
-response:
-{
-	rankings: [
-		{
-			rank: int,
-			teamInfo: {
-		acronym: C9
-		slug: Cloud9
-		name: Cloud9
-		team_id: asdf
-},
-…
-	]
-}
-// Rank custom teams
-"""
 @app.route("/model/customRankings", methods=["POST"])
 def generate_custom_rankings():
     model_name = request.args.get('model')
