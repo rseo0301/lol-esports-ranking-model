@@ -1,5 +1,8 @@
 from typing import List
 import json
+import sys
+import os
+sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 from database_accessor import Database_Accessor
 import pandas as pd
 from sklearn.model_selection import train_test_split
