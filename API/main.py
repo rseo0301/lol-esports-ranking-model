@@ -64,7 +64,7 @@ def get_icon(team):
 
  
 # Database accessor
-def getDao():
+def get_dao():
     global __dao
     if not __dao:
         __dao = Database_Accessor(
@@ -126,7 +126,7 @@ def get_rankings_data(tournament_json):
 
 @app.route('/tournamentStandings/<int:tournament_id>', methods=['GET'])
 def generate_tournaments_standings(tournament_id):
-    db_accessors = getDao()
+    db_accessors = get_dao()
     tournament_json = fetch_tournament_data(db_accessors, tournament_id)
     rankings = tournament_json["stages"][0]["sections"][0]["rankings"]
     newData = []
@@ -146,7 +146,7 @@ def generate_tournaments_standings(tournament_id):
 
 @app.route("/leagueTeams/<int:leagues_id>", methods=["GET"])
 def generate_league_teams(leagues_id):
-    db_accessors = getDao()
+    db_accessors = get_dao()
     league_json = fetch_leagues_data(db_accessors,leagues_id)
     # getting the most recent tournament id
     recent_tournament_id = league_json["tournaments"][0]["id"]
@@ -165,7 +165,7 @@ def generate_league_teams(leagues_id):
 # This is for the folders
 @app.route("/leagues", methods=["GET"])
 def generate_leagues():
-    db_accessors = getDao()
+    db_accessors = get_dao()
     leagues_data = db_accessors.getDataFromTable(
         tableName="leagues",
         columns=["league"])
@@ -211,7 +211,7 @@ def generate_tournament_standings_by_model(tournament_id):
 
 @app.route("/leagueTournaments/<league_id>", methods=["GET"])
 def generate_league_tournaments(league_id: str):
-    dao = getDao()
+    dao = get_dao()
     league_data = dao.getDataFromTable(tableName="leagues", columns=["league"], where_clause=f"id={league_id}")
     league_tournaments = json.loads(league_data[0][0])['tournaments']
     tournament_ids = [t['id'] for t in league_tournaments]
@@ -239,8 +239,37 @@ def generate_model_global_rankings():
     return model.get_global_rankings(n_teams=int(n_teams))
 
 
-
-
+"""
+GET model/customRankings?model_id=
+input:
+{
+	teams: [“team1_id”, “team2_id”, …]
+}
+response:
+{
+	rankings: [
+		{
+			rank: int,
+			teamInfo: {
+		acronym: C9
+		slug: Cloud9
+		name: Cloud9
+		team_id: asdf
+},
+…
+	]
+}
+// Rank custom teams
+"""
+@app.route("/model/customRankings", methods=["POST"])
+def generate_custom_rankings():
+    model_name = request.args.get('model')
+    json_data = request.get_json()
+    if json_data is None:
+        return "Expecting a list of team ids as input. Example: {'teams': ['team1_id', 'team2_id', ...]", 400
+    team_ids = json_data['teams']
+    model = get_model(model_name=model_name)
+    return model.get_custom_rankings(team_ids=team_ids)
     
 
 if __name__ == '__main__':

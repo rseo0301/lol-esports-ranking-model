@@ -25,10 +25,13 @@ class Ranking_Model(ABC):
     def get_global_rankings(self, n_teams: int = 20) -> List[dict]:
         pass
 
+    """
+    Input should be a list of team ids
+    """
     @abstractmethod
-    def get_custom_rankings(self, teams: dict) -> List[dict]:
+    def get_custom_rankings(self, team_ids: List[str]) -> List[dict]:
         """
-        Input should be in this format
+        Output should be in this format
         [
             {"team_id": "100205573495116443"
             "team_code": "GEN",
