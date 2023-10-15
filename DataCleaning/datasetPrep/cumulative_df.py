@@ -6,6 +6,8 @@ sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 from database_accessor import Database_Accessor
 import pandas as pd
 from sklearn.model_selection import train_test_split
+import numpy as np
+from sklearn.preprocessing import OneHotEncoder
 
 db_access = Database_Accessor(
     db_name="games",
@@ -115,8 +117,21 @@ class CumulativeDataParser:
         print(f"total: {rows_parsed + len(skipped_row_ids)} rows observed")
 
         df = pd.DataFrame(self.raw_data_dict)
+
         if split_x_and_y:
-            X = df.drop(columns=["winner"])
+            # initialize encoder and fit data
+            region = df[['team_1_region', 'team_2_region']].values.reshape(-1, 2)
+            enc = OneHotEncoder()
+            enc.fit(region)
+            # transform data
+            one_hot = enc.transform(region).todense()
+            # turn one hot into dataframe
+            one_hot_df = pd.DataFrame(one_hot, columns=enc.get_feature_names_out(["team_1_region", "team_2_region"]))
+            # add one_hot features and remove initial region features
+            X = pd.concat([df, one_hot_df], axis=1)
+            X = X.drop(columns=["team_1_region", "team_2_region", "winner"])
+
+            df["winner"] = np.where(df["winner"] == 100, 1, 0)
             y = df["winner"]
             # return X_train, X_test, y_train, y_test (4-item list)
             return train_test_split(X, y, test_size=0.2, random_state=self.shuffle_state)
