@@ -131,7 +131,8 @@ class Database_Accessor:
             CREATE TABLE IF NOT EXISTS teams
             (
                 id VARCHAR(128) PRIMARY KEY,
-                team JSON
+                team JSON,
+                latest_cumulative_stats JSON
             )
             """
             self.executeSqlCommand(command=command)

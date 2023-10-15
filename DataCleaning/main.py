@@ -157,8 +157,9 @@ def buildCumulativeStats():
     db_accessor = getDbAccessor()
     gameCount: int = 0
     cumulative_stats_builder: Cumulative_Stats_Builder = Cumulative_Stats_Builder(db_accessor=db_accessor)
-        # Keep track of the current cumulative stats of each team
+    # Keep track of the current cumulative stats of each team
     teams_cumulative_stats = {}
+    # Write to cumulative_data table
     while(True):
         games = db_accessor.getDataFromTable(tableName="games", columns=["id", "info", "stats_update"], order_clause="eventTime ASC", limit=10, offset=gameCount)
         if len(games) == 0:
@@ -187,6 +188,9 @@ def buildCumulativeStats():
                 warning(f"Error building cumulative stats for game {game_info['game_info']['platformGameId']} -- skipping game")
         gameCount += len(games)
         print(f"Written cumulative stats for {gameCount} games.")
+    # Write cumulative stats of each team's last game, to teams table
+    for team_id, stats in teams_cumulative_stats.items():
+        db_accessor.addRowToTable(tableName="teams", columns=["id", "latest_cumulative_stats"], values=[team_id, stats], replaceOnDuplicate=True)
     print(f"{gameCount} games written to cumulative stats table")
 
 
