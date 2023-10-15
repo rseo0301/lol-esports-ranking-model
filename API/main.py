@@ -249,7 +249,13 @@ def generate_custom_rankings():
     team_ids = json_data['teams']
     model = get_model(model_name=model_name)
     return model.get_custom_rankings(team_ids=team_ids)
-    
+
+
+# Health check endpoint for aws ECS service
+@app.route("/healthCheck", methods=["GET"])
+def health_check():
+    return jsonify({"message": "Health check OK"}), 200
+
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
