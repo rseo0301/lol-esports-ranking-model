@@ -6,13 +6,13 @@
 import os
 import sys
 current_script_directory = os.path.dirname(os.path.abspath(__file__))
-sys.path.append(current_script_directory)
+sys.path.append(os.path.join(current_script_directory, ".."))
 from datetime import datetime
 import pytz
 from typing import List
 from mysql.connector import connect
 import json
-from cleaners import game_cleaner
+from DataCleaning.cleaners import game_cleaner
 from pathlib import Path
 
 class Database_Accessor:

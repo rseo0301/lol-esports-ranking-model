@@ -3,15 +3,14 @@ import argparse
 from enum import Enum
 import sys
 import os
+current_directory = os.path.dirname(os.path.abspath(__file__))
+sys.path.append(os.path.join(current_directory, ".."))
 
 from flask.json import dump
 
-parent_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), '..'))
-sys.path.append(parent_dir)
-
 from Models.ranking_model_interface import Ranking_Model
 from Models.mock_ranking_model import Mock_Ranking_Model
-from DataCleaning.database_accessor import Database_Accessor
+from dao.database_accessor import Database_Accessor
 
 import json
 from flask import Flask, request, jsonify

@@ -1,4 +1,8 @@
 # Utility file
+import os
+import sys
+current_script_directory = os.path.dirname(os.path.abspath(__file__))
+sys.path.append(current_script_directory)
 from database_accessor import Database_Accessor
 import json
 from typing import Tuple

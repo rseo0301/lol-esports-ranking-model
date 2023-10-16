@@ -2,9 +2,12 @@
 # This includes migration, cleaning, and uploading to database
 # This script is meant to be run from the command line
 # See arguments for usage, or run 'python main.py --help'
+import os
+import sys
+current_directory = os.path.dirname(os.path.abspath(__file__))
+sys.path.append(os.path.join(current_directory, ".."))
 from distutils.log import error
 from logging import warning
-import os
 import json
 import argparse
 import time
@@ -12,12 +15,11 @@ from datetime import datetime
 from pathlib import Path
 import shutil
 from cleaners.esports_data_cleaner import Esports_Cleaner
-from util import getWinningTeam
-from util import getTeamIdsFromGameInfo
+from dao.util import getWinningTeam, getTeamIdsFromGameInfo
 from cumulativeStats.cumulative_data_builder import Cumulative_Stats_Builder
 from cleaners.game_cleaner import Game_Cleaner
 from cleaners.esports_data_cleaner import Esports_Cleaner
-from database_accessor import Database_Accessor
+from dao.database_accessor import Database_Accessor
 from dataRetrieval.getData import download_esports_files, download_games
 
 _db_accessor: Database_Accessor = None
@@ -156,6 +158,7 @@ def buildTeamRegionMapping() -> None:
 def buildCumulativeStats():
     db_accessor = getDbAccessor()
     gameCount: int = 0
+    skippedGamesCount: int = 0
     cumulative_stats_builder: Cumulative_Stats_Builder = Cumulative_Stats_Builder(db_accessor=db_accessor)
     # Keep track of the current cumulative stats of each team
     teams_cumulative_stats = {}
@@ -185,13 +188,14 @@ def buildCumulativeStats():
                 team1_cumulative_stats, team2_cumulative_stats = cumulative_stats_builder.addGamePlayed(game_info=game_info, stats_info=stats_update)
                 teams_cumulative_stats[team1_id], teams_cumulative_stats[team2_id] = team1_cumulative_stats, team2_cumulative_stats
             except Exception as e:
+                skippedGamesCount += 1
                 warning(f"Error building cumulative stats for game {game_info['game_info']['platformGameId']} -- skipping game")
         gameCount += len(games)
-        print(f"Written cumulative stats for {gameCount} games.")
+        print(f"Processed cumulative stats for {gameCount} games.\n   {skippedGamesCount} games skipped so far.")
     # Write cumulative stats of each team's last game, to teams table
     for team_id, stats in teams_cumulative_stats.items():
         db_accessor.addRowToTable(tableName="teams", columns=["id", "latest_cumulative_stats"], values=[team_id, stats], replaceOnDuplicate=True)
-    print(f"{gameCount} games written to cumulative stats table")
+    print(f"Processed cumulative stats for {gameCount} games.\n   Cumulative stats for {gameCount - skippedGamesCount} games successfully written.\n   {skippedGamesCount} games skipped.")
 
 
 def downloadAndCleanGames(download_directory: str) -> None:

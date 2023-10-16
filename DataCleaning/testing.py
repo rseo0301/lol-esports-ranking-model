@@ -4,7 +4,7 @@ import json
 import argparse
 from pathlib import Path
 
-from database_accessor import Database_Accessor
+from dao.database_accessor import Database_Accessor
 
 
 if __name__ == '__main__':
