@@ -262,5 +262,5 @@ if __name__ == '__main__':
     parser.add_argument('-p', '--production', help='Set this flag to run the flask app in production mode', action="store_true", default=False)
     args = parser.parse_args()
 
-    app.run(port=5001, debug = not args.production)
+    app.run(host='0.0.0.0', port=5001, debug = not args.production)
 
