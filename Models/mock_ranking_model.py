@@ -46,10 +46,10 @@ class Mock_Ranking_Model(Ranking_Model):
     def get_global_rankings(self, n_teams: int = 20) -> List[dict]:
         return self._generate_random_response(n_teams=n_teams)
     
-    def get_custom_rankings(self, teams: dict) -> List[dict]:
-        ret = self._generate_random_response(len(teams))
-        for i in range(len(teams)):
-            ret[i]['team_id'] = teams[i]['team_id']
+    def get_custom_rankings(self, team_ids: List[str]) -> List[dict]:
+        ret = self._generate_random_response(len(team_ids))
+        for i in range(len(team_ids)):
+            ret[i]['team_id'] = team_ids[i]
         return ret
 
     def _generate_random_response(self, n_teams: int = 20) -> List[dict]:
