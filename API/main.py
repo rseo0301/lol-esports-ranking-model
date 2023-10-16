@@ -4,6 +4,8 @@ from enum import Enum
 import sys
 import os
 
+from flask.json import dump
+
 parent_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), '..'))
 sys.path.append(parent_dir)
 
@@ -133,15 +135,20 @@ def generate_tournaments_standings(tournament_id):
     newData = []
     updatedRankings = []
     for team in rankings:
+        team_info = {}
+        try:
+            team_info = fetch_team_data(db_accessors, team["teams"][0]["id"])
+        except:
+            team_info= {}
+            print("error",team)
+       
         updated_ranking = {
             "ranking": team["ordinal"],
-            "team_info": fetch_team_data(db_accessors, team["teams"][0]["id"]),
+            "team_info": team_info,
             "record": team["teams"][0]["record"]
         }
         updatedRankings.append(updated_ranking)
     newData.append({"tournamentName": tournament_json["slug"],"tournamentStandings": updatedRankings})
-    
-
     return jsonify(newData)
 
 
@@ -149,17 +156,31 @@ def generate_tournaments_standings(tournament_id):
 def generate_league_teams(leagues_id):
     db_accessors = get_dao()
     league_json = fetch_leagues_data(db_accessors,leagues_id)
-    # getting the most recent tournament id
-    recent_tournament_id = league_json["tournaments"][0]["id"]
-    tournament_json = fetch_tournament_data(db_accessors, recent_tournament_id)
-    rankings = get_rankings_data(tournament_json)
+   
+    index = 0
+    while True:
+        recent_tournament_id = league_json["tournaments"][index]["id"]
+        tournament_json = fetch_tournament_data(db_accessors, recent_tournament_id)
+        rankings = tournament_json["stages"][0]["sections"][0]["rankings"]
+        if rankings:
+            break  
+    
+        index += 1
     teamList=[]
     for team in rankings:
+        team_info = {}
+        try:
+            team_info = fetch_team_data(db_accessors, team["teams"][0]["id"])
+        except:
+            team_info= {}
+            print("error",team)
         updatedTeamObject = {
-            "id": team["teams"][0]["id"],
-            "team_info":fetch_team_data(db_accessors, team["teams"][0]["id"])
-        }
+                "id": team["teams"][0]["id"],
+                "team_info":team_info
+            }
         teamList.append(updatedTeamObject)
+   
+        
     return jsonify(teamList)
 
 
