@@ -130,15 +130,14 @@ def generate_tournaments_standings(tournament_id):
 def generate_league_teams(leagues_id):
     db_accessors = initialize_db_accessors()
     league_json = fetch_leagues_data(db_accessors,leagues_id)
-    # getting the most recent tournament id
+   
     index = 0
     while True:
         recent_tournament_id = league_json["tournaments"][index]["id"]
         tournament_json = fetch_tournament_data(db_accessors, recent_tournament_id)
         rankings = tournament_json["stages"][0]["sections"][0]["rankings"]
-    
         if rankings:
-            break  # Exit the loop if rankings are not empty
+            break  
     
         index += 1
     teamList=[]
