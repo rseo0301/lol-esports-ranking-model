@@ -3,12 +3,13 @@
 from distutils.log import error
 import sys
 import os
+current_directory = os.path.dirname(os.path.abspath(__file__))
+sys.path.append(os.path.join(current_directory, ".."))
 from tokenize import Number
-sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 import json
 from typing import Tuple
-from database_accessor import Database_Accessor
-from util import getTeamIdsFromGameInfo, getWinningTeam
+from dao.database_accessor import Database_Accessor
+from dao.util import getTeamIdsFromGameInfo, getWinningTeam
 
 CUMULATIVE_STATS_KEYS = [
     'first_blood_rate',
