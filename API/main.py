@@ -35,7 +35,7 @@ def get_filename_url_to_open(site: EsportsClient, filename, team, width=None):
         iiprop="url",
         iiurlwidth=width,
     )
-
+ 
     print(response)
     image_info = next(iter(response["query"]["pages"].values()))["imageinfo"][0]
 
@@ -198,7 +198,8 @@ def generate_leagues():
             "leagues_id": league_object ["id"],
             "image": league_object["image"],
             "priority":league_object["priority"],
-            "region": league_object["region"]
+            "region": league_object["region"],
+            "tournaments":league_object["tournaments"]
         }
         leagueArr.append(updatedData)
     sorted_leagueArr = sorted(leagueArr, key=lambda x: x["priority"])
