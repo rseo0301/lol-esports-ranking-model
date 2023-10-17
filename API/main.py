@@ -33,7 +33,7 @@ def get_filename_url_to_open(site: EsportsClient, filename, team, width=None):
         iiprop="url",
         iiurlwidth=width,
     )
-
+ 
     print(response)
     image_info = next(iter(response["query"]["pages"].values()))["imageinfo"][0]
 
