@@ -1,4 +1,5 @@
 # Utility file
+from logging import error
 import os
 import sys
 current_script_directory = os.path.dirname(os.path.abspath(__file__))
@@ -35,9 +36,57 @@ def getCumulativeStatsForTeams(db_accessor: Database_Accessor, team_ids: List[st
     return ret
 
 # Get the cumulative stats for every team, just before they play the first game of the tournmanet/stage
-def getCumulativeDataForTournament(tournament_id: str, stage: str) -> dict:
-    pass
+def getCumulativeDataForTournament(db_accessor: Database_Accessor, tournament_id: str, stage_name: str) -> dict:
+    tournament_data = db_accessor.getDataFromTable(tableName="tournaments", columns=["tournament"], where_clause=f"id='{tournament_id}'")
+    if not tournament_data:
+        error(f"Could not find tournament with id '{tournament_id}'")
+        return None
+    tournament = json.loads(tournament_data[0][0])
+    stage = [stage for stage in tournament['stages'] if stage['name'].lower() == stage_name.lower()]
+    if not stage:
+        stage_names = [f"{stage['name']}" for stage in tournament['stages']]
+        spacer = "\n   "
+        error(f"Could not find stage '{stage_name}' in tournament '{tournament_id}'. Valid stages for this tournament are: {spacer}{spacer.join(stage_names)}")
+        return None
+    stage = stage[0]
+    game_ids: List[str] = []
+    for section in stage['sections']:
+        for match in section['matches']:
+            for game in match['games']:
+                game_ids.append(game['id'])
+    return game_ids
+
+    # tournament['sections']['matches']
+    
     """
+    tournamnet['stages'] is an arry of objects, that look like
+    {
+        name: slug
+        type: idk
+        slug: slug
+        sections: [sections]
+    }
+
+    sections look like:
+    {
+        name: idk
+        matches: [matches]
+    }
+
+    matches look like:
+    {
+        ...,
+        games: [games]
+    }
+
+    games look like:
+    {
+        ...,
+        id: maps to gameID,
+        teams: [...]
+    }
+
+    We want to return:
     {
         team1_id: {cumulative_stats},
         …
@@ -48,6 +97,8 @@ def getCumulativeDataForTournament(tournament_id: str, stage: str) -> dict:
 # Debugging and testing:
 if __name__ == "__main__":
     dao: Database_Accessor = Database_Accessor()
-    temp = getCumulativeStatsForTeams(db_accessor=dao, team_ids=["107580483738977500", "109981647134921596"])
-    print(temp["109981647134921596"])
+    cumulative_data_for_teams = getCumulativeStatsForTeams(db_accessor=dao, team_ids=["107580483738977500", "109981647134921596"])
+
+    cumulative_data_for_tournament = getCumulativeDataForTournament(db_accessor=dao, tournament_id="103462454280724883", stage_name="asdf")
+
     print("Hello World")
