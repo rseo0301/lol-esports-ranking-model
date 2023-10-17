@@ -2,12 +2,12 @@
 FROM python:3.11.5
 
 # Set the working directory to /app
-WORKDIR /DataCleaning
+WORKDIR /workdir
 
 # Copy the current directory contents into the container at /app
-COPY . /DataCleaning
+COPY . /workdir
 
 # Install any dependencies
-RUN pip install -r requirements.txt
+RUN pip install -r /workdir/DataCleaning/requirements.txt
 
-ENTRYPOINT ["python", "main.py"]
+ENTRYPOINT ["python", "/workdir/DataCleaning/main.py"]
