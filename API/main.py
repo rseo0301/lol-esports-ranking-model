@@ -218,7 +218,7 @@ def generate_tournament_standings_by_model(tournament_id):
      model_type = machineLearningModel[int(model_id)]
      model: Ranking_Model = None
      if model_type == "Bayesian Model":
-         model = Mock_Ranking_Model()
+         model = Mock_Ranking_Model() 
          bayesian_model = model.get_tournament_rankings(tournament_id,"test")
          return jsonify({"model":model_type,"data":bayesian_model})
      if model_type == "Logistic Regression":
