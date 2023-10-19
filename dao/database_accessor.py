@@ -223,11 +223,14 @@ class Database_Accessor:
     # "order_clause" is MYSql formatted "ORDER BY" clause, to order results.
     def getDataFromTable(self, tableName: str, 
     columns: List[str], 
+    join_clause: str = None,
     where_clause: str = None,
     order_clause: str = None,
     limit: int = None,
     offset: int = None) -> List[tuple]:
         query = "SELECT {} FROM {}".format(', '.join(columns), tableName)
+        if join_clause:
+            query += f"JOIN {join_clause}"
         if where_clause:
             query += f" WHERE {where_clause}"
         if order_clause:
