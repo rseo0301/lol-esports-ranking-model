@@ -230,7 +230,7 @@ class Database_Accessor:
     offset: int = None) -> List[tuple]:
         query = "SELECT {} FROM {}".format(', '.join(columns), tableName)
         if join_clause:
-            query += f"JOIN {join_clause}"
+            query += f" JOIN {join_clause}"
         if where_clause:
             query += f" WHERE {where_clause}"
         if order_clause:
