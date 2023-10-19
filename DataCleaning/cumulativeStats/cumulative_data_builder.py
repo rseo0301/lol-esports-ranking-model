@@ -215,10 +215,10 @@ class Cumulative_Stats_Builder:
             team1_region, team2_region = "region not found", "region not found"
             team1_region_data = self.db_accessor.getDataFromTable(tableName="team_region_mapping", columns=["region"], where_clause=f"id={team1_id}")
             if team1_region_data:
-                team1_region = team1_region_data[0]
+                team1_region = team1_region_data[0][0]
             team2_region_data = self.db_accessor.getDataFromTable(tableName="team_region_mapping", columns=["region"], where_clause=f"id={team2_id}")
             if team2_region_data:
-                team2_region = team2_region_data[0]
+                team2_region = team2_region_data[0][0]
             return team1_region, team2_region
             
 
