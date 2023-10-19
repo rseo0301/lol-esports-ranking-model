@@ -45,11 +45,11 @@ def getCumulativeDataForTournament(db_accessor: Database_Accessor, tournament_id
             error(f"Could not find tournament with id '{tournament_id}'")
             return None
         tournament = json.loads(tournament_data[0][0])
-        stage = [stage for stage in tournament['stages'] if stage['name'].strip().lower() == stage_name.strip().lower()]
+        stage = [stage for stage in tournament['stages'] if stage['name'].strip().lower().replace('-', '').replace('_','') == stage_name.strip().lower().replace('-','').replace('_','')]
         if not stage:
             stage_names = [f"{stage['name']}" for stage in tournament['stages']]
             spacer = "\n   "
-            error(f"Could not find stage '{stage_name}' in tournament '{tournament_id}'. Valid stages for this tournament are: {spacer}{spacer.join(stage_names)}")
+            error(f"Could not find stage '{stage_name}' in tournament '{tournament['name']}' ({tournament_id}). Valid stages for this tournament are: {spacer}{spacer.join(stage_names)}")
             return None
         stage = stage[0]
         game_ids: List[str] = []
@@ -72,6 +72,7 @@ def getCumulativeDataForTournament(db_accessor: Database_Accessor, tournament_id
             team1_id, team2_id = getTeamIdsFromGameInfo(game_info=game_info)
             team_first_game[team1_id] = game_id
             team_first_game[team2_id] = game_id
+        return team_first_game
     
     # Expects an input of {team1_id: game1_id, team2_id: game2_id, ...}
     # Will return the associated cumulative stats for each game as {team1_id: cumulative_stats1, team2_id: cumulative_stats2, ...}
@@ -88,46 +89,13 @@ def getCumulativeDataForTournament(db_accessor: Database_Accessor, tournament_id
             
 
     game_names = getStageGameNames()
+    if not game_names:
+        return {}
     first_games = getTeamsFirstGames(game_names=game_names)
+    if not first_games:
+        return {}
     teams_cumulative_stats = getCumulativeStatsForTeamsGames(teams_games=first_games)
     return teams_cumulative_stats
-
-    # tournament['sections']['matches']
-    
-    """
-    tournamnet['stages'] is an arry of objects, that look like
-    {
-        name: slug
-        type: idk
-        slug: slug
-        sections: [sections]
-    }
-
-    sections look like:
-    {
-        name: idk
-        matches: [matches]
-    }
-
-    matches look like:
-    {
-        ...,
-        games: [games]
-    }
-
-    games look like:
-    {
-        ...,
-        id: maps to gameID,
-        teams: [...]
-    }
-
-    We want to return:
-    {
-        team1_id: {cumulative_stats},
-        …
-    }
-    """
 
 
 # Debugging and testing:
@@ -137,8 +105,11 @@ if __name__ == "__main__":
     # cumulative_data_for_teams = getCumulativeStatsForTeams(db_accessor=dao, team_ids=["107580483738977500", "109981647134921596"])
 
     tournaments_data = dao.getDataFromTable(tableName="tournaments", columns=["tournament"])
-    tournament1 = json.loads(tournaments_data[0][0])
-
-    cumulative_data_for_tournament = getCumulativeDataForTournament(db_accessor=dao, tournament_id=tournament1['id'], stage_name="Regular Season")
+    for tournament_data in tournaments_data:
+        tournament = json.loads(tournament_data[0])
+        cumulative_data_for_tournament = getCumulativeDataForTournament(db_accessor=dao, tournament_id=tournament['id'], stage_name="regional qualifier")
+        if cumulative_data_for_tournament:
+            print(f"Cumulative data found for games in f{tournament['id']}")
+            sys.exit(1)
 
     print("Hello World")
