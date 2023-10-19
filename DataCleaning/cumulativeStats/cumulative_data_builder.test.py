@@ -9,9 +9,10 @@ from dao.util import getTeamIdsFromGameInfo
 dao: Database_Accessor = Database_Accessor(db_host="hackathon-db-2.c880zspfzfsi.us-west-2.rds.amazonaws.com")
 team1_id = "99566405123587075"
 team2_id = "99566405128626825"
-team3_id = "team3_id"
+team3_id = "103461966975897718"
 
 # Game between teams {100: 99566405123587075, 200: 99566405128626825}
+# team1 and team2
 game1_data = {
     'info': {
         'game_end': {
@@ -339,7 +340,37 @@ game1_data = {
     ]
 }
 
+# Expected cumulative stats after game 1
+game1_expected_cumulative_stats = {
+    team1_id: {
+        "region": [
+            "NORTH AMERICA"
+        ],
+        "avg_kd_ratio": 0.15384615384615383,
+        "barons_per_game": 0.0,
+        "gold_diff_at_14": 319.0,
+        "overall_winrate": 0.0,
+        "avg_time_per_win": 0,
+        "dragons_per_game": 0.0,
+        "first_blood_rate": 0.0,
+        "first_tower_rate": 1.0,
+        "heralds_per_game": 0.0,
+        "turrets_per_game": 4.0,
+        "avg_time_per_loss": 28.155383333333337,
+        "gold_diff_per_min": -234.910671316261,
+        "avg_assists_per_kill": 2.0,
+        "vision_score_per_minute": 0.005620877893580239
+    },
+    team2_id: {
+
+    },
+    team3_id: {
+
+    }
+}
+
 # Game between teams {100: 99566405123587075, 200: 103461966975897718}
+# team1 and team3
 game2_data = {
     'info': {
         "game_end": {
@@ -1772,6 +1803,3619 @@ game2_data = {
     ]
 }
 
+# Game between teams {100: 99566405123587075, 200: 99566405128626825}
+# team1 and team2
+game3_data = {
+    'info': {
+        "game_end": {
+            "gameTime": 2105275,
+            "winningTeam": 100
+        },
+        "game_info": {
+            "gameName": "106273298443342402|game1",
+            "eventTime": "2021-06-30T20:12:57.705Z",
+            "eventType": "game_info",
+            "participants": [
+                {
+                    "teamID": 100,
+                    "championName": "Viego",
+                    "summonerName": "100 Tenacity",
+                    "participantID": 1
+                },
+                {
+                    "teamID": 100,
+                    "championName": "Diana",
+                    "summonerName": "100 Kenvi",
+                    "participantID": 2
+                },
+                {
+                    "teamID": 100,
+                    "championName": "Lucian",
+                    "summonerName": "100 ry0ma",
+                    "participantID": 3
+                },
+                {
+                    "teamID": 100,
+                    "championName": "Jinx",
+                    "summonerName": "100 Luger",
+                    "participantID": 4
+                },
+                {
+                    "teamID": 100,
+                    "championName": "Braum",
+                    "summonerName": "100 Poome",
+                    "participantID": 5
+                },
+                {
+                    "teamID": 200,
+                    "championName": "MonkeyKing",
+                    "summonerName": "CLG Thien",
+                    "participantID": 6
+                },
+                {
+                    "teamID": 200,
+                    "championName": "Volibear",
+                    "summonerName": "CLG Keel",
+                    "participantID": 7
+                },
+                {
+                    "teamID": 200,
+                    "championName": "Viktor",
+                    "summonerName": "CLG rjs",
+                    "participantID": 8
+                },
+                {
+                    "teamID": 200,
+                    "championName": "Ziggs",
+                    "summonerName": "CLG Katsurii",
+                    "participantID": 9
+                },
+                {
+                    "teamID": 200,
+                    "championName": "Nautilus",
+                    "summonerName": "CLG Hooks",
+                    "participantID": 10
+                }
+            ],
+            "platformGameId": "ESPORTSTMNT01:2131752"
+        },
+        "champion_kill": [
+            {
+                "bounty": 400,
+                "killer": 5,
+                "gameTime": 749904,
+                "assistants": [
+                    2,
+                    3,
+                    4
+                ],
+                "killerTeamID": 100,
+                "killStreakLength": 0
+            },
+            {
+                "bounty": 300,
+                "killer": 6,
+                "gameTime": 888135,
+                "assistants": [
+                    7,
+                    8,
+                    9,
+                    10
+                ],
+                "killerTeamID": 200,
+                "killStreakLength": 0
+            },
+            {
+                "bounty": 300,
+                "killer": 1,
+                "gameTime": 890480,
+                "assistants": [
+                    2,
+                    3,
+                    4
+                ],
+                "killerTeamID": 100,
+                "killStreakLength": 0
+            },
+            {
+                "bounty": 300,
+                "killer": 4,
+                "gameTime": 892925,
+                "assistants": [
+                    2,
+                    3,
+                    5
+                ],
+                "killerTeamID": 100,
+                "killStreakLength": 0
+            },
+            {
+                "bounty": 300,
+                "killer": 3,
+                "gameTime": 1010606,
+                "assistants": [
+                    1,
+                    2
+                ],
+                "killerTeamID": 100,
+                "killStreakLength": 0
+            },
+            {
+                "bounty": 300,
+                "killer": 7,
+                "gameTime": 1129319,
+                "assistants": [
+                    8,
+                    9,
+                    10
+                ],
+                "killerTeamID": 200,
+                "killStreakLength": 0
+            },
+            {
+                "bounty": 300,
+                "killer": 3,
+                "gameTime": 1130643,
+                "assistants": [
+                    1,
+                    4,
+                    5
+                ],
+                "killerTeamID": 100,
+                "killStreakLength": 1
+            },
+            {
+                "bounty": 300,
+                "killer": 9,
+                "gameTime": 1130775,
+                "assistants": [
+                    7,
+                    8,
+                    10
+                ],
+                "killerTeamID": 200,
+                "killStreakLength": 0
+            },
+            {
+                "bounty": 300,
+                "killer": 8,
+                "gameTime": 1131570,
+                "assistants": [
+                    7,
+                    9,
+                    10
+                ],
+                "killerTeamID": 200,
+                "killStreakLength": 0
+            },
+            {
+                "bounty": 300,
+                "killer": 4,
+                "gameTime": 1444591,
+                "assistants": [
+                    1,
+                    2,
+                    3,
+                    5
+                ],
+                "killerTeamID": 100,
+                "killStreakLength": 1
+            },
+            {
+                "bounty": 300,
+                "killer": 3,
+                "gameTime": 1446511,
+                "assistants": [
+                    2,
+                    4,
+                    5
+                ],
+                "killerTeamID": 100,
+                "killStreakLength": 2
+            },
+            {
+                "bounty": 300,
+                "killer": 6,
+                "gameTime": 1479875,
+                "assistants": [],
+                "killerTeamID": 200,
+                "killStreakLength": 0
+            },
+            {
+                "bounty": 300,
+                "killer": 2,
+                "gameTime": 1539770,
+                "assistants": [
+                    4
+                ],
+                "killerTeamID": 100,
+                "killStreakLength": 0
+            },
+            {
+                "bounty": 274,
+                "killer": 3,
+                "gameTime": 1567942,
+                "assistants": [
+                    1,
+                    5
+                ],
+                "killerTeamID": 100,
+                "killStreakLength": 0
+            },
+            {
+                "bounty": 300,
+                "killer": 1,
+                "gameTime": 1576519,
+                "assistants": [
+                    4
+                ],
+                "killerTeamID": 100,
+                "killStreakLength": 0
+            },
+            {
+                "bounty": 300,
+                "killer": 6,
+                "gameTime": 1576619,
+                "assistants": [
+                    8
+                ],
+                "killerTeamID": 200,
+                "killStreakLength": 1
+            },
+            {
+                "bounty": 300,
+                "killer": 8,
+                "gameTime": 1579334,
+                "assistants": [
+                    7,
+                    10
+                ],
+                "killerTeamID": 200,
+                "killStreakLength": 0
+            },
+            {
+                "bounty": 300,
+                "killer": 2,
+                "gameTime": 1580194,
+                "assistants": [
+                    3,
+                    4,
+                    5
+                ],
+                "killerTeamID": 100,
+                "killStreakLength": 1
+            },
+            {
+                "bounty": 274,
+                "killer": 1,
+                "gameTime": 1652741,
+                "assistants": [
+                    2,
+                    3,
+                    4,
+                    5
+                ],
+                "killerTeamID": 100,
+                "killStreakLength": 0
+            },
+            {
+                "bounty": 219,
+                "killer": 3,
+                "gameTime": 1812434,
+                "assistants": [
+                    4,
+                    5
+                ],
+                "killerTeamID": 100,
+                "killStreakLength": 1
+            },
+            {
+                "bounty": 300,
+                "killer": 1,
+                "gameTime": 1817359,
+                "assistants": [
+                    3,
+                    5
+                ],
+                "killerTeamID": 100,
+                "killStreakLength": 1
+            },
+            {
+                "bounty": 300,
+                "killer": 4,
+                "gameTime": 1826159,
+                "assistants": [
+                    1,
+                    3,
+                    5
+                ],
+                "killerTeamID": 100,
+                "killStreakLength": 0
+            },
+            {
+                "bounty": 300,
+                "killer": 8,
+                "gameTime": 1826389,
+                "assistants": [
+                    9
+                ],
+                "killerTeamID": 200,
+                "killStreakLength": 1
+            },
+            {
+                "bounty": 300,
+                "killer": 7,
+                "gameTime": 1878864,
+                "assistants": [
+                    8,
+                    10
+                ],
+                "killerTeamID": 200,
+                "killStreakLength": 0
+            },
+            {
+                "bounty": 300,
+                "killer": 2,
+                "gameTime": 2030082,
+                "assistants": [
+                    4,
+                    5
+                ],
+                "killerTeamID": 100,
+                "killStreakLength": 0
+            },
+            {
+                "bounty": 300,
+                "killer": 8,
+                "gameTime": 2051705,
+                "assistants": [
+                    10
+                ],
+                "killerTeamID": 200,
+                "killStreakLength": 2
+            },
+            {
+                "bounty": 300,
+                "killer": 2,
+                "gameTime": 2072769,
+                "assistants": [
+                    4,
+                    5
+                ],
+                "killerTeamID": 100,
+                "killStreakLength": 1
+            },
+            {
+                "bounty": 274,
+                "killer": 2,
+                "gameTime": 2080311,
+                "assistants": [
+                    4,
+                    5
+                ],
+                "killerTeamID": 100,
+                "killStreakLength": 2
+            },
+            {
+                "bounty": 274,
+                "killer": 4,
+                "gameTime": 2080477,
+                "assistants": [
+                    1,
+                    2,
+                    5
+                ],
+                "killerTeamID": 100,
+                "killStreakLength": 1
+            },
+            {
+                "bounty": 300,
+                "killer": 2,
+                "gameTime": 2082958,
+                "assistants": [],
+                "killerTeamID": 100,
+                "killStreakLength": 3
+            },
+            {
+                "bounty": 300,
+                "killer": 2,
+                "gameTime": 2095095,
+                "assistants": [],
+                "killerTeamID": 100,
+                "killStreakLength": 4
+            }
+        ],
+        "epic_monster_kill": [
+            {
+                "killer": 7,
+                "gameTime": 108647,
+                "assistants": [],
+                "monsterType": "blueCamp",
+                "killerTeamID": 200,
+                "inEnemyJungle": false
+            },
+            {
+                "killer": 2,
+                "gameTime": 114637,
+                "assistants": [],
+                "monsterType": "redCamp",
+                "killerTeamID": 100,
+                "inEnemyJungle": false
+            },
+            {
+                "killer": 7,
+                "gameTime": 119332,
+                "assistants": [],
+                "monsterType": "gromp",
+                "killerTeamID": 200,
+                "inEnemyJungle": false
+            },
+            {
+                "killer": 2,
+                "gameTime": 123996,
+                "assistants": [],
+                "monsterType": "krug",
+                "killerTeamID": 100,
+                "inEnemyJungle": false
+            },
+            {
+                "killer": 7,
+                "gameTime": 137500,
+                "assistants": [],
+                "monsterType": "wolf",
+                "killerTeamID": 200,
+                "inEnemyJungle": false
+            },
+            {
+                "killer": 2,
+                "gameTime": 150730,
+                "assistants": [],
+                "monsterType": "raptor",
+                "killerTeamID": 100,
+                "inEnemyJungle": false
+            },
+            {
+                "killer": 7,
+                "gameTime": 154963,
+                "assistants": [],
+                "monsterType": "raptor",
+                "killerTeamID": 200,
+                "inEnemyJungle": false
+            },
+            {
+                "killer": 7,
+                "gameTime": 172594,
+                "assistants": [],
+                "monsterType": "redCamp",
+                "killerTeamID": 200,
+                "inEnemyJungle": false
+            },
+            {
+                "killer": 2,
+                "gameTime": 181687,
+                "assistants": [],
+                "monsterType": "blueCamp",
+                "killerTeamID": 100,
+                "inEnemyJungle": false
+            },
+            {
+                "killer": 2,
+                "gameTime": 195450,
+                "assistants": [],
+                "monsterType": "gromp",
+                "killerTeamID": 100,
+                "inEnemyJungle": false
+            },
+            {
+                "killer": 7,
+                "gameTime": 205797,
+                "assistants": [],
+                "monsterType": "scuttleCrab",
+                "killerTeamID": 200,
+                "inEnemyJungle": false
+            },
+            {
+                "killer": 2,
+                "gameTime": 212281,
+                "assistants": [],
+                "monsterType": "wolf",
+                "killerTeamID": 100,
+                "inEnemyJungle": false
+            },
+            {
+                "killer": 7,
+                "gameTime": 227453,
+                "assistants": [],
+                "monsterType": "krug",
+                "killerTeamID": 200,
+                "inEnemyJungle": false
+            },
+            {
+                "killer": 2,
+                "gameTime": 231424,
+                "assistants": [],
+                "monsterType": "scuttleCrab",
+                "killerTeamID": 100,
+                "inEnemyJungle": false
+            },
+            {
+                "killer": 2,
+                "gameTime": 274143,
+                "assistants": [],
+                "monsterType": "krug",
+                "killerTeamID": 100,
+                "inEnemyJungle": false
+            },
+            {
+                "killer": 7,
+                "gameTime": 286182,
+                "assistants": [],
+                "monsterType": "gromp",
+                "killerTeamID": 200,
+                "inEnemyJungle": false
+            },
+            {
+                "killer": 2,
+                "gameTime": 299573,
+                "assistants": [],
+                "monsterType": "raptor",
+                "killerTeamID": 100,
+                "inEnemyJungle": false
+            },
+            {
+                "killer": 7,
+                "gameTime": 303510,
+                "assistants": [],
+                "monsterType": "wolf",
+                "killerTeamID": 200,
+                "inEnemyJungle": false
+            },
+            {
+                "killer": 7,
+                "gameTime": 324653,
+                "assistants": [],
+                "monsterType": "raptor",
+                "killerTeamID": 200,
+                "inEnemyJungle": false
+            },
+            {
+                "killer": 2,
+                "gameTime": 343013,
+                "assistants": [],
+                "monsterType": "gromp",
+                "killerTeamID": 100,
+                "inEnemyJungle": false
+            },
+            {
+                "killer": 2,
+                "gameTime": 379609,
+                "assistants": [],
+                "monsterType": "wolf",
+                "killerTeamID": 100,
+                "inEnemyJungle": false
+            },
+            {
+                "killer": 7,
+                "gameTime": 383315,
+                "assistants": [],
+                "monsterType": "krug",
+                "killerTeamID": 200,
+                "inEnemyJungle": false
+            },
+            {
+                "killer": 2,
+                "gameTime": 414510,
+                "assistants": [
+                    3,
+                    4,
+                    5
+                ],
+                "monsterType": "dragon",
+                "killerTeamID": 100,
+                "inEnemyJungle": false
+            },
+            {
+                "killer": 2,
+                "gameTime": 438567,
+                "assistants": [],
+                "monsterType": "blueCamp",
+                "killerTeamID": 100,
+                "inEnemyJungle": true
+            },
+            {
+                "killer": 1,
+                "gameTime": 442072,
+                "assistants": [],
+                "monsterType": "scuttleCrab",
+                "killerTeamID": 100,
+                "inEnemyJungle": false
+            },
+            {
+                "killer": 7,
+                "gameTime": 454507,
+                "assistants": [],
+                "monsterType": "wolf",
+                "killerTeamID": 200,
+                "inEnemyJungle": false
+            },
+            {
+                "killer": 2,
+                "gameTime": 454738,
+                "assistants": [],
+                "monsterType": "gromp",
+                "killerTeamID": 100,
+                "inEnemyJungle": false
+            },
+            {
+                "killer": 2,
+                "gameTime": 488384,
+                "assistants": [],
+                "monsterType": "redCamp",
+                "killerTeamID": 100,
+                "inEnemyJungle": false
+            },
+            {
+                "killer": 2,
+                "gameTime": 494240,
+                "assistants": [],
+                "monsterType": "raptor",
+                "killerTeamID": 100,
+                "inEnemyJungle": false
+            },
+            {
+                "killer": 7,
+                "gameTime": 518398,
+                "assistants": [],
+                "monsterType": "raptor",
+                "killerTeamID": 200,
+                "inEnemyJungle": false
+            },
+            {
+                "killer": 2,
+                "gameTime": 525873,
+                "assistants": [
+                    1
+                ],
+                "monsterType": "riftHerald",
+                "killerTeamID": 100,
+                "inEnemyJungle": false
+            },
+            {
+                "killer": 7,
+                "gameTime": 538811,
+                "assistants": [],
+                "monsterType": "redCamp",
+                "killerTeamID": 200,
+                "inEnemyJungle": false
+            },
+            {
+                "killer": 3,
+                "gameTime": 542907,
+                "assistants": [],
+                "monsterType": "blueCamp",
+                "killerTeamID": 100,
+                "inEnemyJungle": false
+            },
+            {
+                "killer": 7,
+                "gameTime": 549991,
+                "assistants": [],
+                "monsterType": "krug",
+                "killerTeamID": 200,
+                "inEnemyJungle": false
+            },
+            {
+                "killer": 2,
+                "gameTime": 550354,
+                "assistants": [],
+                "monsterType": "gromp",
+                "killerTeamID": 100,
+                "inEnemyJungle": false
+            },
+            {
+                "killer": 2,
+                "gameTime": 560662,
+                "assistants": [],
+                "monsterType": "wolf",
+                "killerTeamID": 100,
+                "inEnemyJungle": false
+            },
+            {
+                "killer": 2,
+                "gameTime": 605578,
+                "assistants": [],
+                "monsterType": "scuttleCrab",
+                "killerTeamID": 100,
+                "inEnemyJungle": false
+            },
+            {
+                "killer": 7,
+                "gameTime": 613452,
+                "assistants": [],
+                "monsterType": "gromp",
+                "killerTeamID": 200,
+                "inEnemyJungle": false
+            },
+            {
+                "killer": 7,
+                "gameTime": 637820,
+                "assistants": [],
+                "monsterType": "wolf",
+                "killerTeamID": 200,
+                "inEnemyJungle": false
+            },
+            {
+                "killer": 2,
+                "gameTime": 640825,
+                "assistants": [],
+                "monsterType": "krug",
+                "killerTeamID": 100,
+                "inEnemyJungle": false
+            },
+            {
+                "killer": 7,
+                "gameTime": 688951,
+                "assistants": [],
+                "monsterType": "raptor",
+                "killerTeamID": 200,
+                "inEnemyJungle": false
+            },
+            {
+                "killer": 2,
+                "gameTime": 695299,
+                "assistants": [],
+                "monsterType": "gromp",
+                "killerTeamID": 100,
+                "inEnemyJungle": false
+            },
+            {
+                "killer": 7,
+                "gameTime": 705019,
+                "assistants": [],
+                "monsterType": "krug",
+                "killerTeamID": 200,
+                "inEnemyJungle": false
+            },
+            {
+                "killer": 2,
+                "gameTime": 707437,
+                "assistants": [],
+                "monsterType": "wolf",
+                "killerTeamID": 100,
+                "inEnemyJungle": false
+            },
+            {
+                "killer": 2,
+                "gameTime": 761943,
+                "assistants": [],
+                "monsterType": "blueCamp",
+                "killerTeamID": 100,
+                "inEnemyJungle": true
+            },
+            {
+                "killer": 2,
+                "gameTime": 783541,
+                "assistants": [],
+                "monsterType": "raptor",
+                "killerTeamID": 100,
+                "inEnemyJungle": false
+            },
+            {
+                "killer": 2,
+                "gameTime": 799220,
+                "assistants": [],
+                "monsterType": "redCamp",
+                "killerTeamID": 100,
+                "inEnemyJungle": false
+            },
+            {
+                "killer": 2,
+                "gameTime": 818445,
+                "assistants": [],
+                "monsterType": "dragon",
+                "killerTeamID": 100,
+                "inEnemyJungle": false
+            },
+            {
+                "killer": 2,
+                "gameTime": 826973,
+                "assistants": [],
+                "monsterType": "scuttleCrab",
+                "killerTeamID": 100,
+                "inEnemyJungle": false
+            },
+            {
+                "killer": 7,
+                "gameTime": 836591,
+                "assistants": [],
+                "monsterType": "raptor",
+                "killerTeamID": 200,
+                "inEnemyJungle": false
+            },
+            {
+                "killer": 2,
+                "gameTime": 842509,
+                "assistants": [],
+                "monsterType": "gromp",
+                "killerTeamID": 100,
+                "inEnemyJungle": false
+            },
+            {
+                "killer": 7,
+                "gameTime": 852497,
+                "assistants": [],
+                "monsterType": "redCamp",
+                "killerTeamID": 200,
+                "inEnemyJungle": false
+            },
+            {
+                "killer": 1,
+                "gameTime": 857326,
+                "assistants": [],
+                "monsterType": "gromp",
+                "killerTeamID": 100,
+                "inEnemyJungle": false
+            },
+            {
+                "killer": 7,
+                "gameTime": 866859,
+                "assistants": [],
+                "monsterType": "blueCamp",
+                "killerTeamID": 200,
+                "inEnemyJungle": true
+            },
+            {
+                "killer": 2,
+                "gameTime": 871227,
+                "assistants": [],
+                "monsterType": "wolf",
+                "killerTeamID": 100,
+                "inEnemyJungle": false
+            },
+            {
+                "killer": 7,
+                "gameTime": 917053,
+                "assistants": [],
+                "monsterType": "wolf",
+                "killerTeamID": 200,
+                "inEnemyJungle": false
+            },
+            {
+                "killer": 2,
+                "gameTime": 925155,
+                "assistants": [],
+                "monsterType": "riftHerald",
+                "killerTeamID": 100,
+                "inEnemyJungle": false
+            },
+            {
+                "killer": 1,
+                "gameTime": 938229,
+                "assistants": [],
+                "monsterType": "krug",
+                "killerTeamID": 100,
+                "inEnemyJungle": false
+            },
+            {
+                "killer": 2,
+                "gameTime": 948259,
+                "assistants": [],
+                "monsterType": "raptor",
+                "killerTeamID": 100,
+                "inEnemyJungle": false
+            },
+            {
+                "killer": 7,
+                "gameTime": 957517,
+                "assistants": [],
+                "monsterType": "krug",
+                "killerTeamID": 200,
+                "inEnemyJungle": false
+            },
+            {
+                "killer": 7,
+                "gameTime": 983978,
+                "assistants": [],
+                "monsterType": "scuttleCrab",
+                "killerTeamID": 200,
+                "inEnemyJungle": false
+            },
+            {
+                "killer": 7,
+                "gameTime": 1002072,
+                "assistants": [],
+                "monsterType": "raptor",
+                "killerTeamID": 200,
+                "inEnemyJungle": false
+            },
+            {
+                "killer": 2,
+                "gameTime": 1034850,
+                "assistants": [],
+                "monsterType": "gromp",
+                "killerTeamID": 100,
+                "inEnemyJungle": false
+            },
+            {
+                "killer": 2,
+                "gameTime": 1044243,
+                "assistants": [],
+                "monsterType": "wolf",
+                "killerTeamID": 100,
+                "inEnemyJungle": false
+            },
+            {
+                "killer": 8,
+                "gameTime": 1070643,
+                "assistants": [],
+                "monsterType": "blueCamp",
+                "killerTeamID": 200,
+                "inEnemyJungle": false
+            },
+            {
+                "killer": 7,
+                "gameTime": 1075012,
+                "assistants": [],
+                "monsterType": "gromp",
+                "killerTeamID": 200,
+                "inEnemyJungle": false
+            },
+            {
+                "killer": 3,
+                "gameTime": 1080440,
+                "assistants": [],
+                "monsterType": "krug",
+                "killerTeamID": 100,
+                "inEnemyJungle": false
+            },
+            {
+                "killer": 7,
+                "gameTime": 1088143,
+                "assistants": [],
+                "monsterType": "wolf",
+                "killerTeamID": 200,
+                "inEnemyJungle": false
+            },
+            {
+                "killer": 2,
+                "gameTime": 1092184,
+                "assistants": [],
+                "monsterType": "raptor",
+                "killerTeamID": 100,
+                "inEnemyJungle": false
+            },
+            {
+                "killer": 8,
+                "gameTime": 1140870,
+                "assistants": [],
+                "monsterType": "scuttleCrab",
+                "killerTeamID": 200,
+                "inEnemyJungle": false
+            },
+            {
+                "killer": 8,
+                "gameTime": 1155295,
+                "assistants": [
+                    6,
+                    9,
+                    10
+                ],
+                "monsterType": "dragon",
+                "killerTeamID": 200,
+                "inEnemyJungle": false
+            },
+            {
+                "killer": 4,
+                "gameTime": 1157644,
+                "assistants": [],
+                "monsterType": "raptor",
+                "killerTeamID": 100,
+                "inEnemyJungle": false
+            },
+            {
+                "killer": 4,
+                "gameTime": 1165183,
+                "assistants": [],
+                "monsterType": "redCamp",
+                "killerTeamID": 100,
+                "inEnemyJungle": true
+            },
+            {
+                "killer": 7,
+                "gameTime": 1187773,
+                "assistants": [],
+                "monsterType": "krug",
+                "killerTeamID": 200,
+                "inEnemyJungle": false
+            },
+            {
+                "killer": 2,
+                "gameTime": 1188402,
+                "assistants": [],
+                "monsterType": "wolf",
+                "killerTeamID": 100,
+                "inEnemyJungle": false
+            },
+            {
+                "killer": 2,
+                "gameTime": 1199484,
+                "assistants": [],
+                "monsterType": "blueCamp",
+                "killerTeamID": 100,
+                "inEnemyJungle": false
+            },
+            {
+                "killer": 2,
+                "gameTime": 1201699,
+                "assistants": [],
+                "monsterType": "gromp",
+                "killerTeamID": 100,
+                "inEnemyJungle": false
+            },
+            {
+                "killer": 6,
+                "gameTime": 1224828,
+                "assistants": [],
+                "monsterType": "gromp",
+                "killerTeamID": 200,
+                "inEnemyJungle": false
+            },
+            {
+                "killer": 2,
+                "gameTime": 1250670,
+                "assistants": [],
+                "monsterType": "raptor",
+                "killerTeamID": 100,
+                "inEnemyJungle": false
+            },
+            {
+                "killer": 2,
+                "gameTime": 1260489,
+                "assistants": [],
+                "monsterType": "krug",
+                "killerTeamID": 100,
+                "inEnemyJungle": false
+            },
+            {
+                "killer": 6,
+                "gameTime": 1270421,
+                "assistants": [],
+                "monsterType": "wolf",
+                "killerTeamID": 200,
+                "inEnemyJungle": false
+            },
+            {
+                "killer": 4,
+                "gameTime": 1282957,
+                "assistants": [],
+                "monsterType": "redCamp",
+                "killerTeamID": 100,
+                "inEnemyJungle": false
+            },
+            {
+                "killer": 2,
+                "gameTime": 1294273,
+                "assistants": [],
+                "monsterType": "scuttleCrab",
+                "killerTeamID": 100,
+                "inEnemyJungle": false
+            },
+            {
+                "killer": 7,
+                "gameTime": 1318370,
+                "assistants": [],
+                "monsterType": "raptor",
+                "killerTeamID": 200,
+                "inEnemyJungle": false
+            },
+            {
+                "killer": 2,
+                "gameTime": 1327709,
+                "assistants": [],
+                "monsterType": "wolf",
+                "killerTeamID": 100,
+                "inEnemyJungle": false
+            },
+            {
+                "killer": 7,
+                "gameTime": 1333195,
+                "assistants": [],
+                "monsterType": "krug",
+                "killerTeamID": 200,
+                "inEnemyJungle": false
+            },
+            {
+                "killer": 2,
+                "gameTime": 1348513,
+                "assistants": [],
+                "monsterType": "gromp",
+                "killerTeamID": 100,
+                "inEnemyJungle": false
+            },
+            {
+                "killer": 6,
+                "gameTime": 1380181,
+                "assistants": [],
+                "monsterType": "gromp",
+                "killerTeamID": 200,
+                "inEnemyJungle": false
+            },
+            {
+                "killer": 6,
+                "gameTime": 1390871,
+                "assistants": [],
+                "monsterType": "blueCamp",
+                "killerTeamID": 200,
+                "inEnemyJungle": false
+            },
+            {
+                "killer": 2,
+                "gameTime": 1396992,
+                "assistants": [],
+                "monsterType": "raptor",
+                "killerTeamID": 100,
+                "inEnemyJungle": false
+            },
+            {
+                "killer": 2,
+                "gameTime": 1506321,
+                "assistants": [],
+                "monsterType": "wolf",
+                "killerTeamID": 100,
+                "inEnemyJungle": false
+            },
+            {
+                "killer": 2,
+                "gameTime": 1513532,
+                "assistants": [],
+                "monsterType": "blueCamp",
+                "killerTeamID": 100,
+                "inEnemyJungle": false
+            },
+            {
+                "killer": 9,
+                "gameTime": 1516280,
+                "assistants": [
+                    7,
+                    8
+                ],
+                "monsterType": "dragon",
+                "killerTeamID": 200,
+                "inEnemyJungle": false
+            },
+            {
+                "killer": 7,
+                "gameTime": 1519257,
+                "assistants": [],
+                "monsterType": "scuttleCrab",
+                "killerTeamID": 200,
+                "inEnemyJungle": false
+            },
+            {
+                "killer": 4,
+                "gameTime": 1524321,
+                "assistants": [],
+                "monsterType": "gromp",
+                "killerTeamID": 100,
+                "inEnemyJungle": false
+            },
+            {
+                "killer": 1,
+                "gameTime": 1533053,
+                "assistants": [],
+                "monsterType": "krug",
+                "killerTeamID": 100,
+                "inEnemyJungle": false
+            },
+            {
+                "killer": 6,
+                "gameTime": 1541986,
+                "assistants": [],
+                "monsterType": "gromp",
+                "killerTeamID": 200,
+                "inEnemyJungle": false
+            },
+            {
+                "killer": 7,
+                "gameTime": 1558044,
+                "assistants": [],
+                "monsterType": "redCamp",
+                "killerTeamID": 200,
+                "inEnemyJungle": false
+            },
+            {
+                "killer": 8,
+                "gameTime": 1586579,
+                "assistants": [],
+                "monsterType": "raptor",
+                "killerTeamID": 200,
+                "inEnemyJungle": false
+            },
+            {
+                "killer": 8,
+                "gameTime": 1601668,
+                "assistants": [],
+                "monsterType": "krug",
+                "killerTeamID": 200,
+                "inEnemyJungle": false
+            },
+            {
+                "killer": 2,
+                "gameTime": 1614139,
+                "assistants": [],
+                "monsterType": "raptor",
+                "killerTeamID": 100,
+                "inEnemyJungle": false
+            },
+            {
+                "killer": 2,
+                "gameTime": 1650294,
+                "assistants": [
+                    1,
+                    3,
+                    4,
+                    5,
+                    9
+                ],
+                "monsterType": "baron",
+                "killerTeamID": 100,
+                "inEnemyJungle": false
+            },
+            {
+                "killer": 3,
+                "gameTime": 1666347,
+                "assistants": [],
+                "monsterType": "gromp",
+                "killerTeamID": 100,
+                "inEnemyJungle": false
+            },
+            {
+                "killer": 2,
+                "gameTime": 1669324,
+                "assistants": [],
+                "monsterType": "wolf",
+                "killerTeamID": 100,
+                "inEnemyJungle": false
+            },
+            {
+                "killer": 4,
+                "gameTime": 1686007,
+                "assistants": [],
+                "monsterType": "redCamp",
+                "killerTeamID": 100,
+                "inEnemyJungle": false
+            },
+            {
+                "killer": 7,
+                "gameTime": 1686901,
+                "assistants": [],
+                "monsterType": "scuttleCrab",
+                "killerTeamID": 200,
+                "inEnemyJungle": false
+            },
+            {
+                "killer": 7,
+                "gameTime": 1696228,
+                "assistants": [],
+                "monsterType": "wolf",
+                "killerTeamID": 200,
+                "inEnemyJungle": false
+            },
+            {
+                "killer": 2,
+                "gameTime": 1696693,
+                "assistants": [],
+                "monsterType": "blueCamp",
+                "killerTeamID": 100,
+                "inEnemyJungle": true
+            },
+            {
+                "killer": 1,
+                "gameTime": 1706552,
+                "assistants": [],
+                "monsterType": "gromp",
+                "killerTeamID": 100,
+                "inEnemyJungle": false
+            },
+            {
+                "killer": 7,
+                "gameTime": 1736860,
+                "assistants": [],
+                "monsterType": "raptor",
+                "killerTeamID": 200,
+                "inEnemyJungle": false
+            },
+            {
+                "killer": 2,
+                "gameTime": 1743049,
+                "assistants": [],
+                "monsterType": "krug",
+                "killerTeamID": 100,
+                "inEnemyJungle": false
+            },
+            {
+                "killer": 4,
+                "gameTime": 1760481,
+                "assistants": [],
+                "monsterType": "raptor",
+                "killerTeamID": 100,
+                "inEnemyJungle": false
+            },
+            {
+                "killer": 3,
+                "gameTime": 1782067,
+                "assistants": [],
+                "monsterType": "krug",
+                "killerTeamID": 100,
+                "inEnemyJungle": false
+            },
+            {
+                "killer": 3,
+                "gameTime": 1859709,
+                "assistants": [],
+                "monsterType": "wolf",
+                "killerTeamID": 100,
+                "inEnemyJungle": false
+            },
+            {
+                "killer": 4,
+                "gameTime": 1863581,
+                "assistants": [],
+                "monsterType": "redCamp",
+                "killerTeamID": 100,
+                "inEnemyJungle": true
+            },
+            {
+                "killer": 3,
+                "gameTime": 1866558,
+                "assistants": [],
+                "monsterType": "gromp",
+                "killerTeamID": 100,
+                "inEnemyJungle": false
+            },
+            {
+                "killer": 1,
+                "gameTime": 1872247,
+                "assistants": [],
+                "monsterType": "dragon",
+                "killerTeamID": 100,
+                "inEnemyJungle": false
+            },
+            {
+                "killer": 1,
+                "gameTime": 1879626,
+                "assistants": [],
+                "monsterType": "scuttleCrab",
+                "killerTeamID": 100,
+                "inEnemyJungle": false
+            },
+            {
+                "killer": 9,
+                "gameTime": 1889582,
+                "assistants": [],
+                "monsterType": "raptor",
+                "killerTeamID": 200,
+                "inEnemyJungle": false
+            },
+            {
+                "killer": 2,
+                "gameTime": 1900889,
+                "assistants": [],
+                "monsterType": "wolf",
+                "killerTeamID": 100,
+                "inEnemyJungle": false
+            },
+            {
+                "killer": 2,
+                "gameTime": 1907075,
+                "assistants": [],
+                "monsterType": "blueCamp",
+                "killerTeamID": 100,
+                "inEnemyJungle": false
+            },
+            {
+                "killer": 1,
+                "gameTime": 1911877,
+                "assistants": [],
+                "monsterType": "raptor",
+                "killerTeamID": 100,
+                "inEnemyJungle": false
+            },
+            {
+                "killer": 2,
+                "gameTime": 1913599,
+                "assistants": [],
+                "monsterType": "gromp",
+                "killerTeamID": 100,
+                "inEnemyJungle": false
+            },
+            {
+                "killer": 2,
+                "gameTime": 1931227,
+                "assistants": [],
+                "monsterType": "krug",
+                "killerTeamID": 100,
+                "inEnemyJungle": false
+            },
+            {
+                "killer": 3,
+                "gameTime": 2009246,
+                "assistants": [],
+                "monsterType": "redCamp",
+                "killerTeamID": 100,
+                "inEnemyJungle": false
+            },
+            {
+                "killer": 1,
+                "gameTime": 2020253,
+                "assistants": [],
+                "monsterType": "gromp",
+                "killerTeamID": 100,
+                "inEnemyJungle": false
+            },
+            {
+                "killer": 3,
+                "gameTime": 2021908,
+                "assistants": [],
+                "monsterType": "blueCamp",
+                "killerTeamID": 100,
+                "inEnemyJungle": true
+            },
+            {
+                "killer": 4,
+                "gameTime": 2028924,
+                "assistants": [
+                    2,
+                    5,
+                    7,
+                    8,
+                    9
+                ],
+                "monsterType": "baron",
+                "killerTeamID": 100,
+                "inEnemyJungle": false
+            },
+            {
+                "killer": 4,
+                "gameTime": 2032535,
+                "assistants": [],
+                "monsterType": "scuttleCrab",
+                "killerTeamID": 100,
+                "inEnemyJungle": false
+            },
+            {
+                "killer": 4,
+                "gameTime": 2067054,
+                "assistants": [],
+                "monsterType": "wolf",
+                "killerTeamID": 100,
+                "inEnemyJungle": false
+            }
+        ],
+        "building_destroyed": [
+            {
+                "lane": "bot",
+                "teamID": 200,
+                "gameTime": 833880,
+                "assistants": [
+                    5
+                ],
+                "turretTier": "outer",
+                "buildingType": "turret"
+            },
+            {
+                "lane": "top",
+                "teamID": 200,
+                "gameTime": 1026617,
+                "assistants": [],
+                "turretTier": "outer",
+                "buildingType": "turret"
+            },
+            {
+                "lane": "mid",
+                "teamID": 200,
+                "gameTime": 1188732,
+                "assistants": [],
+                "turretTier": "outer",
+                "buildingType": "turret"
+            },
+            {
+                "lane": "bot",
+                "teamID": 200,
+                "gameTime": 1788950,
+                "assistants": [],
+                "turretTier": "inner",
+                "buildingType": "turret"
+            },
+            {
+                "lane": "mid",
+                "teamID": 200,
+                "gameTime": 1832472,
+                "assistants": [
+                    4,
+                    5
+                ],
+                "turretTier": "inner",
+                "buildingType": "turret"
+            },
+            {
+                "lane": "mid",
+                "teamID": 200,
+                "gameTime": 1841794,
+                "assistants": [
+                    1,
+                    3
+                ],
+                "turretTier": "base",
+                "buildingType": "turret"
+            },
+            {
+                "lane": "mid",
+                "teamID": 200,
+                "gameTime": 1848634,
+                "assistants": [
+                    3,
+                    5
+                ],
+                "turretTier": null,
+                "buildingType": "inhibitor"
+            },
+            {
+                "lane": "top",
+                "teamID": 200,
+                "gameTime": 1940219,
+                "assistants": [],
+                "turretTier": "inner",
+                "buildingType": "turret"
+            },
+            {
+                "lane": "mid",
+                "teamID": 200,
+                "gameTime": 2091289,
+                "assistants": [],
+                "turretTier": "nexus",
+                "buildingType": "turret"
+            },
+            {
+                "lane": "mid",
+                "teamID": 200,
+                "gameTime": 2097244,
+                "assistants": [
+                    1,
+                    2,
+                    4
+                ],
+                "turretTier": "nexus",
+                "buildingType": "turret"
+            }
+        ],
+    },
+    "stats_update": [
+        {
+            "teams": [
+                {
+                    "deaths": 0,
+                    "teamID": 100,
+                    "assists": 3,
+                    "totalGold": 23961,
+                    "baronKills": 0,
+                    "inhibKills": 0,
+                    "towerKills": 1,
+                    "dragonKills": 2
+                },
+                {
+                    "deaths": 1,
+                    "teamID": 200,
+                    "assists": 0,
+                    "totalGold": 20930,
+                    "baronKills": 0,
+                    "inhibKills": 0,
+                    "towerKills": 0,
+                    "dragonKills": 0
+                }
+            ],
+            "gameOver": false,
+            "gameTime": 840786,
+            "participants": [
+                {
+                    "XP": 6931,
+                    "stats": {
+                        "ASSISTS": 0,
+                        "NUM_DEATHS": 0,
+                        "VISION_SCORE": 11.09061050415039,
+                        "MINIONS_KILLED": 121,
+                        "CHAMPIONS_KILLED": 0
+                    },
+                    "totalGold": 4780
+                },
+                {
+                    "XP": 5856,
+                    "stats": {
+                        "ASSISTS": 1,
+                        "NUM_DEATHS": 0,
+                        "VISION_SCORE": 13.046119689941406,
+                        "MINIONS_KILLED": 3,
+                        "CHAMPIONS_KILLED": 0
+                    },
+                    "totalGold": 5049
+                },
+                {
+                    "XP": 7599,
+                    "stats": {
+                        "ASSISTS": 1,
+                        "NUM_DEATHS": 0,
+                        "VISION_SCORE": 11.966157913208008,
+                        "MINIONS_KILLED": 138,
+                        "CHAMPIONS_KILLED": 0
+                    },
+                    "totalGold": 5203
+                },
+                {
+                    "XP": 5609,
+                    "stats": {
+                        "ASSISTS": 1,
+                        "NUM_DEATHS": 0,
+                        "VISION_SCORE": 12.950394630432127,
+                        "MINIONS_KILLED": 135,
+                        "CHAMPIONS_KILLED": 0
+                    },
+                    "totalGold": 5407
+                },
+                {
+                    "XP": 3137,
+                    "stats": {
+                        "ASSISTS": 0,
+                        "NUM_DEATHS": 0,
+                        "VISION_SCORE": 16.516870498657227,
+                        "MINIONS_KILLED": 21,
+                        "CHAMPIONS_KILLED": 1
+                    },
+                    "totalGold": 3522
+                },
+                {
+                    "XP": 7169,
+                    "stats": {
+                        "ASSISTS": 0,
+                        "NUM_DEATHS": 0,
+                        "VISION_SCORE": 9.251444816589355,
+                        "MINIONS_KILLED": 135,
+                        "CHAMPIONS_KILLED": 0
+                    },
+                    "totalGold": 4976
+                },
+                {
+                    "XP": 4438,
+                    "stats": {
+                        "ASSISTS": 0,
+                        "NUM_DEATHS": 1,
+                        "VISION_SCORE": 11.75104808807373,
+                        "MINIONS_KILLED": 5,
+                        "CHAMPIONS_KILLED": 0
+                    },
+                    "totalGold": 4022
+                },
+                {
+                    "XP": 7223,
+                    "stats": {
+                        "ASSISTS": 0,
+                        "NUM_DEATHS": 0,
+                        "VISION_SCORE": 11.25966739654541,
+                        "MINIONS_KILLED": 128,
+                        "CHAMPIONS_KILLED": 0
+                    },
+                    "totalGold": 4578
+                },
+                {
+                    "XP": 4574,
+                    "stats": {
+                        "ASSISTS": 0,
+                        "NUM_DEATHS": 0,
+                        "VISION_SCORE": 9.610260009765623,
+                        "MINIONS_KILLED": 115,
+                        "CHAMPIONS_KILLED": 0
+                    },
+                    "totalGold": 4407
+                },
+                {
+                    "XP": 3004,
+                    "stats": {
+                        "ASSISTS": 0,
+                        "NUM_DEATHS": 0,
+                        "VISION_SCORE": 17.958436965942383,
+                        "MINIONS_KILLED": 21,
+                        "CHAMPIONS_KILLED": 0
+                    },
+                    "totalGold": 2947
+                }
+            ]
+        },
+        {
+            "teams": [
+                {
+                    "deaths": 10,
+                    "teamID": 100,
+                    "assists": 48,
+                    "totalGold": 72179,
+                    "baronKills": 2,
+                    "inhibKills": 1,
+                    "towerKills": 8,
+                    "dragonKills": 3
+                },
+                {
+                    "deaths": 21,
+                    "teamID": 200,
+                    "assists": 20,
+                    "totalGold": 55774,
+                    "baronKills": 0,
+                    "inhibKills": 0,
+                    "towerKills": 0,
+                    "dragonKills": 2
+                }
+            ],
+            "gameOver": true,
+            "gameTime": 2105275,
+            "participants": [
+                {
+                    "XP": 19336,
+                    "stats": {
+                        "ASSISTS": 6,
+                        "NUM_DEATHS": 2,
+                        "VISION_SCORE": 41.96663284301758,
+                        "MINIONS_KILLED": 258,
+                        "CHAMPIONS_KILLED": 4
+                    },
+                    "totalGold": 14853
+                },
+                {
+                    "XP": 18502,
+                    "stats": {
+                        "ASSISTS": 8,
+                        "NUM_DEATHS": 2,
+                        "VISION_SCORE": 49.796722412109375,
+                        "MINIONS_KILLED": 32,
+                        "CHAMPIONS_KILLED": 7
+                    },
+                    "totalGold": 14823
+                },
+                {
+                    "XP": 20194,
+                    "stats": {
+                        "ASSISTS": 8,
+                        "NUM_DEATHS": 2,
+                        "VISION_SCORE": 67.88123321533203,
+                        "MINIONS_KILLED": 304,
+                        "CHAMPIONS_KILLED": 5
+                    },
+                    "totalGold": 16004
+                },
+                {
+                    "XP": 19415,
+                    "stats": {
+                        "ASSISTS": 12,
+                        "NUM_DEATHS": 1,
+                        "VISION_SCORE": 66.1397476196289,
+                        "MINIONS_KILLED": 346,
+                        "CHAMPIONS_KILLED": 4
+                    },
+                    "totalGold": 17345
+                },
+                {
+                    "XP": 13578,
+                    "stats": {
+                        "ASSISTS": 14,
+                        "NUM_DEATHS": 3,
+                        "VISION_SCORE": 89.03742980957031,
+                        "MINIONS_KILLED": 32,
+                        "CHAMPIONS_KILLED": 1
+                    },
+                    "totalGold": 9154
+                },
+                {
+                    "XP": 16394,
+                    "stats": {
+                        "ASSISTS": 0,
+                        "NUM_DEATHS": 5,
+                        "VISION_SCORE": 35.3630256652832,
+                        "MINIONS_KILLED": 269,
+                        "CHAMPIONS_KILLED": 3
+                    },
+                    "totalGold": 13128
+                },
+                {
+                    "XP": 12552,
+                    "stats": {
+                        "ASSISTS": 4,
+                        "NUM_DEATHS": 6,
+                        "VISION_SCORE": 39.94133377075195,
+                        "MINIONS_KILLED": 13,
+                        "CHAMPIONS_KILLED": 2
+                    },
+                    "totalGold": 9511
+                },
+                {
+                    "XP": 19043,
+                    "stats": {
+                        "ASSISTS": 5,
+                        "NUM_DEATHS": 2,
+                        "VISION_SCORE": 51.022335052490234,
+                        "MINIONS_KILLED": 302,
+                        "CHAMPIONS_KILLED": 4
+                    },
+                    "totalGold": 13759
+                },
+                {
+                    "XP": 15840,
+                    "stats": {
+                        "ASSISTS": 4,
+                        "NUM_DEATHS": 2,
+                        "VISION_SCORE": 50.18354415893555,
+                        "MINIONS_KILLED": 310,
+                        "CHAMPIONS_KILLED": 1
+                    },
+                    "totalGold": 12478
+                },
+                {
+                    "XP": 9896,
+                    "stats": {
+                        "ASSISTS": 7,
+                        "NUM_DEATHS": 6,
+                        "VISION_SCORE": 84.13357543945312,
+                        "MINIONS_KILLED": 31,
+                        "CHAMPIONS_KILLED": 0
+                    },
+                    "totalGold": 6898
+                }
+            ]
+        }
+    ]
+}
+
+# Game between teams {100: 99566405128626825, 200: 99566405123587075}
+# team2 and tea1
+game4_data = {
+    'info': {
+        "game_end": {
+            "gameTime": 1677716,
+            "winningTeam": 100
+        },
+        "game_info": {
+            "gameName": "106273298443342402|game2",
+            "eventTime": "2021-06-30T21:12:24.922Z",
+            "eventType": "game_info",
+            "participants": [
+                {
+                    "teamID": 100,
+                    "championName": "DrMundo",
+                    "summonerName": "100 Tenacity",
+                    "participantID": 1
+                },
+                {
+                    "teamID": 100,
+                    "championName": "Kindred",
+                    "summonerName": "100 Kenvi",
+                    "participantID": 2
+                },
+                {
+                    "teamID": 100,
+                    "championName": "Lulu",
+                    "summonerName": "100 ry0ma",
+                    "participantID": 3
+                },
+                {
+                    "teamID": 100,
+                    "championName": "Varus",
+                    "summonerName": "100 Luger",
+                    "participantID": 4
+                },
+                {
+                    "teamID": 100,
+                    "championName": "Braum",
+                    "summonerName": "100 Poome",
+                    "participantID": 5
+                },
+                {
+                    "teamID": 200,
+                    "championName": "LeeSin",
+                    "summonerName": "CLG Thien",
+                    "participantID": 6
+                },
+                {
+                    "teamID": 200,
+                    "championName": "Gragas",
+                    "summonerName": "CLG Keel",
+                    "participantID": 7
+                },
+                {
+                    "teamID": 200,
+                    "championName": "Vladimir",
+                    "summonerName": "CLG rjs",
+                    "participantID": 8
+                },
+                {
+                    "teamID": 200,
+                    "championName": "Aphelios",
+                    "summonerName": "CLG Katsurii",
+                    "participantID": 9
+                },
+                {
+                    "teamID": 200,
+                    "championName": "Nautilus",
+                    "summonerName": "CLG Hooks",
+                    "participantID": 10
+                }
+            ],
+            "platformGameId": "ESPORTSTMNT01:2131800"
+        },
+        "champion_kill": [
+            {
+                "bounty": 400,
+                "killer": 1,
+                "gameTime": 214203,
+                "assistants": [],
+                "killerTeamID": 100,
+                "killStreakLength": 0
+            },
+            {
+                "bounty": 300,
+                "killer": 9,
+                "gameTime": 317464,
+                "assistants": [
+                    10
+                ],
+                "killerTeamID": 200,
+                "killStreakLength": 0
+            },
+            {
+                "bounty": 300,
+                "killer": 3,
+                "gameTime": 340691,
+                "assistants": [],
+                "killerTeamID": 100,
+                "killStreakLength": 0
+            },
+            {
+                "bounty": 300,
+                "killer": 10,
+                "gameTime": 465746,
+                "assistants": [
+                    6,
+                    7,
+                    8
+                ],
+                "killerTeamID": 200,
+                "killStreakLength": 0
+            },
+            {
+                "bounty": 300,
+                "killer": 7,
+                "gameTime": 490560,
+                "assistants": [
+                    6,
+                    10
+                ],
+                "killerTeamID": 200,
+                "killStreakLength": 0
+            },
+            {
+                "bounty": 300,
+                "killer": 6,
+                "gameTime": 716578,
+                "assistants": [
+                    7
+                ],
+                "killerTeamID": 200,
+                "killStreakLength": 0
+            },
+            {
+                "bounty": 300,
+                "killer": 2,
+                "gameTime": 739798,
+                "assistants": [
+                    4,
+                    5
+                ],
+                "killerTeamID": 100,
+                "killStreakLength": 0
+            },
+            {
+                "bounty": 300,
+                "killer": 6,
+                "gameTime": 741321,
+                "assistants": [
+                    9,
+                    10
+                ],
+                "killerTeamID": 200,
+                "killStreakLength": 1
+            },
+            {
+                "bounty": 300,
+                "killer": 2,
+                "gameTime": 743074,
+                "assistants": [
+                    4,
+                    5
+                ],
+                "killerTeamID": 100,
+                "killStreakLength": 1
+            },
+            {
+                "bounty": 300,
+                "killer": 6,
+                "gameTime": 750520,
+                "assistants": [
+                    9
+                ],
+                "killerTeamID": 200,
+                "killStreakLength": 2
+            },
+            {
+                "bounty": 300,
+                "killer": 7,
+                "gameTime": 761402,
+                "assistants": [
+                    6
+                ],
+                "killerTeamID": 200,
+                "killStreakLength": 1
+            },
+            {
+                "bounty": 300,
+                "killer": 6,
+                "gameTime": 817469,
+                "assistants": [],
+                "killerTeamID": 200,
+                "killStreakLength": 3
+            },
+            {
+                "bounty": 300,
+                "killer": 2,
+                "gameTime": 819390,
+                "assistants": [
+                    1
+                ],
+                "killerTeamID": 100,
+                "killStreakLength": 0
+            },
+            {
+                "bounty": 300,
+                "killer": 2,
+                "gameTime": 824852,
+                "assistants": [
+                    1
+                ],
+                "killerTeamID": 100,
+                "killStreakLength": 1
+            },
+            {
+                "bounty": 274,
+                "killer": 6,
+                "gameTime": 829152,
+                "assistants": [],
+                "killerTeamID": 200,
+                "killStreakLength": 4
+            },
+            {
+                "bounty": 300,
+                "killer": 7,
+                "gameTime": 833384,
+                "assistants": [
+                    9,
+                    10
+                ],
+                "killerTeamID": 200,
+                "killStreakLength": 2
+            },
+            {
+                "bounty": 300,
+                "killer": 1,
+                "gameTime": 865741,
+                "assistants": [],
+                "killerTeamID": 100,
+                "killStreakLength": 0
+            },
+            {
+                "bounty": 300,
+                "killer": 2,
+                "gameTime": 1009458,
+                "assistants": [
+                    1,
+                    3,
+                    4,
+                    5
+                ],
+                "killerTeamID": 100,
+                "killStreakLength": 0
+            },
+            {
+                "bounty": 300,
+                "killer": 9,
+                "gameTime": 1018063,
+                "assistants": [
+                    7,
+                    8,
+                    10
+                ],
+                "killerTeamID": 200,
+                "killStreakLength": 0
+            },
+            {
+                "bounty": 274,
+                "killer": 9,
+                "gameTime": 1018659,
+                "assistants": [
+                    7,
+                    8,
+                    10
+                ],
+                "killerTeamID": 200,
+                "killStreakLength": 1
+            },
+            {
+                "bounty": 300,
+                "killer": 4,
+                "gameTime": 1021314,
+                "assistants": [
+                    1,
+                    2,
+                    3,
+                    5
+                ],
+                "killerTeamID": 100,
+                "killStreakLength": 0
+            },
+            {
+                "bounty": 300,
+                "killer": 9,
+                "gameTime": 1022043,
+                "assistants": [
+                    7,
+                    8
+                ],
+                "killerTeamID": 200,
+                "killStreakLength": 2
+            },
+            {
+                "bounty": 300,
+                "killer": 7,
+                "gameTime": 1024426,
+                "assistants": [
+                    8,
+                    9
+                ],
+                "killerTeamID": 200,
+                "killStreakLength": 0
+            },
+            {
+                "bounty": 300,
+                "killer": 1,
+                "gameTime": 1028096,
+                "assistants": [
+                    2,
+                    3,
+                    4
+                ],
+                "killerTeamID": 100,
+                "killStreakLength": 1
+            },
+            {
+                "bounty": 300,
+                "killer": 1,
+                "gameTime": 1053620,
+                "assistants": [],
+                "killerTeamID": 100,
+                "killStreakLength": 2
+            },
+            {
+                "bounty": 300,
+                "killer": 7,
+                "gameTime": 1057562,
+                "assistants": [
+                    6,
+                    10
+                ],
+                "killerTeamID": 200,
+                "killStreakLength": 1
+            },
+            {
+                "bounty": 300,
+                "killer": 2,
+                "gameTime": 1097032,
+                "assistants": [
+                    3,
+                    5
+                ],
+                "killerTeamID": 100,
+                "killStreakLength": 0
+            },
+            {
+                "bounty": 300,
+                "killer": 3,
+                "gameTime": 1099946,
+                "assistants": [
+                    2,
+                    4,
+                    5
+                ],
+                "killerTeamID": 100,
+                "killStreakLength": 0
+            },
+            {
+                "bounty": 300,
+                "killer": 2,
+                "gameTime": 1158051,
+                "assistants": [],
+                "killerTeamID": 100,
+                "killStreakLength": 1
+            },
+            {
+                "bounty": 300,
+                "killer": 6,
+                "gameTime": 1161560,
+                "assistants": [
+                    7,
+                    10
+                ],
+                "killerTeamID": 200,
+                "killStreakLength": 0
+            },
+            {
+                "bounty": 300,
+                "killer": 6,
+                "gameTime": 1169630,
+                "assistants": [],
+                "killerTeamID": 200,
+                "killStreakLength": 1
+            },
+            {
+                "bounty": 300,
+                "killer": 1,
+                "gameTime": 1292083,
+                "assistants": [
+                    2,
+                    4,
+                    5
+                ],
+                "killerTeamID": 100,
+                "killStreakLength": 0
+            },
+            {
+                "bounty": 300,
+                "killer": 2,
+                "gameTime": 1296582,
+                "assistants": [
+                    1,
+                    4,
+                    5
+                ],
+                "killerTeamID": 100,
+                "killStreakLength": 0
+            },
+            {
+                "bounty": 300,
+                "killer": 2,
+                "gameTime": 1303072,
+                "assistants": [
+                    1,
+                    5
+                ],
+                "killerTeamID": 100,
+                "killStreakLength": 1
+            },
+            {
+                "bounty": 274,
+                "killer": 2,
+                "gameTime": 1443050,
+                "assistants": [
+                    1,
+                    3,
+                    5
+                ],
+                "killerTeamID": 100,
+                "killStreakLength": 2
+            },
+            {
+                "bounty": 300,
+                "killer": 4,
+                "gameTime": 1450296,
+                "assistants": [
+                    1,
+                    2,
+                    3,
+                    5
+                ],
+                "killerTeamID": 100,
+                "killStreakLength": 0
+            },
+            {
+                "bounty": 274,
+                "killer": 2,
+                "gameTime": 1475742,
+                "assistants": [
+                    3,
+                    4
+                ],
+                "killerTeamID": 100,
+                "killStreakLength": 3
+            },
+            {
+                "bounty": 274,
+                "killer": 4,
+                "gameTime": 1479247,
+                "assistants": [
+                    1,
+                    2,
+                    3
+                ],
+                "killerTeamID": 100,
+                "killStreakLength": 1
+            },
+            {
+                "bounty": 300,
+                "killer": 6,
+                "gameTime": 1479711,
+                "assistants": [
+                    7,
+                    8
+                ],
+                "killerTeamID": 200,
+                "killStreakLength": 2
+            },
+            {
+                "bounty": 300,
+                "killer": 10,
+                "gameTime": 1481043,
+                "assistants": [
+                    6,
+                    7
+                ],
+                "killerTeamID": 200,
+                "killStreakLength": 0
+            },
+            {
+                "bounty": 300,
+                "killer": 4,
+                "gameTime": 1487429,
+                "assistants": [
+                    1,
+                    5
+                ],
+                "killerTeamID": 100,
+                "killStreakLength": 2
+            },
+            {
+                "bounty": 300,
+                "killer": 1,
+                "gameTime": 1490378,
+                "assistants": [
+                    2,
+                    4,
+                    5
+                ],
+                "killerTeamID": 100,
+                "killStreakLength": 1
+            },
+            {
+                "bounty": 300,
+                "killer": 9,
+                "gameTime": 1508125,
+                "assistants": [],
+                "killerTeamID": 200,
+                "killStreakLength": 0
+            },
+            {
+                "bounty": 300,
+                "killer": 8,
+                "gameTime": 1532270,
+                "assistants": [],
+                "killerTeamID": 200,
+                "killStreakLength": 0
+            },
+            {
+                "bounty": 300,
+                "killer": 2,
+                "gameTime": 1630709,
+                "assistants": [
+                    1,
+                    3,
+                    5
+                ],
+                "killerTeamID": 100,
+                "killStreakLength": 0
+            },
+            {
+                "bounty": 300,
+                "killer": 2,
+                "gameTime": 1638453,
+                "assistants": [
+                    1,
+                    3,
+                    4,
+                    5
+                ],
+                "killerTeamID": 100,
+                "killStreakLength": 1
+            },
+            {
+                "bounty": 300,
+                "killer": 5,
+                "gameTime": 1638784,
+                "assistants": [
+                    1,
+                    2,
+                    3,
+                    4
+                ],
+                "killerTeamID": 100,
+                "killStreakLength": 0
+            },
+            {
+                "bounty": 300,
+                "killer": 2,
+                "gameTime": 1640271,
+                "assistants": [
+                    1,
+                    3,
+                    5
+                ],
+                "killerTeamID": 100,
+                "killStreakLength": 2
+            },
+            {
+                "bounty": 300,
+                "killer": 9,
+                "gameTime": 1640370,
+                "assistants": [
+                    6,
+                    7,
+                    8
+                ],
+                "killerTeamID": 200,
+                "killStreakLength": 0
+            },
+            {
+                "bounty": 300,
+                "killer": 10,
+                "gameTime": 1641230,
+                "assistants": [
+                    7,
+                    9
+                ],
+                "killerTeamID": 200,
+                "killStreakLength": 0
+            },
+            {
+                "bounty": 300,
+                "killer": 10,
+                "gameTime": 1650685,
+                "assistants": [],
+                "killerTeamID": 200,
+                "killStreakLength": 1
+            }
+        ],
+        "epic_monster_kill": [
+            {
+                "killer": 2,
+                "gameTime": 111523,
+                "assistants": [],
+                "monsterType": "redCamp",
+                "killerTeamID": 100,
+                "inEnemyJungle": true
+            },
+            {
+                "killer": 7,
+                "gameTime": 112713,
+                "assistants": [],
+                "monsterType": "wolf",
+                "killerTeamID": 200,
+                "inEnemyJungle": false
+            },
+            {
+                "killer": 2,
+                "gameTime": 118401,
+                "assistants": [],
+                "monsterType": "raptor",
+                "killerTeamID": 100,
+                "inEnemyJungle": false
+            },
+            {
+                "killer": 2,
+                "gameTime": 155711,
+                "assistants": [],
+                "monsterType": "gromp",
+                "killerTeamID": 100,
+                "inEnemyJungle": false
+            },
+            {
+                "killer": 7,
+                "gameTime": 181725,
+                "assistants": [],
+                "monsterType": "blueCamp",
+                "killerTeamID": 200,
+                "inEnemyJungle": false
+            },
+            {
+                "killer": 2,
+                "gameTime": 202964,
+                "assistants": [],
+                "monsterType": "gromp",
+                "killerTeamID": 100,
+                "inEnemyJungle": false
+            },
+            {
+                "killer": 2,
+                "gameTime": 220418,
+                "assistants": [],
+                "monsterType": "scuttleCrab",
+                "killerTeamID": 100,
+                "inEnemyJungle": false
+            },
+            {
+                "killer": 7,
+                "gameTime": 230245,
+                "assistants": [],
+                "monsterType": "scuttleCrab",
+                "killerTeamID": 200,
+                "inEnemyJungle": false
+            },
+            {
+                "killer": 2,
+                "gameTime": 236206,
+                "assistants": [],
+                "monsterType": "raptor",
+                "killerTeamID": 100,
+                "inEnemyJungle": false
+            },
+            {
+                "killer": 7,
+                "gameTime": 253249,
+                "assistants": [],
+                "monsterType": "blueCamp",
+                "killerTeamID": 200,
+                "inEnemyJungle": true
+            },
+            {
+                "killer": 2,
+                "gameTime": 267914,
+                "assistants": [],
+                "monsterType": "wolf",
+                "killerTeamID": 100,
+                "inEnemyJungle": false
+            },
+            {
+                "killer": 7,
+                "gameTime": 279858,
+                "assistants": [],
+                "monsterType": "raptor",
+                "killerTeamID": 200,
+                "inEnemyJungle": false
+            },
+            {
+                "killer": 2,
+                "gameTime": 293512,
+                "assistants": [],
+                "monsterType": "krug",
+                "killerTeamID": 100,
+                "inEnemyJungle": false
+            },
+            {
+                "killer": 2,
+                "gameTime": 336189,
+                "assistants": [],
+                "monsterType": "gromp",
+                "killerTeamID": 100,
+                "inEnemyJungle": false
+            },
+            {
+                "killer": 2,
+                "gameTime": 373623,
+                "assistants": [],
+                "monsterType": "redCamp",
+                "killerTeamID": 100,
+                "inEnemyJungle": false
+            },
+            {
+                "killer": 7,
+                "gameTime": 382225,
+                "assistants": [],
+                "monsterType": "wolf",
+                "killerTeamID": 200,
+                "inEnemyJungle": false
+            },
+            {
+                "killer": 2,
+                "gameTime": 393175,
+                "assistants": [],
+                "monsterType": "scuttleCrab",
+                "killerTeamID": 100,
+                "inEnemyJungle": false
+            },
+            {
+                "killer": 2,
+                "gameTime": 431232,
+                "assistants": [],
+                "monsterType": "gromp",
+                "killerTeamID": 100,
+                "inEnemyJungle": false
+            },
+            {
+                "killer": 2,
+                "gameTime": 456815,
+                "assistants": [],
+                "monsterType": "raptor",
+                "killerTeamID": 100,
+                "inEnemyJungle": false
+            },
+            {
+                "killer": 1,
+                "gameTime": 495292,
+                "assistants": [],
+                "monsterType": "redCamp",
+                "killerTeamID": 100,
+                "inEnemyJungle": true
+            },
+            {
+                "killer": 7,
+                "gameTime": 506871,
+                "assistants": [],
+                "monsterType": "krug",
+                "killerTeamID": 200,
+                "inEnemyJungle": false
+            },
+            {
+                "killer": 2,
+                "gameTime": 555368,
+                "assistants": [],
+                "monsterType": "scuttleCrab",
+                "killerTeamID": 100,
+                "inEnemyJungle": false
+            },
+            {
+                "killer": 2,
+                "gameTime": 555996,
+                "assistants": [
+                    1
+                ],
+                "monsterType": "riftHerald",
+                "killerTeamID": 100,
+                "inEnemyJungle": false
+            },
+            {
+                "killer": 7,
+                "gameTime": 562586,
+                "assistants": [],
+                "monsterType": "blueCamp",
+                "killerTeamID": 200,
+                "inEnemyJungle": false
+            },
+            {
+                "killer": 3,
+                "gameTime": 578075,
+                "assistants": [],
+                "monsterType": "blueCamp",
+                "killerTeamID": 100,
+                "inEnemyJungle": false
+            },
+            {
+                "killer": 2,
+                "gameTime": 578704,
+                "assistants": [],
+                "monsterType": "gromp",
+                "killerTeamID": 100,
+                "inEnemyJungle": false
+            },
+            {
+                "killer": 7,
+                "gameTime": 580790,
+                "assistants": [],
+                "monsterType": "wolf",
+                "killerTeamID": 200,
+                "inEnemyJungle": false
+            },
+            {
+                "killer": 2,
+                "gameTime": 592183,
+                "assistants": [],
+                "monsterType": "wolf",
+                "killerTeamID": 100,
+                "inEnemyJungle": false
+            },
+            {
+                "killer": 7,
+                "gameTime": 598707,
+                "assistants": [],
+                "monsterType": "raptor",
+                "killerTeamID": 200,
+                "inEnemyJungle": false
+            },
+            {
+                "killer": 7,
+                "gameTime": 627024,
+                "assistants": [],
+                "monsterType": "gromp",
+                "killerTeamID": 200,
+                "inEnemyJungle": false
+            },
+            {
+                "killer": 2,
+                "gameTime": 631023,
+                "assistants": [],
+                "monsterType": "raptor",
+                "killerTeamID": 100,
+                "inEnemyJungle": false
+            },
+            {
+                "killer": 1,
+                "gameTime": 678473,
+                "assistants": [],
+                "monsterType": "krug",
+                "killerTeamID": 100,
+                "inEnemyJungle": false
+            },
+            {
+                "killer": 2,
+                "gameTime": 698080,
+                "assistants": [
+                    4,
+                    5
+                ],
+                "monsterType": "dragon",
+                "killerTeamID": 100,
+                "inEnemyJungle": false
+            },
+            {
+                "killer": 2,
+                "gameTime": 715553,
+                "assistants": [],
+                "monsterType": "redCamp",
+                "killerTeamID": 100,
+                "inEnemyJungle": false
+            },
+            {
+                "killer": 2,
+                "gameTime": 722335,
+                "assistants": [],
+                "monsterType": "scuttleCrab",
+                "killerTeamID": 100,
+                "inEnemyJungle": false
+            },
+            {
+                "killer": 7,
+                "gameTime": 785219,
+                "assistants": [],
+                "monsterType": "gromp",
+                "killerTeamID": 200,
+                "inEnemyJungle": false
+            },
+            {
+                "killer": 2,
+                "gameTime": 799668,
+                "assistants": [],
+                "monsterType": "wolf",
+                "killerTeamID": 100,
+                "inEnemyJungle": false
+            },
+            {
+                "killer": 7,
+                "gameTime": 803239,
+                "assistants": [],
+                "monsterType": "wolf",
+                "killerTeamID": 200,
+                "inEnemyJungle": false
+            },
+            {
+                "killer": 2,
+                "gameTime": 808468,
+                "assistants": [],
+                "monsterType": "gromp",
+                "killerTeamID": 100,
+                "inEnemyJungle": false
+            },
+            {
+                "killer": 7,
+                "gameTime": 847471,
+                "assistants": [],
+                "monsterType": "krug",
+                "killerTeamID": 200,
+                "inEnemyJungle": false
+            },
+            {
+                "killer": 2,
+                "gameTime": 901349,
+                "assistants": [],
+                "monsterType": "scuttleCrab",
+                "killerTeamID": 100,
+                "inEnemyJungle": false
+            },
+            {
+                "killer": 2,
+                "gameTime": 923400,
+                "assistants": [],
+                "monsterType": "raptor",
+                "killerTeamID": 100,
+                "inEnemyJungle": false
+            },
+            {
+                "killer": 7,
+                "gameTime": 928957,
+                "assistants": [],
+                "monsterType": "blueCamp",
+                "killerTeamID": 200,
+                "inEnemyJungle": false
+            },
+            {
+                "killer": 9,
+                "gameTime": 935776,
+                "assistants": [],
+                "monsterType": "raptor",
+                "killerTeamID": 200,
+                "inEnemyJungle": false
+            },
+            {
+                "killer": 3,
+                "gameTime": 936601,
+                "assistants": [],
+                "monsterType": "krug",
+                "killerTeamID": 100,
+                "inEnemyJungle": false
+            },
+            {
+                "killer": 7,
+                "gameTime": 937529,
+                "assistants": [],
+                "monsterType": "gromp",
+                "killerTeamID": 200,
+                "inEnemyJungle": false
+            },
+            {
+                "killer": 2,
+                "gameTime": 955692,
+                "assistants": [
+                    5
+                ],
+                "monsterType": "riftHerald",
+                "killerTeamID": 100,
+                "inEnemyJungle": false
+            },
+            {
+                "killer": 2,
+                "gameTime": 971565,
+                "assistants": [],
+                "monsterType": "blueCamp",
+                "killerTeamID": 100,
+                "inEnemyJungle": false
+            },
+            {
+                "killer": 2,
+                "gameTime": 971664,
+                "assistants": [],
+                "monsterType": "gromp",
+                "killerTeamID": 100,
+                "inEnemyJungle": false
+            },
+            {
+                "killer": 2,
+                "gameTime": 983118,
+                "assistants": [],
+                "monsterType": "wolf",
+                "killerTeamID": 100,
+                "inEnemyJungle": false
+            },
+            {
+                "killer": 7,
+                "gameTime": 1070600,
+                "assistants": [],
+                "monsterType": "scuttleCrab",
+                "killerTeamID": 200,
+                "inEnemyJungle": false
+            },
+            {
+                "killer": 7,
+                "gameTime": 1085716,
+                "assistants": [
+                    2,
+                    3,
+                    4,
+                    5,
+                    8,
+                    8
+                ],
+                "monsterType": "dragon",
+                "killerTeamID": 200,
+                "inEnemyJungle": false
+            },
+            {
+                "killer": 2,
+                "gameTime": 1115961,
+                "assistants": [],
+                "monsterType": "gromp",
+                "killerTeamID": 100,
+                "inEnemyJungle": false
+            },
+            {
+                "killer": 2,
+                "gameTime": 1121919,
+                "assistants": [],
+                "monsterType": "wolf",
+                "killerTeamID": 100,
+                "inEnemyJungle": false
+            },
+            {
+                "killer": 2,
+                "gameTime": 1134792,
+                "assistants": [],
+                "monsterType": "raptor",
+                "killerTeamID": 100,
+                "inEnemyJungle": false
+            },
+            {
+                "killer": 2,
+                "gameTime": 1138694,
+                "assistants": [],
+                "monsterType": "redCamp",
+                "killerTeamID": 100,
+                "inEnemyJungle": true
+            },
+            {
+                "killer": 2,
+                "gameTime": 1145149,
+                "assistants": [],
+                "monsterType": "krug",
+                "killerTeamID": 100,
+                "inEnemyJungle": false
+            },
+            {
+                "killer": 2,
+                "gameTime": 1221001,
+                "assistants": [],
+                "monsterType": "redCamp",
+                "killerTeamID": 100,
+                "inEnemyJungle": false
+            },
+            {
+                "killer": 2,
+                "gameTime": 1225836,
+                "assistants": [],
+                "monsterType": "raptor",
+                "killerTeamID": 100,
+                "inEnemyJungle": false
+            },
+            {
+                "killer": 7,
+                "gameTime": 1236815,
+                "assistants": [],
+                "monsterType": "scuttleCrab",
+                "killerTeamID": 200,
+                "inEnemyJungle": false
+            },
+            {
+                "killer": 2,
+                "gameTime": 1237080,
+                "assistants": [],
+                "monsterType": "wolf",
+                "killerTeamID": 100,
+                "inEnemyJungle": false
+            },
+            {
+                "killer": 2,
+                "gameTime": 1243598,
+                "assistants": [],
+                "monsterType": "gromp",
+                "killerTeamID": 100,
+                "inEnemyJungle": false
+            },
+            {
+                "killer": 7,
+                "gameTime": 1264278,
+                "assistants": [],
+                "monsterType": "blueCamp",
+                "killerTeamID": 200,
+                "inEnemyJungle": false
+            },
+            {
+                "killer": 2,
+                "gameTime": 1289998,
+                "assistants": [
+                    1,
+                    4,
+                    5,
+                    9
+                ],
+                "monsterType": "baron",
+                "killerTeamID": 100,
+                "inEnemyJungle": false
+            },
+            {
+                "killer": 9,
+                "gameTime": 1307338,
+                "assistants": [],
+                "monsterType": "raptor",
+                "killerTeamID": 200,
+                "inEnemyJungle": false
+            },
+            {
+                "killer": 6,
+                "gameTime": 1318879,
+                "assistants": [],
+                "monsterType": "wolf",
+                "killerTeamID": 200,
+                "inEnemyJungle": false
+            },
+            {
+                "killer": 9,
+                "gameTime": 1319342,
+                "assistants": [],
+                "monsterType": "krug",
+                "killerTeamID": 200,
+                "inEnemyJungle": false
+            },
+            {
+                "killer": 1,
+                "gameTime": 1331418,
+                "assistants": [],
+                "monsterType": "gromp",
+                "killerTeamID": 100,
+                "inEnemyJungle": false
+            },
+            {
+                "killer": 3,
+                "gameTime": 1366829,
+                "assistants": [],
+                "monsterType": "blueCamp",
+                "killerTeamID": 100,
+                "inEnemyJungle": false
+            },
+            {
+                "killer": 2,
+                "gameTime": 1367193,
+                "assistants": [],
+                "monsterType": "raptor",
+                "killerTeamID": 100,
+                "inEnemyJungle": false
+            },
+            {
+                "killer": 2,
+                "gameTime": 1391883,
+                "assistants": [
+                    3
+                ],
+                "monsterType": "dragon",
+                "killerTeamID": 100,
+                "inEnemyJungle": false
+            },
+            {
+                "killer": 7,
+                "gameTime": 1394068,
+                "assistants": [],
+                "monsterType": "scuttleCrab",
+                "killerTeamID": 200,
+                "inEnemyJungle": false
+            },
+            {
+                "killer": 7,
+                "gameTime": 1408037,
+                "assistants": [],
+                "monsterType": "gromp",
+                "killerTeamID": 200,
+                "inEnemyJungle": false
+            },
+            {
+                "killer": 1,
+                "gameTime": 1524730,
+                "assistants": [],
+                "monsterType": "wolf",
+                "killerTeamID": 100,
+                "inEnemyJungle": false
+            },
+            {
+                "killer": 1,
+                "gameTime": 1537064,
+                "assistants": [],
+                "monsterType": "gromp",
+                "killerTeamID": 100,
+                "inEnemyJungle": false
+            },
+            {
+                "killer": 9,
+                "gameTime": 1541464,
+                "assistants": [],
+                "monsterType": "redCamp",
+                "killerTeamID": 200,
+                "inEnemyJungle": false
+            },
+            {
+                "killer": 7,
+                "gameTime": 1542092,
+                "assistants": [],
+                "monsterType": "raptor",
+                "killerTeamID": 200,
+                "inEnemyJungle": false
+            },
+            {
+                "killer": 2,
+                "gameTime": 1542949,
+                "assistants": [],
+                "monsterType": "redCamp",
+                "killerTeamID": 100,
+                "inEnemyJungle": false
+            },
+            {
+                "killer": 2,
+                "gameTime": 1546422,
+                "assistants": [],
+                "monsterType": "raptor",
+                "killerTeamID": 100,
+                "inEnemyJungle": false
+            },
+            {
+                "killer": 2,
+                "gameTime": 1555848,
+                "assistants": [],
+                "monsterType": "wolf",
+                "killerTeamID": 100,
+                "inEnemyJungle": false
+            },
+            {
+                "killer": 2,
+                "gameTime": 1560808,
+                "assistants": [],
+                "monsterType": "gromp",
+                "killerTeamID": 100,
+                "inEnemyJungle": false
+            },
+            {
+                "killer": 8,
+                "gameTime": 1563288,
+                "assistants": [],
+                "monsterType": "krug",
+                "killerTeamID": 200,
+                "inEnemyJungle": false
+            },
+            {
+                "killer": 2,
+                "gameTime": 1574985,
+                "assistants": [],
+                "monsterType": "scuttleCrab",
+                "killerTeamID": 100,
+                "inEnemyJungle": false
+            }
+        ],
+        "building_destroyed": [
+            {
+                "lane": "top",
+                "teamID": 200,
+                "gameTime": 856602,
+                "assistants": [],
+                "turretTier": "outer",
+                "buildingType": "turret"
+            },
+            {
+                "lane": "mid",
+                "teamID": 200,
+                "gameTime": 910982,
+                "assistants": [],
+                "turretTier": "outer",
+                "buildingType": "turret"
+            },
+            {
+                "lane": "bot",
+                "teamID": 100,
+                "gameTime": 956222,
+                "assistants": [],
+                "turretTier": "outer",
+                "buildingType": "turret"
+            },
+            {
+                "lane": "bot",
+                "teamID": 200,
+                "gameTime": 1144852,
+                "assistants": [],
+                "turretTier": "outer",
+                "buildingType": "turret"
+            },
+            {
+                "lane": "mid",
+                "teamID": 200,
+                "gameTime": 1323414,
+                "assistants": [
+                    2,
+                    3
+                ],
+                "turretTier": "inner",
+                "buildingType": "turret"
+            },
+            {
+                "lane": "mid",
+                "teamID": 200,
+                "gameTime": 1334598,
+                "assistants": [
+                    3,
+                    4,
+                    5
+                ],
+                "turretTier": "base",
+                "buildingType": "turret"
+            },
+            {
+                "lane": "bot",
+                "teamID": 200,
+                "gameTime": 1420567,
+                "assistants": [
+                    1,
+                    3
+                ],
+                "turretTier": "inner",
+                "buildingType": "turret"
+            },
+            {
+                "lane": "bot",
+                "teamID": 200,
+                "gameTime": 1447581,
+                "assistants": [
+                    3,
+                    5
+                ],
+                "turretTier": "base",
+                "buildingType": "turret"
+            },
+            {
+                "lane": "bot",
+                "teamID": 200,
+                "gameTime": 1463636,
+                "assistants": [
+                    1,
+                    3,
+                    5
+                ],
+                "turretTier": null,
+                "buildingType": "inhibitor"
+            },
+            {
+                "lane": "mid",
+                "teamID": 200,
+                "gameTime": 1468668,
+                "assistants": [
+                    2,
+                    3,
+                    4
+                ],
+                "turretTier": null,
+                "buildingType": "inhibitor"
+            },
+            {
+                "lane": "mid",
+                "teamID": 200,
+                "gameTime": 1496012,
+                "assistants": [
+                    4,
+                    5
+                ],
+                "turretTier": "nexus",
+                "buildingType": "turret"
+            },
+            {
+                "lane": "top",
+                "teamID": 200,
+                "gameTime": 1605584,
+                "assistants": [
+                    3
+                ],
+                "turretTier": "inner",
+                "buildingType": "turret"
+            },
+            {
+                "lane": "top",
+                "teamID": 200,
+                "gameTime": 1623818,
+                "assistants": [
+                    1,
+                    3,
+                    5
+                ],
+                "turretTier": "base",
+                "buildingType": "turret"
+            },
+            {
+                "lane": "mid",
+                "teamID": 200,
+                "gameTime": 1640569,
+                "assistants": [
+                    2,
+                    3,
+                    5
+                ],
+                "turretTier": "nexus",
+                "buildingType": "turret"
+            },
+            {
+                "lane": "top",
+                "teamID": 200,
+                "gameTime": 1667412,
+                "assistants": [],
+                "turretTier": null,
+                "buildingType": "inhibitor"
+            }
+        ],
+    },
+    "stats_update": [
+        {
+            "teams": [
+                {
+                    "deaths": 10,
+                    "teamID": 100,
+                    "assists": 6,
+                    "totalGold": 24120,
+                    "baronKills": 0,
+                    "inhibKills": 0,
+                    "towerKills": 0,
+                    "dragonKills": 1
+                },
+                {
+                    "deaths": 6,
+                    "teamID": 200,
+                    "assists": 13,
+                    "totalGold": 23584,
+                    "baronKills": 0,
+                    "inhibKills": 0,
+                    "towerKills": 0,
+                    "dragonKills": 0
+                }
+            ],
+            "gameOver": false,
+            "gameTime": 840726,
+            "participants": [
+                {
+                    "XP": 6887,
+                    "stats": {
+                        "ASSISTS": 2,
+                        "NUM_DEATHS": 1,
+                        "VISION_SCORE": 8.462809562683105,
+                        "MINIONS_KILLED": 114,
+                        "CHAMPIONS_KILLED": 1
+                    },
+                    "totalGold": 5792
+                },
+                {
+                    "XP": 5642,
+                    "stats": {
+                        "ASSISTS": 0,
+                        "NUM_DEATHS": 3,
+                        "VISION_SCORE": 25.77021598815918,
+                        "MINIONS_KILLED": 11,
+                        "CHAMPIONS_KILLED": 4
+                    },
+                    "totalGold": 5873
+                },
+                {
+                    "XP": 7014,
+                    "stats": {
+                        "ASSISTS": 0,
+                        "NUM_DEATHS": 0,
+                        "VISION_SCORE": 6.104644775390625,
+                        "MINIONS_KILLED": 108,
+                        "CHAMPIONS_KILLED": 1
+                    },
+                    "totalGold": 4948
+                },
+                {
+                    "XP": 4914,
+                    "stats": {
+                        "ASSISTS": 2,
+                        "NUM_DEATHS": 3,
+                        "VISION_SCORE": 6.063873291015625,
+                        "MINIONS_KILLED": 113,
+                        "CHAMPIONS_KILLED": 0
+                    },
+                    "totalGold": 4509
+                },
+                {
+                    "XP": 3164,
+                    "stats": {
+                        "ASSISTS": 2,
+                        "NUM_DEATHS": 3,
+                        "VISION_SCORE": 12.759075164794922,
+                        "MINIONS_KILLED": 18,
+                        "CHAMPIONS_KILLED": 0
+                    },
+                    "totalGold": 2998
+                },
+                {
+                    "XP": 7362,
+                    "stats": {
+                        "ASSISTS": 3,
+                        "NUM_DEATHS": 1,
+                        "VISION_SCORE": 7.399072170257568,
+                        "MINIONS_KILLED": 101,
+                        "CHAMPIONS_KILLED": 5
+                    },
+                    "totalGold": 6321
+                },
+                {
+                    "XP": 5094,
+                    "stats": {
+                        "ASSISTS": 2,
+                        "NUM_DEATHS": 0,
+                        "VISION_SCORE": 7.861560344696045,
+                        "MINIONS_KILLED": 5,
+                        "CHAMPIONS_KILLED": 3
+                    },
+                    "totalGold": 4920
+                },
+                {
+                    "XP": 6085,
+                    "stats": {
+                        "ASSISTS": 1,
+                        "NUM_DEATHS": 1,
+                        "VISION_SCORE": 11.606928825378418,
+                        "MINIONS_KILLED": 104,
+                        "CHAMPIONS_KILLED": 0
+                    },
+                    "totalGold": 4059
+                },
+                {
+                    "XP": 5617,
+                    "stats": {
+                        "ASSISTS": 3,
+                        "NUM_DEATHS": 2,
+                        "VISION_SCORE": 7.83736515045166,
+                        "MINIONS_KILLED": 106,
+                        "CHAMPIONS_KILLED": 1
+                    },
+                    "totalGold": 4921
+                },
+                {
+                    "XP": 3228,
+                    "stats": {
+                        "ASSISTS": 4,
+                        "NUM_DEATHS": 2,
+                        "VISION_SCORE": 10.835750579833984,
+                        "MINIONS_KILLED": 19,
+                        "CHAMPIONS_KILLED": 1
+                    },
+                    "totalGold": 3363
+                }
+            ]
+        },
+        {
+            "teams": [
+                {
+                    "deaths": 24,
+                    "teamID": 100,
+                    "assists": 61,
+                    "totalGold": 59991,
+                    "baronKills": 1,
+                    "inhibKills": 2,
+                    "towerKills": 11,
+                    "dragonKills": 2
+                },
+                {
+                    "deaths": 27,
+                    "teamID": 200,
+                    "assists": 36,
+                    "totalGold": 49892,
+                    "baronKills": 0,
+                    "inhibKills": 0,
+                    "towerKills": 1,
+                    "dragonKills": 1
+                }
+            ],
+            "gameOver": true,
+            "gameTime": 1677716,
+            "participants": [
+                {
+                    "XP": 16609,
+                    "stats": {
+                        "ASSISTS": 14,
+                        "NUM_DEATHS": 2,
+                        "VISION_SCORE": 19.43981170654297,
+                        "MINIONS_KILLED": 211,
+                        "CHAMPIONS_KILLED": 6
+                    },
+                    "totalGold": 14842
+                },
+                {
+                    "XP": 15115,
+                    "stats": {
+                        "ASSISTS": 8,
+                        "NUM_DEATHS": 7,
+                        "VISION_SCORE": 88.2555160522461,
+                        "MINIONS_KILLED": 67,
+                        "CHAMPIONS_KILLED": 14
+                    },
+                    "totalGold": 16216
+                },
+                {
+                    "XP": 13793,
+                    "stats": {
+                        "ASSISTS": 12,
+                        "NUM_DEATHS": 4,
+                        "VISION_SCORE": 21.582338333129883,
+                        "MINIONS_KILLED": 148,
+                        "CHAMPIONS_KILLED": 2
+                    },
+                    "totalGold": 10098
+                },
+                {
+                    "XP": 12279,
+                    "stats": {
+                        "ASSISTS": 11,
+                        "NUM_DEATHS": 5,
+                        "VISION_SCORE": 30.795351028442383,
+                        "MINIONS_KILLED": 209,
+                        "CHAMPIONS_KILLED": 4
+                    },
+                    "totalGold": 11339
+                },
+                {
+                    "XP": 10144,
+                    "stats": {
+                        "ASSISTS": 16,
+                        "NUM_DEATHS": 6,
+                        "VISION_SCORE": 64.43998718261719,
+                        "MINIONS_KILLED": 27,
+                        "CHAMPIONS_KILLED": 1
+                    },
+                    "totalGold": 7496
+                },
+                {
+                    "XP": 14378,
+                    "stats": {
+                        "ASSISTS": 6,
+                        "NUM_DEATHS": 5,
+                        "VISION_SCORE": 21.74927520751953,
+                        "MINIONS_KILLED": 192,
+                        "CHAMPIONS_KILLED": 8
+                    },
+                    "totalGold": 12493
+                },
+                {
+                    "XP": 11219,
+                    "stats": {
+                        "ASSISTS": 10,
+                        "NUM_DEATHS": 5,
+                        "VISION_SCORE": 35.75667953491211,
+                        "MINIONS_KILLED": 24,
+                        "CHAMPIONS_KILLED": 5
+                    },
+                    "totalGold": 9376
+                },
+                {
+                    "XP": 12307,
+                    "stats": {
+                        "ASSISTS": 7,
+                        "NUM_DEATHS": 5,
+                        "VISION_SCORE": 26.07009506225586,
+                        "MINIONS_KILLED": 184,
+                        "CHAMPIONS_KILLED": 1
+                    },
+                    "totalGold": 8903
+                },
+                {
+                    "XP": 13860,
+                    "stats": {
+                        "ASSISTS": 5,
+                        "NUM_DEATHS": 5,
+                        "VISION_SCORE": 24.666725158691406,
+                        "MINIONS_KILLED": 235,
+                        "CHAMPIONS_KILLED": 6
+                    },
+                    "totalGold": 11792
+                },
+                {
+                    "XP": 9749,
+                    "stats": {
+                        "ASSISTS": 8,
+                        "NUM_DEATHS": 7,
+                        "VISION_SCORE": 49.59792709350586,
+                        "MINIONS_KILLED": 35,
+                        "CHAMPIONS_KILLED": 4
+                    },
+                    "totalGold": 7328
+                }
+            ]
+        }
+    ]
+}
 
 
 """
@@ -1781,6 +5425,7 @@ getCumulativeStatsForTeam
 
 """
 if __name__=="__main__":
+    # This chunk of code is used for finding example games to use in testing
     nGames = 0
     while True:
         games_data = dao.getDataFromTable(tableName="games", columns=["info", "stats_update"], limit = 10, offset=nGames)
@@ -1795,3 +5440,5 @@ if __name__=="__main__":
                 print(f"Same matchup {info['game_info']['platformGameId']}")
             if t1_id == team1_id:
                 print(f"Team 1 id is the same {info['game_info']['platformGameId']}")
+
+    # This is the actual testing
