@@ -39,7 +39,7 @@ def getCumulativeStatsForTeams(db_accessor: Database_Accessor, team_ids: List[st
 # TODO test if this works, once data is up
 def getCumulativeDataForTournament(db_accessor: Database_Accessor, tournament_id: str, stage_name: str) -> dict:
     # Gets the game ids for all games played in this stage of this tournament
-    def getStageGameNames() -> List[str]:
+    def getStageEsportsGameIds() -> List[str]:
         tournament_data = db_accessor.getDataFromTable(tableName="tournaments", columns=["tournament"], where_clause=f"id='{tournament_id}'")
         if not tournament_data:
             error(f"Could not find tournament with id '{tournament_id}'")
@@ -52,17 +52,17 @@ def getCumulativeDataForTournament(db_accessor: Database_Accessor, tournament_id
             error(f"Could not find stage '{stage_name}' in tournament '{tournament['name']}' ({tournament_id}). Valid stages for this tournament are: {spacer}{spacer.join(stage_names)}")
             return None
         stage = stage[0]
-        game_ids: List[str] = []
+        esports_game_ids: List[str] = []
         for section in stage['sections']:
             for match in section['matches']:
                 for game in match['games']:
-                    game_ids.append(game['id'])
-        return game_ids
+                    esports_game_ids.append(game['id'])
+        return esports_game_ids
     
-    # Given a list of game ids,
+    # Given a list of esports game ids,
     # return an object that maps each team_id to the first game they played (from given list of game ids)
-    def getTeamsFirstGames(game_names: List[str]) -> dict:
-        where_clause: str = " OR ".join([f"gameName LIKE '{game_id}%'" for game_id in game_names])
+    def getTeamsFirstGames(esports_game_ids: List[str]) -> dict:
+        where_clause: str = " OR ".join([f"esportsGameId='{esports_game_id}'" for esports_game_id in esports_game_ids])
         order_clause = "eventTime DESC"
         games_data = db_accessor.getDataFromTable(tableName="games", columns=["id", "info"], where_clause=where_clause, order_clause=order_clause)
         team_first_game = {}
@@ -77,8 +77,8 @@ def getCumulativeDataForTournament(db_accessor: Database_Accessor, tournament_id
     # Expects an input of {team1_id: game1_id, team2_id: game2_id, ...}
     # Will return the associated cumulative stats for each game as {team1_id: cumulative_stats1, team2_id: cumulative_stats2, ...}
     def getCumulativeStatsForTeamsGames(teams_games: dict) -> dict:
-        where_clause = " OR ".join([f"cumulative_data.id='{game_id}'" for game_id in teams_games.values()])
-        cumulative_stats_data = db_accessor.getDataFromTable(tableName="cumulative_data", join_clause="games AS g ON cumulative_data.id = g.id", columns=["scale_by_90"], where_clause=where_clause, order_clause="eventTime DESC")
+        where_clause = " OR ".join([f"games.id='{game_id}'" for game_id in teams_games.values()])
+        cumulative_stats_data = db_accessor.getDataFromTable(tableName="cumulative_data", join_clause="games AS games ON cumulative_data.id = games.id", columns=["scale_by_90"], where_clause=where_clause, order_clause="eventTime DESC")
         teams_cumulative_stats = {}
         for cumulative_data in cumulative_stats_data:
             stats = json.loads(cumulative_data[0])
@@ -88,10 +88,10 @@ def getCumulativeDataForTournament(db_accessor: Database_Accessor, tournament_id
         return teams_cumulative_stats
             
 
-    game_names = getStageGameNames()
-    if not game_names:
+    esports_game_ids = getStageEsportsGameIds()
+    if not esports_game_ids:
         return {}
-    first_games = getTeamsFirstGames(game_names=game_names)
+    first_games = getTeamsFirstGames(esports_game_ids=esports_game_ids)
     if not first_games:
         return {}
     teams_cumulative_stats = getCumulativeStatsForTeamsGames(teams_games=first_games)
@@ -101,13 +101,14 @@ def getCumulativeDataForTournament(db_accessor: Database_Accessor, tournament_id
 # Debugging and testing:
 if __name__ == "__main__":
     # dao: Database_Accessor = Database_Accessor(db_host='riot-hackathon-db.c880zspfzfsi.us-west-2.rds.amazonaws.com')
-    dao: Database_Accessor = Database_Accessor()
+    dao: Database_Accessor = Database_Accessor(db_host='hackathon-db-2.c880zspfzfsi.us-west-2.rds.amazonaws.com')
+    # dao: Database_Accessor = Database_Accessor()
     # cumulative_data_for_teams = getCumulativeStatsForTeams(db_accessor=dao, team_ids=["107580483738977500", "109981647134921596"])
 
     tournaments_data = dao.getDataFromTable(tableName="tournaments", columns=["tournament"])
     for tournament_data in tournaments_data:
         tournament = json.loads(tournament_data[0])
-        cumulative_data_for_tournament = getCumulativeDataForTournament(db_accessor=dao, tournament_id=tournament['id'], stage_name="regional qualifier")
+        cumulative_data_for_tournament = getCumulativeDataForTournament(db_accessor=dao, tournament_id=tournament['id'], stage_name="Playoffs")
         if cumulative_data_for_tournament:
             print(f"Cumulative data found for games in f{tournament['id']}")
             sys.exit(1)
