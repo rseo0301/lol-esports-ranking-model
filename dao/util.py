@@ -62,14 +62,14 @@ def getCumulativeDataForTournament(db_accessor: Database_Accessor, tournament_id
     # Given a list of game ids,
     # return an object that maps each team_id to the first game they played (from given list of game ids)
     def getTeamsFirstGames(game_names: List[str]) -> dict:
-        where_clause: str = " OR ".join([f"gameName LIKE '{game_id}%'" for game_id in game_names])
+        where_clause: str = " OR ".join([f"gameName LIKE '%{game_id[:1]}%'" for game_id in game_names])
         order_clause = "eventTime DESC"
         games_data = db_accessor.getDataFromTable(tableName="games", columns=["id", "info"], where_clause=where_clause, order_clause=order_clause)
         team_first_game = {}
         for game_data in games_data:
             game_id = game_data[0]
             game_info: dict = json.loads(game_data[1])
-            team1_id, team2_id = getTeamIdsFromGameInfo(game_info=game_info)
+            team1_id, team2_id = getTeamIdsFromGameInfo(db_accessor=db_accessor, game_info=game_info)
             team_first_game[team1_id] = game_id
             team_first_game[team2_id] = game_id
         return team_first_game
@@ -77,14 +77,14 @@ def getCumulativeDataForTournament(db_accessor: Database_Accessor, tournament_id
     # Expects an input of {team1_id: game1_id, team2_id: game2_id, ...}
     # Will return the associated cumulative stats for each game as {team1_id: cumulative_stats1, team2_id: cumulative_stats2, ...}
     def getCumulativeStatsForTeamsGames(teams_games: dict) -> dict:
-        where_clause = " OR ".join([f"id='{game_id}'" for game_id in teams_games.values()])
+        where_clause = " OR ".join([f"cumulative_data.id='{game_id}'" for game_id in teams_games.values()])
         cumulative_stats_data = db_accessor.getDataFromTable(tableName="cumulative_data", join_clause="games AS g ON cumulative_data.id = g.id", columns=["scale_by_90"], where_clause=where_clause, order_clause="eventTime DESC")
         teams_cumulative_stats = {}
         for cumulative_data in cumulative_stats_data:
             stats = json.loads(cumulative_data[0])
             team1_id, team2_id = stats['meta']['team1_id'], stats['meta']['team2_id']
-            teams_cumulative_stats[team1_id] = stats['team_1']
-            teams_cumulative_stats[team2_id] = stats['team_2']
+            teams_cumulative_stats[team1_id] = stats.get('team_1')
+            teams_cumulative_stats[team2_id] = stats.get('team_2')
         return teams_cumulative_stats
             
 
