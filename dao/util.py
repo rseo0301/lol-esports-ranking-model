@@ -72,7 +72,6 @@ def getCumulativeDataForTournament(db_accessor: Database_Accessor, tournament_id
             team1_id, team2_id = getTeamIdsFromGameInfo(game_info=game_info)
             team_first_game[team1_id] = game_id
             team_first_game[team2_id] = game_id
-        pass
     
     # Expects an input of {team1_id: game1_id, team2_id: game2_id, ...}
     # Will return the associated cumulative stats for each game as {team1_id: cumulative_stats1, team2_id: cumulative_stats2, ...}
@@ -133,9 +132,13 @@ def getCumulativeDataForTournament(db_accessor: Database_Accessor, tournament_id
 
 # Debugging and testing:
 if __name__ == "__main__":
-    dao: Database_Accessor = Database_Accessor(db_host='riot-hackathon-db.c880zspfzfsi.us-west-2.rds.amazonaws.com')
+    # dao: Database_Accessor = Database_Accessor(db_host='riot-hackathon-db.c880zspfzfsi.us-west-2.rds.amazonaws.com')
+    dao: Database_Accessor = Database_Accessor()
     # cumulative_data_for_teams = getCumulativeStatsForTeams(db_accessor=dao, team_ids=["107580483738977500", "109981647134921596"])
 
-    cumulative_data_for_tournament = getCumulativeDataForTournament(db_accessor=dao, tournament_id="106269459003590888", stage_name="Regular Season")
+    tournaments_data = dao.getDataFromTable(tableName="tournaments", columns=["tournament"])
+    tournament1 = json.loads(tournaments_data[0][0])
+
+    cumulative_data_for_tournament = getCumulativeDataForTournament(db_accessor=dao, tournament_id=tournament1['id'], stage_name="Regular Season")
 
     print("Hello World")
