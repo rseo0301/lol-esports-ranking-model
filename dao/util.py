@@ -62,7 +62,7 @@ def getCumulativeDataForTournament(db_accessor: Database_Accessor, tournament_id
     # Given a list of game ids,
     # return an object that maps each team_id to the first game they played (from given list of game ids)
     def getTeamsFirstGames(game_names: List[str]) -> dict:
-        where_clause: str = " OR ".join([f"gameName LIKE '%{game_id[:1]}%'" for game_id in game_names])
+        where_clause: str = " OR ".join([f"gameName LIKE '{game_id}%'" for game_id in game_names])
         order_clause = "eventTime DESC"
         games_data = db_accessor.getDataFromTable(tableName="games", columns=["id", "info"], where_clause=where_clause, order_clause=order_clause)
         team_first_game = {}
