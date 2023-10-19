@@ -88,6 +88,7 @@ class Database_Accessor:
             CREATE TABLE IF NOT EXISTS games
             (
                 id VARCHAR(128) PRIMARY KEY,
+                gameName VARCHAR(128),
                 eventTime DATETIME,
                 info JSON,
                 stats_update JSON
@@ -103,6 +104,17 @@ class Database_Accessor:
                 command = """
                     ALTER TABLE games
                     ADD INDEX eventTime (eventTime);
+                """
+                self.executeSqlCommand(command=command)
+            command = """
+                SELECT NULL FROM INFORMATION_SCHEMA.STATISTICS
+                WHERE table_schema = DATABASE() AND table_name = 'games' AND index_name = 'gameName'
+            """
+            eventTimeIndexExists = self.executeSqlCommand(command=command)
+            if not eventTimeIndexExists:
+                command = """
+                    ALTER TABLE games
+                    ADD INDEX gameName (gameName);
                 """
                 self.executeSqlCommand(command=command)
 
@@ -211,11 +223,14 @@ class Database_Accessor:
     # "order_clause" is MYSql formatted "ORDER BY" clause, to order results.
     def getDataFromTable(self, tableName: str, 
     columns: List[str], 
+    join_clause: str = None,
     where_clause: str = None,
     order_clause: str = None,
     limit: int = None,
     offset: int = None) -> List[tuple]:
         query = "SELECT {} FROM {}".format(', '.join(columns), tableName)
+        if join_clause:
+            query += f"JOIN {join_clause}"
         if where_clause:
             query += f" WHERE {where_clause}"
         if order_clause:
