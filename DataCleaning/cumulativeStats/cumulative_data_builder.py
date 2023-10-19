@@ -188,7 +188,7 @@ class Cumulative_Stats_Builder:
             return turrets_destroyed[0]['teamID']
         
         def get_vision_score_per_minute() -> Tuple[float, float]:
-            game_length_minutes = game_info['game_end']['gameTime']/60
+            game_length_minutes = game_info['game_end']['gameTime']/60000
             participants = stats_info['stats_update'][-1]['participants']
             team1_total_vision_score = sum([participant['stats']['VISION_SCORE'] for participant in participants[:5]])
             team2_total_vision_score = sum([participant['stats']['VISION_SCORE'] for participant in participants[5:]])
