@@ -293,7 +293,7 @@ game1_data = {
     }
 }
 
-# Expected cumulative stats after game 1
+# Expected cumulative stats after just game 1
 game1_expected_cumulative_stats = {
     team1_id: {
         "region": "NORTH AMERICA",
@@ -329,6 +329,12 @@ game1_expected_cumulative_stats = {
     },
 }
 
+
+############################################################################################################
+############################################################################################################
+############################################################################################################
+
+
 # Game between teams {100: 99566405123587075, 200: 103461966975897718}
 # team1 and team3
 game2_data = {
@@ -345,75 +351,28 @@ game2_data = {
         },
         "champion_kill": [
             {
-                "bounty": 400,
-                "killer": 8,
                 "gameTime": 604273,
-                "assistants": [
-                    7,
-                    10
-                ],
                 "killerTeamID": 200,
-                "killStreakLength": 0
             },
             {
-                "bounty": 300,
-                "killer": 3,
                 "gameTime": 903902,
-                "assistants": [
-                    2,
-                    4,
-                    5
-                ],
                 "killerTeamID": 100,
-                "killStreakLength": 0
             },
             {
-                "bounty": 300,
-                "killer": 8,
                 "gameTime": 907010,
-                "assistants": [
-                    6,
-                    7,
-                    9,
-                    10
-                ],
                 "killerTeamID": 200,
-                "killStreakLength": 1
             },
             {
-                "bounty": 300,
-                "killer": 8,
                 "gameTime": 914901,
-                "assistants": [
-                    7,
-                    10
-                ],
                 "killerTeamID": 200,
-                "killStreakLength": 2
             },
             {
-                "bounty": 300,
-                "killer": 8,
                 "gameTime": 927662,
-                "assistants": [
-                    6,
-                    7,
-                    10
-                ],
                 "killerTeamID": 200,
-                "killStreakLength": 3
             },
             {
-                "bounty": 300,
-                "killer": 4,
                 "gameTime": 1051280,
-                "assistants": [
-                    2,
-                    3,
-                    5
-                ],
                 "killerTeamID": 100,
-                "killStreakLength": 0
             },
             {
                 "bounty": 274,
@@ -1653,7 +1612,7 @@ game2_data = {
                     "stats": {
                         "ASSISTS": 0,
                         "NUM_DEATHS": 3,
-                        "VISION_SCORE": 28.790931701660156,
+                        "VISION_SCORE": 20,
                         "MINIONS_KILLED": 249,
                         "CHAMPIONS_KILLED": 0
                     },
@@ -1664,7 +1623,7 @@ game2_data = {
                     "stats": {
                         "ASSISTS": 2,
                         "NUM_DEATHS": 5,
-                        "VISION_SCORE": 33.675655364990234,
+                        "VISION_SCORE": 20,
                         "MINIONS_KILLED": 20,
                         "CHAMPIONS_KILLED": 0
                     },
@@ -1675,7 +1634,7 @@ game2_data = {
                     "stats": {
                         "ASSISTS": 1,
                         "NUM_DEATHS": 2,
-                        "VISION_SCORE": 23.48464584350586,
+                        "VISION_SCORE": 20,
                         "MINIONS_KILLED": 238,
                         "CHAMPIONS_KILLED": 1
                     },
@@ -1686,7 +1645,7 @@ game2_data = {
                     "stats": {
                         "ASSISTS": 1,
                         "NUM_DEATHS": 4,
-                        "VISION_SCORE": 19.297863006591797,
+                        "VISION_SCORE": 20,
                         "MINIONS_KILLED": 299,
                         "CHAMPIONS_KILLED": 1
                     },
@@ -1697,7 +1656,7 @@ game2_data = {
                     "stats": {
                         "ASSISTS": 2,
                         "NUM_DEATHS": 2,
-                        "VISION_SCORE": 75.78276062011719,
+                        "VISION_SCORE": 20,
                         "MINIONS_KILLED": 35,
                         "CHAMPIONS_KILLED": 0
                     },
@@ -1708,7 +1667,7 @@ game2_data = {
                     "stats": {
                         "ASSISTS": 6,
                         "NUM_DEATHS": 0,
-                        "VISION_SCORE": 21.634321212768555,
+                        "VISION_SCORE": 30,
                         "MINIONS_KILLED": 249,
                         "CHAMPIONS_KILLED": 5
                     },
@@ -1719,7 +1678,7 @@ game2_data = {
                     "stats": {
                         "ASSISTS": 14,
                         "NUM_DEATHS": 0,
-                        "VISION_SCORE": 56.5147705078125,
+                        "VISION_SCORE": 30,
                         "MINIONS_KILLED": 38,
                         "CHAMPIONS_KILLED": 1
                     },
@@ -1730,7 +1689,7 @@ game2_data = {
                     "stats": {
                         "ASSISTS": 6,
                         "NUM_DEATHS": 1,
-                        "VISION_SCORE": 42.196250915527344,
+                        "VISION_SCORE": 30,
                         "MINIONS_KILLED": 279,
                         "CHAMPIONS_KILLED": 6
                     },
@@ -1741,7 +1700,7 @@ game2_data = {
                     "stats": {
                         "ASSISTS": 7,
                         "NUM_DEATHS": 1,
-                        "VISION_SCORE": 43.16498947143555,
+                        "VISION_SCORE": 30,
                         "MINIONS_KILLED": 277,
                         "CHAMPIONS_KILLED": 4
                     },
@@ -1752,7 +1711,7 @@ game2_data = {
                     "stats": {
                         "ASSISTS": 16,
                         "NUM_DEATHS": 0,
-                        "VISION_SCORE": 72.38910675048828,
+                        "VISION_SCORE": 30,
                         "MINIONS_KILLED": 8,
                         "CHAMPIONS_KILLED": 0
                     },
@@ -1762,6 +1721,48 @@ game2_data = {
         }
     ]
 }
+
+# Expected cumulative stats after just game 2
+game2_expected_cumulative_stats = {
+    team1_id: {
+        "region": "NORTH AMERICA",
+        "avg_kd_ratio": 2/16,
+        "barons_per_game": 0,
+        "gold_diff_at_14": 19725 - 21832,
+        "overall_winrate": 0,
+        "avg_time_per_loss": 1928263 / 60000,
+        "dragons_per_game": 2,
+        "first_blood_rate": 0,
+        "first_tower_rate": 0,
+        "heralds_per_game": 0.0,
+        "turrets_per_game": 1.0,
+        "gold_diff_per_min": (47763 - 61848) / (1928263 / 60000),
+        "avg_assists_per_kill": 6 / 2,
+        "vision_score_per_minute": (20 * 5) / (1928263 / 60000)
+    },
+    team3_id: {
+        "region": "NORTH AMERICA",
+        "avg_kd_ratio": 16/2,
+        "barons_per_game": 1,
+        "gold_diff_at_14": 21832 - 19725,
+        "overall_winrate": 1,
+        "avg_time_per_win": 1928263 / 60000,
+        "dragons_per_game": 3,
+        "first_blood_rate": 1.0,
+        "first_tower_rate": 1.0,
+        "heralds_per_game": 2,
+        "turrets_per_game": 11,
+        "gold_diff_per_min": - (47763 - 61848) / (1928263 / 60000),
+        "avg_assists_per_kill": 49/16,
+        "vision_score_per_minute": (30 * 5) / (1928263 / 60000)
+    },
+}
+
+
+############################################################################################################
+############################################################################################################
+############################################################################################################
+
 
 # Game between teams {100: 99566405123587075, 200: 99566405128626825}
 # team1 and team2
@@ -5416,4 +5417,9 @@ if __name__=="__main__":
     team2_stats = cumulative_stats_builder.getCumulativeStatsForTeam(team_id=team2_id)
     verifyStats(team1_stats, game1_expected_cumulative_stats[team1_id])
     verifyStats(team2_stats, game1_expected_cumulative_stats[team2_id])
+
+    cumulative_stats_builder.addGamePlayed(game_info=game2_data['info'], stats_info=game2_data['stats_update'])
+    team1_stats = cumulative_stats_builder.getCumulativeStatsForTeam(team_id=team1_id)
+    team3_stats = cumulative_stats_builder.getCumulativeStatsForTeam(team_id=team3_id)
+    # Need to find new expected stats
 
