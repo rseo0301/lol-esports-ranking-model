@@ -35,8 +35,10 @@ def addGamesToDb(games_directory: str):
         db_accessor: Database_Accessor = getDbAccessor()
         primary_key = game["game_info"]["platformGameId"]
         gameName = game["game_info"]["gameName"]
+        mapping_data = db_accessor.getDataFromTable(tableName="mapping_data", columns=["mapping"], where_clause=f"id='{primary_key}'")
+        esportsGameId = json.loads(mapping_data[0][0])['esportsGameId']
         print(f"Adding game {primary_key} to database")
-        db_accessor.addRowToTable(tableName="games", columns=["id", "gameName", "info", "stats_update", "eventTime"], values=[primary_key, gameName, game, stats, eventTime])
+        db_accessor.addRowToTable(tableName="games", columns=["id", "gameName", "esportsGameId", "info", "stats_update", "eventTime"], values=[primary_key, gameName, esportsGameId, game, stats, eventTime])
 
     directory_path = Path(games_directory)
     game_cleaner: Game_Cleaner = Game_Cleaner()

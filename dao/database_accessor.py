@@ -89,6 +89,7 @@ class Database_Accessor:
             (
                 id VARCHAR(128) PRIMARY KEY,
                 gameName VARCHAR(128),
+                esportsGameId VARCHAR(128),
                 eventTime DATETIME,
                 info JSON,
                 stats_update JSON
@@ -99,8 +100,8 @@ class Database_Accessor:
                 SELECT NULL FROM INFORMATION_SCHEMA.STATISTICS
                 WHERE table_schema = DATABASE() AND table_name = 'games' AND index_name = 'eventTime'
             """
-            eventTimeIndexExists = self.executeSqlCommand(command=command)
-            if not eventTimeIndexExists:
+            esportsGameIdIndexExists = self.executeSqlCommand(command=command)
+            if not esportsGameIdIndexExists:
                 command = """
                     ALTER TABLE games
                     ADD INDEX eventTime (eventTime);
@@ -108,13 +109,13 @@ class Database_Accessor:
                 self.executeSqlCommand(command=command)
             command = """
                 SELECT NULL FROM INFORMATION_SCHEMA.STATISTICS
-                WHERE table_schema = DATABASE() AND table_name = 'games' AND index_name = 'gameName'
+                WHERE table_schema = DATABASE() AND table_name = 'games' AND index_name = 'esportsGameId'
             """
-            eventTimeIndexExists = self.executeSqlCommand(command=command)
-            if not eventTimeIndexExists:
+            esportsGameIdIndexExists = self.executeSqlCommand(command=command)
+            if not esportsGameIdIndexExists:
                 command = """
                     ALTER TABLE games
-                    ADD INDEX gameName (gameName);
+                    ADD INDEX esportsGameId (esportsGameId);
                 """
                 self.executeSqlCommand(command=command)
 
