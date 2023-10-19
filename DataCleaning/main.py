@@ -34,8 +34,9 @@ def addGamesToDb(games_directory: str):
     def addGameToDb(game: dict, stats: dict, eventTime: datetime) -> None:
         db_accessor: Database_Accessor = getDbAccessor()
         primary_key = game["game_info"]["platformGameId"]
+        gameName = game["game_info"]["gameName"]
         print(f"Adding game {primary_key} to database")
-        db_accessor.addRowToTable(tableName="games", columns=["id", "info", "stats_update", "eventTime"], values=[primary_key, game, stats, eventTime])
+        db_accessor.addRowToTable(tableName="games", columns=["id", "gameName", "info", "stats_update", "eventTime"], values=[primary_key, gameName, game, stats, eventTime])
 
     directory_path = Path(games_directory)
     game_cleaner: Game_Cleaner = Game_Cleaner()
@@ -179,7 +180,9 @@ def buildCumulativeStats():
                 if team2_id in teams_cumulative_stats:
                     cumulative_stats['team_2'] = teams_cumulative_stats[team2_id]
                 cumulative_stats['meta'] = {
-                        'winning_team': getWinningTeam(game_info=game_info)
+                        'winning_team': getWinningTeam(game_info=game_info),
+                        'team1_id': team1_id,
+                        'team2_id': team2_id
                     }
                 print(f"Writing cumulative stats for game {game_info['game_info']['platformGameId']}")
                 db_accessor.addRowToTable(tableName='cumulative_data', columns=['id', 'scale_by_90'], values=[game_id, cumulative_stats], replaceOnDuplicate=True)

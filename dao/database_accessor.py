@@ -88,6 +88,7 @@ class Database_Accessor:
             CREATE TABLE IF NOT EXISTS games
             (
                 id VARCHAR(128) PRIMARY KEY,
+                gameName VARCHAR(128),
                 eventTime DATETIME,
                 info JSON,
                 stats_update JSON
@@ -103,6 +104,17 @@ class Database_Accessor:
                 command = """
                     ALTER TABLE games
                     ADD INDEX eventTime (eventTime);
+                """
+                self.executeSqlCommand(command=command)
+            command = """
+                SELECT NULL FROM INFORMATION_SCHEMA.STATISTICS
+                WHERE table_schema = DATABASE() AND table_name = 'games' AND index_name = 'gameName'
+            """
+            eventTimeIndexExists = self.executeSqlCommand(command=command)
+            if not eventTimeIndexExists:
+                command = """
+                    ALTER TABLE games
+                    ADD INDEX gameName (gameName);
                 """
                 self.executeSqlCommand(command=command)
 
