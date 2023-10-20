@@ -174,8 +174,8 @@ class Cumulative_Stats_Builder:
             return team1_dragons, team2_dragons
 
         def get_heralds_per_game() -> Tuple[int, int]:
-            team1_heralds = len([event for event in game_info['epic_monster_kill'] if event['monsterType'].lower() == 'riftHerald' and event['killerTeamID'] == 100])
-            team2_heralds = len([event for event in game_info['epic_monster_kill'] if event['monsterType'].lower() == 'riftHerald' and event['killerTeamID'] == 200])
+            team1_heralds = len([event for event in game_info['epic_monster_kill'] if event['monsterType'].lower() == 'riftHerald'.lower() and event['killerTeamID'] == 100])
+            team2_heralds = len([event for event in game_info['epic_monster_kill'] if event['monsterType'].lower() == 'riftHerald'.lower() and event['killerTeamID'] == 200])
             return team1_heralds, team2_heralds
         
         def get_turrets_per_game() -> Tuple[int, int]:
@@ -185,10 +185,13 @@ class Cumulative_Stats_Builder:
         
         def get_first_turret_team() -> int:
             turrets_destroyed = [event for event in game_info['building_destroyed'] if event['buildingType'] == 'turret']
-            return turrets_destroyed[0]['teamID']
+            if turrets_destroyed[0]['teamID'] == 100:
+                return 200
+            else:
+                return 100
         
         def get_vision_score_per_minute() -> Tuple[float, float]:
-            game_length_minutes = game_info['game_end']['gameTime']/60
+            game_length_minutes = game_info['game_end']['gameTime']/60000
             participants = stats_info['stats_update'][-1]['participants']
             team1_total_vision_score = sum([participant['stats']['VISION_SCORE'] for participant in participants[:5]])
             team2_total_vision_score = sum([participant['stats']['VISION_SCORE'] for participant in participants[5:]])
@@ -215,10 +218,10 @@ class Cumulative_Stats_Builder:
             team1_region, team2_region = "region not found", "region not found"
             team1_region_data = self.db_accessor.getDataFromTable(tableName="team_region_mapping", columns=["region"], where_clause=f"id={team1_id}")
             if team1_region_data:
-                team1_region = team1_region_data[0]
+                team1_region = team1_region_data[0][0]
             team2_region_data = self.db_accessor.getDataFromTable(tableName="team_region_mapping", columns=["region"], where_clause=f"id={team2_id}")
             if team2_region_data:
-                team2_region = team2_region_data[0]
+                team2_region = team2_region_data[0][0]
             return team1_region, team2_region
             
 
