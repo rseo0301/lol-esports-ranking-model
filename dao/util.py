@@ -35,7 +35,7 @@ def getCumulativeStatsForTeams(db_accessor: Database_Accessor, team_ids: List[st
         ret[team_id] = cumulative_stats
     return ret
 
-# Get the cumulative stats for every team, just before they play the first game of the tournmanet/stage
+# Get the cumulative stats for every team, just before they play the first game of the tournament/stage
 # TODO test if this works, once data is up
 def getCumulativeDataForTournament(db_accessor: Database_Accessor, tournament_id: str, stage_name: str) -> dict:
     # Gets the game ids for all games played in this stage of this tournament
