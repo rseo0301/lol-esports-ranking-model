@@ -116,8 +116,7 @@ def getCumulativeDataForTournament(db_accessor: Database_Accessor, tournament_id
 
 # Debugging and testing:
 if __name__ == "__main__":
-    # dao: Database_Accessor = Database_Accessor(db_host='riot-hackathon-db.c880zspfzfsi.us-west-2.rds.amazonaws.com')
-    dao: Database_Accessor = Database_Accessor(db_host='hackathon-db-2.c880zspfzfsi.us-west-2.rds.amazonaws.com')
+    dao: Database_Accessor = Database_Accessor(db_host='riot-hackathon-db.c880zspfzfsi.us-west-2.rds.amazonaws.com')
     # dao: Database_Accessor = Database_Accessor()
     # cumulative_data_for_teams = getCumulativeStatsForTeams(db_accessor=dao, team_ids=["107580483738977500", "109981647134921596"])
 
