@@ -1,6 +1,7 @@
 from typing import List
 
 import numpy as np
+import pandas as pd
 import requests
 from Models.ranking_model_interface import Ranking_Model
 from API.main import *
@@ -28,6 +29,32 @@ class RandomForest(Ranking_Model):
     def predict(self, X):
         result = self.model.predict_proba(X)
         return result
+
+    def worlds_predictions(self):
+        df = pd.read_csv("../worlds_2023.csv")
+        teams = df[["team_1_name", "team_2_name"]]
+        df = df.drop(columns=["team_1_name", "team_2_name"])
+
+        result = self.predict(df)
+        wins = {}
+        for i, pred in enumerate(result):
+            team_1 = teams.iloc[i].iloc[0]
+            team_2 = teams.iloc[i].iloc[1]
+            if team_1 in wins:
+                wins[team_1] = wins[team_1] + pred[1]
+            else:
+                wins[team_1] = pred[1]
+            
+            if team_2 in wins:
+                wins[team_2] = wins[team_2] + pred[0]
+            else:
+                wins[team_2] = pred[0]
+            
+        sorted_wins = sorted(wins.items(), key=lambda x:x[1], reverse=True)
+        sorted_dict = dict(sorted_wins)
+        for key in sorted_dict:
+            print(key, " : ", "{:.2f}".format(sorted_dict[key]))
+        
     
     def optimal_parameters(self):
         # Number of trees in random forest
@@ -54,5 +81,5 @@ class RandomForest(Ranking_Model):
 
 rfc = RandomForest()
 rfc.get_training_test_datasets()
-# rfc.optimal_parameters()
-print(rfc.datasets[0].columns)
+rfc.fit(rfc.datasets[0], rfc.datasets[2])
+rfc.worlds_predictions()
