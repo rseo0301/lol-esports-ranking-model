@@ -131,22 +131,24 @@ def generate_tournaments_standings(tournament_id):
     db_accessors = get_dao()
     tournament_json = fetch_tournament_data(db_accessors, tournament_id)
     rankings = tournament_json["stages"][0]["sections"][0]["rankings"]
+    tournament_name_type = tournament_json["stages"][0]["name"]
     newData = []
     updatedRankings = []
+   
     for team in rankings:
-        team_info = {}
-        try:
-            team_info = fetch_team_data(db_accessors, team["teams"][0]["id"])
-        except:
-            team_info= {}
-            print("error",team)
-       
-        updated_ranking = {
-            "ranking": team["ordinal"],
-            "team_info": team_info,
-            "record": team["teams"][0]["record"]
-        }
-        updatedRankings.append(updated_ranking)
+            team_info = {}
+            try:
+                team_info = fetch_team_data(db_accessors, team["teams"][0]["id"])
+            except:
+                team_info= {}
+                print("error",team)
+        
+            updated_ranking = {
+                "ranking": team["ordinal"],
+                "team_info": team_info,
+                "record": team["teams"][0]["record"]
+            }
+            updatedRankings.append(updated_ranking)
     newData.append({"tournamentName": tournament_json["slug"],"tournamentStandings": updatedRankings})
     return jsonify(newData)
 
@@ -158,12 +160,16 @@ def generate_league_teams(leagues_id):
    
     index = 0
     while True:
-        recent_tournament_id = league_json["tournaments"][index]["id"]
-        tournament_json = fetch_tournament_data(db_accessors, recent_tournament_id)
-        rankings = tournament_json["stages"][0]["sections"][0]["rankings"]
-        if rankings:
-            break  
-    
+        try:
+            recent_tournament_id = league_json["tournaments"][index]["id"]
+            tournament_json = fetch_tournament_data(db_accessors, recent_tournament_id)
+            rankings = tournament_json["stages"][0]["sections"][0]["rankings"]
+            if rankings:
+                break  
+        
+            
+        except:
+            print("dont exist")
         index += 1
     teamList=[]
     for team in rankings:
@@ -193,44 +199,20 @@ def generate_leagues():
     leagueArr=[]
     for league in leagues_data:
         league_object = json.loads(league[0])
-        updatedData={
+        if(league_object["name"]!="TFT Rising Legends"):
+         updatedData={
             "name":league_object["name"],
             "leagues_id": league_object ["id"],
             "image": league_object["image"],
             "priority":league_object["priority"],
             "region": league_object["region"],
-            "tournaments":league_object["tournaments"]
+            # "tournaments":league_object["tournaments"]
         }
         leagueArr.append(updatedData)
+        
     sorted_leagueArr = sorted(leagueArr, key=lambda x: x["priority"])
     return jsonify(sorted_leagueArr)
-
-
-"""
-    ML mock endpoints
-"""
-machineLearningModel=["Bayesian Model","Logistic Regression", "Random Forest"]
-
-
-@app.route("/model/tournamentsStandings/<tournament_id>")
-def generate_tournament_standings_by_model(tournament_id):
-     model_id = request.args.get("model_id")
-     model_type = machineLearningModel[int(model_id)]
-     model: Ranking_Model = None
-     if model_type == "Bayesian Model":
-         model = Mock_Ranking_Model()
-         bayesian_model = model.get_tournament_rankings(tournament_id,"test")
-         return jsonify({"model":model_type,"data":bayesian_model})
-     if model_type == "Logistic Regression":
-         model = Mock_Ranking_Model()
-         logistic_regression_model_data = model.get_tournament_rankings(tournament_id,"test")
-         return jsonify({"model":model_type,"data":logistic_regression_model_data})
-     if model_type == "Random Forest":
-         model = Mock_Ranking_Model()
-         random_forest_model_data = model.get_tournament_rankings(tournament_id,"test")
-         return jsonify({"model":model_type,"data":random_forest_model_data})
-
-
+  
 @app.route("/leagueTournaments/<league_id>", methods=["GET"])
 def generate_league_tournaments(league_id: str):
     dao = get_dao()
@@ -240,17 +222,31 @@ def generate_league_tournaments(league_id: str):
     where_filter = [f"id='{id}'" for id in tournament_ids]
     tournaments_data = dao.getDataFromTable(tableName="tournaments", columns=['tournament'], where_clause=" OR ".join(where_filter))
     ret = []
+   
     for tournament_data in tournaments_data:
         tournament = json.loads(tournament_data[0])
-        ret.append({
-            "id": tournament['id'],
-            "name": tournament['name'],
-            'startDate': tournament['startDate']
-        })
-    ret = sorted(ret, key=lambda x: x["startDate"])
+        if(tournament["stages"][0]["sections"][0]["rankings"] != [ ]):
+            ret.append({
+                        "id": tournament['id'],
+                        "name": tournament['name'],
+                        'startDate': tournament['startDate']
+                    })
+            ret = sorted(ret, key=lambda x: x["startDate"], reverse=True)
     return {
         'tournaments': ret
     }
+
+"""
+    ML mock endpoints
+"""
+machineLearningModel=["Bayesian Model","Logistic Regression", "Random Forest"]
+
+
+@app.route("/model/tournamentsStandings/<tournament_id>")
+def generate_tournament_standings_by_model(tournament_id):
+     model_name = request.args.get("model")
+     model = get_model(model_name=model_name)
+     return model.get_tournament_rankings(tournament_id,"test")
 
 
 @app.route("/model/globalRankings", methods=["GET"])
