@@ -244,24 +244,9 @@ machineLearningModel=["Bayesian Model","Logistic Regression", "Random Forest"]
 
 @app.route("/model/tournamentsStandings/<tournament_id>")
 def generate_tournament_standings_by_model(tournament_id):
-     model_id = request.args.get("model_id")
-     model_type = machineLearningModel[int(model_id)]
-     model: Ranking_Model = None
-     if model_type == "Bayesian Model":
-         model = Mock_Ranking_Model() 
-         bayesian_model = model.get_tournament_rankings(tournament_id,"test")
-         return jsonify({"model":model_type,"data":bayesian_model})
-     if model_type == "Logistic Regression":
-         model = Mock_Ranking_Model()
-         logistic_regression_model_data = model.get_tournament_rankings(tournament_id,"test")
-         return jsonify({"model":model_type,"data":logistic_regression_model_data})
-     if model_type == "Random Forest":
-         model = Mock_Ranking_Model()
-         random_forest_model_data = model.get_tournament_rankings(tournament_id,"test")
-         return jsonify({"model":model_type,"data":random_forest_model_data})
-
-
-
+     model_name = request.args.get("model")
+     model = get_model(model_name=model_name)
+     return model.get_tournament_rankings(tournament_id,"test")
 
 
 @app.route("/model/globalRankings", methods=["GET"])
