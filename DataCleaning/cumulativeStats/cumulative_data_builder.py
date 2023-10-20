@@ -185,7 +185,10 @@ class Cumulative_Stats_Builder:
         
         def get_first_turret_team() -> int:
             turrets_destroyed = [event for event in game_info['building_destroyed'] if event['buildingType'] == 'turret']
-            return turrets_destroyed[0]['teamID']
+            if turrets_destroyed[0]['teamID'] == 100:
+                return 200
+            else:
+                return 100
         
         def get_vision_score_per_minute() -> Tuple[float, float]:
             game_length_minutes = game_info['game_end']['gameTime']/60000
