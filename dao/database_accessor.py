@@ -6,13 +6,13 @@
 import os
 import sys
 current_script_directory = os.path.dirname(os.path.abspath(__file__))
-sys.path.append(current_script_directory)
+sys.path.append(os.path.join(current_script_directory, ".."))
 from datetime import datetime
 import pytz
 from typing import List
 from mysql.connector import connect
 import json
-from cleaners import game_cleaner
+from DataCleaning.cleaners import game_cleaner
 from pathlib import Path
 
 class Database_Accessor:
@@ -88,6 +88,8 @@ class Database_Accessor:
             CREATE TABLE IF NOT EXISTS games
             (
                 id VARCHAR(128) PRIMARY KEY,
+                gameName VARCHAR(128),
+                esportsGameId VARCHAR(128),
                 eventTime DATETIME,
                 info JSON,
                 stats_update JSON
@@ -98,11 +100,22 @@ class Database_Accessor:
                 SELECT NULL FROM INFORMATION_SCHEMA.STATISTICS
                 WHERE table_schema = DATABASE() AND table_name = 'games' AND index_name = 'eventTime'
             """
-            eventTimeIndexExists = self.executeSqlCommand(command=command)
-            if not eventTimeIndexExists:
+            esportsGameIdIndexExists = self.executeSqlCommand(command=command)
+            if not esportsGameIdIndexExists:
                 command = """
                     ALTER TABLE games
                     ADD INDEX eventTime (eventTime);
+                """
+                self.executeSqlCommand(command=command)
+            command = """
+                SELECT NULL FROM INFORMATION_SCHEMA.STATISTICS
+                WHERE table_schema = DATABASE() AND table_name = 'games' AND index_name = 'esportsGameId'
+            """
+            esportsGameIdIndexExists = self.executeSqlCommand(command=command)
+            if not esportsGameIdIndexExists:
+                command = """
+                    ALTER TABLE games
+                    ADD INDEX esportsGameId (esportsGameId);
                 """
                 self.executeSqlCommand(command=command)
 
@@ -131,7 +144,8 @@ class Database_Accessor:
             CREATE TABLE IF NOT EXISTS teams
             (
                 id VARCHAR(128) PRIMARY KEY,
-                team JSON
+                team JSON,
+                latest_cumulative_stats JSON
             )
             """
             self.executeSqlCommand(command=command)
@@ -210,11 +224,14 @@ class Database_Accessor:
     # "order_clause" is MYSql formatted "ORDER BY" clause, to order results.
     def getDataFromTable(self, tableName: str, 
     columns: List[str], 
+    join_clause: str = None,
     where_clause: str = None,
     order_clause: str = None,
     limit: int = None,
     offset: int = None) -> List[tuple]:
         query = "SELECT {} FROM {}".format(', '.join(columns), tableName)
+        if join_clause:
+            query += f" JOIN {join_clause}"
         if where_clause:
             query += f" WHERE {where_clause}"
         if order_clause:
