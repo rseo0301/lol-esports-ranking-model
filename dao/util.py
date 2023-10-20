@@ -36,20 +36,24 @@ def getCumulativeStatsForTeams(db_accessor: Database_Accessor, team_ids: List[st
     return ret
 
 # Returns the latest cumulative stats for all teams
-def getCumulativeStatsForAllTeams(db_accessor: Database_Accessor) -> dict:
-    n_teams = 0
+def getCumulativeStatsForAllTeams(db_accessor: Database_Accessor, n_teams: int = 0) -> dict:
+    processed_teams = 0
     ret = {}
     while True:
-        teams_data = db_accessor.getDataFromTable(tableName="teams", columns=["id", "latest_cumulative_stats"], limit=50, offset=n_teams)
+        if processed_teams >= n_teams:
+            break
+        teams_data = db_accessor.getDataFromTable(tableName="teams", columns=["id", "latest_cumulative_stats"], limit=50, offset=processed_teams)
         if not teams_data:
             break
-        n_teams += len(teams_data)
+        processed_teams += len(teams_data)
         for team_data in teams_data:
             if not team_data[1]:
                 continue
             team_id = team_data[0]
             team_stats = json.loads(team_data[1])
             ret[team_id] = team_stats
+            if len(ret) >= n_teams:
+                break
     return ret
 
 # Get the cumulative stats for every team, just before they play the first game of the tournmanet/stage
