@@ -35,8 +35,24 @@ def getCumulativeStatsForTeams(db_accessor: Database_Accessor, team_ids: List[st
         ret[team_id] = cumulative_stats
     return ret
 
+# Returns the latest cumulative stats for all teams
+def getCumulativeStatsForAllTeams(db_accessor: Database_Accessor) -> dict:
+    n_teams = 0
+    ret = {}
+    while True:
+        teams_data = db_accessor.getDataFromTable(tableName="teams", columns=["id", "latest_cumulative_stats"], limit=50, offset=n_teams)
+        if not teams_data:
+            break
+        n_teams += len(teams_data)
+        for team_data in teams_data:
+            if not team_data[1]:
+                continue
+            team_id = team_data[0]
+            team_stats = json.loads(team_data[1])
+            ret[team_id] = team_stats
+    return ret
+
 # Get the cumulative stats for every team, just before they play the first game of the tournmanet/stage
-# TODO test if this works, once data is up
 def getCumulativeDataForTournament(db_accessor: Database_Accessor, tournament_id: str, stage_name: str) -> dict:
     # Gets the game ids for all games played in this stage of this tournament
     def getStageEsportsGameIds() -> List[str]:
