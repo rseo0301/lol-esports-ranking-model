@@ -1,6 +1,7 @@
 from logging import error
 import sys
 import os
+from typing import List
 current_directory = os.path.dirname(os.path.abspath(__file__))
 sys.path.append(os.path.join(current_directory, "..", ".."))
 import json
@@ -304,7 +305,7 @@ game1_expected_cumulative_stats = {
         "avg_time_per_loss": 1536158 / 60000,
         "dragons_per_game": 1,
         "first_blood_rate": 1,
-        "first_tower_rate": 0,
+        "first_tower_rate": 1,
         "heralds_per_game": 0.0,
         "turrets_per_game": 1.0,
         "gold_diff_per_min": (39272 - 50721) / (1536158 / 60000),
@@ -320,7 +321,7 @@ game1_expected_cumulative_stats = {
         "avg_time_per_win": 1536158 / 60000,
         "dragons_per_game": 3,
         "first_blood_rate": 0.0,
-        "first_tower_rate": 1.0,
+        "first_tower_rate": 0.0,
         "heralds_per_game": 1,
         "turrets_per_game": 8.0,
         "gold_diff_per_min": - (39272 - 50721) / (1536158 / 60000),
@@ -1442,7 +1443,8 @@ game2_data = {
             }
         ],
     },
-    "stats_update": [
+    "stats_update": {
+        "stats_update": [
         {
             "teams": [
                 {
@@ -1720,6 +1722,7 @@ game2_data = {
             ]
         }
     ]
+    }
 }
 
 # Expected cumulative stats after just game 2
@@ -1733,7 +1736,7 @@ game2_expected_cumulative_stats = {
         "avg_time_per_loss": 1928263 / 60000,
         "dragons_per_game": 2,
         "first_blood_rate": 0,
-        "first_tower_rate": 0,
+        "first_tower_rate": 1,
         "heralds_per_game": 0.0,
         "turrets_per_game": 1.0,
         "gold_diff_per_min": (47763 - 61848) / (1928263 / 60000),
@@ -1749,7 +1752,7 @@ game2_expected_cumulative_stats = {
         "avg_time_per_win": 1928263 / 60000,
         "dragons_per_game": 3,
         "first_blood_rate": 1.0,
-        "first_tower_rate": 1.0,
+        "first_tower_rate": 0.0,
         "heralds_per_game": 2,
         "turrets_per_game": 11,
         "gold_diff_per_min": - (47763 - 61848) / (1928263 / 60000),
@@ -1764,8 +1767,8 @@ game2_expected_cumulative_stats = {
 ############################################################################################################
 
 
-# Game between teams {100: 99566405123587075, 200: 99566405128626825}
-# team1 and team2
+# Game between teams {100: 99566405128626825, 200: 99566405123587075}
+# team2 and team1
 game3_data = {
     'info': {
         "game_end": {
@@ -3351,7 +3354,8 @@ game3_data = {
             }
         ],
     },
-    "stats_update": [
+    "stats_update": {
+        "stats_update": [
         {
             "teams": [
                 {
@@ -3383,7 +3387,7 @@ game3_data = {
                     "stats": {
                         "ASSISTS": 0,
                         "NUM_DEATHS": 0,
-                        "VISION_SCORE": 11.09061050415039,
+                        "VISION_SCORE": 32,
                         "MINIONS_KILLED": 121,
                         "CHAMPIONS_KILLED": 0
                     },
@@ -3394,7 +3398,7 @@ game3_data = {
                     "stats": {
                         "ASSISTS": 1,
                         "NUM_DEATHS": 0,
-                        "VISION_SCORE": 13.046119689941406,
+                        "VISION_SCORE": 32,
                         "MINIONS_KILLED": 3,
                         "CHAMPIONS_KILLED": 0
                     },
@@ -3405,7 +3409,7 @@ game3_data = {
                     "stats": {
                         "ASSISTS": 1,
                         "NUM_DEATHS": 0,
-                        "VISION_SCORE": 11.966157913208008,
+                        "VISION_SCORE": 32,
                         "MINIONS_KILLED": 138,
                         "CHAMPIONS_KILLED": 0
                     },
@@ -3416,7 +3420,7 @@ game3_data = {
                     "stats": {
                         "ASSISTS": 1,
                         "NUM_DEATHS": 0,
-                        "VISION_SCORE": 12.950394630432127,
+                        "VISION_SCORE": 32,
                         "MINIONS_KILLED": 135,
                         "CHAMPIONS_KILLED": 0
                     },
@@ -3427,7 +3431,7 @@ game3_data = {
                     "stats": {
                         "ASSISTS": 0,
                         "NUM_DEATHS": 0,
-                        "VISION_SCORE": 16.516870498657227,
+                        "VISION_SCORE": 32,
                         "MINIONS_KILLED": 21,
                         "CHAMPIONS_KILLED": 1
                     },
@@ -3438,7 +3442,7 @@ game3_data = {
                     "stats": {
                         "ASSISTS": 0,
                         "NUM_DEATHS": 0,
-                        "VISION_SCORE": 9.251444816589355,
+                        "VISION_SCORE": 32,
                         "MINIONS_KILLED": 135,
                         "CHAMPIONS_KILLED": 0
                     },
@@ -3449,7 +3453,7 @@ game3_data = {
                     "stats": {
                         "ASSISTS": 0,
                         "NUM_DEATHS": 1,
-                        "VISION_SCORE": 11.75104808807373,
+                        "VISION_SCORE": 32,
                         "MINIONS_KILLED": 5,
                         "CHAMPIONS_KILLED": 0
                     },
@@ -3460,7 +3464,7 @@ game3_data = {
                     "stats": {
                         "ASSISTS": 0,
                         "NUM_DEATHS": 0,
-                        "VISION_SCORE": 11.25966739654541,
+                        "VISION_SCORE": 32,
                         "MINIONS_KILLED": 128,
                         "CHAMPIONS_KILLED": 0
                     },
@@ -3471,7 +3475,7 @@ game3_data = {
                     "stats": {
                         "ASSISTS": 0,
                         "NUM_DEATHS": 0,
-                        "VISION_SCORE": 9.610260009765623,
+                        "VISION_SCORE": 32,
                         "MINIONS_KILLED": 115,
                         "CHAMPIONS_KILLED": 0
                     },
@@ -3482,7 +3486,7 @@ game3_data = {
                     "stats": {
                         "ASSISTS": 0,
                         "NUM_DEATHS": 0,
-                        "VISION_SCORE": 17.958436965942383,
+                        "VISION_SCORE": 32,
                         "MINIONS_KILLED": 21,
                         "CHAMPIONS_KILLED": 0
                     },
@@ -3521,7 +3525,7 @@ game3_data = {
                     "stats": {
                         "ASSISTS": 6,
                         "NUM_DEATHS": 2,
-                        "VISION_SCORE": 41.96663284301758,
+                        "VISION_SCORE": 32,
                         "MINIONS_KILLED": 258,
                         "CHAMPIONS_KILLED": 4
                     },
@@ -3532,7 +3536,7 @@ game3_data = {
                     "stats": {
                         "ASSISTS": 8,
                         "NUM_DEATHS": 2,
-                        "VISION_SCORE": 49.796722412109375,
+                        "VISION_SCORE": 32,
                         "MINIONS_KILLED": 32,
                         "CHAMPIONS_KILLED": 7
                     },
@@ -3543,7 +3547,7 @@ game3_data = {
                     "stats": {
                         "ASSISTS": 8,
                         "NUM_DEATHS": 2,
-                        "VISION_SCORE": 67.88123321533203,
+                        "VISION_SCORE": 32,
                         "MINIONS_KILLED": 304,
                         "CHAMPIONS_KILLED": 5
                     },
@@ -3554,7 +3558,7 @@ game3_data = {
                     "stats": {
                         "ASSISTS": 12,
                         "NUM_DEATHS": 1,
-                        "VISION_SCORE": 66.1397476196289,
+                        "VISION_SCORE": 32,
                         "MINIONS_KILLED": 346,
                         "CHAMPIONS_KILLED": 4
                     },
@@ -3565,7 +3569,7 @@ game3_data = {
                     "stats": {
                         "ASSISTS": 14,
                         "NUM_DEATHS": 3,
-                        "VISION_SCORE": 89.03742980957031,
+                        "VISION_SCORE": 32,
                         "MINIONS_KILLED": 32,
                         "CHAMPIONS_KILLED": 1
                     },
@@ -3576,7 +3580,7 @@ game3_data = {
                     "stats": {
                         "ASSISTS": 0,
                         "NUM_DEATHS": 5,
-                        "VISION_SCORE": 35.3630256652832,
+                        "VISION_SCORE": 32,
                         "MINIONS_KILLED": 269,
                         "CHAMPIONS_KILLED": 3
                     },
@@ -3587,7 +3591,7 @@ game3_data = {
                     "stats": {
                         "ASSISTS": 4,
                         "NUM_DEATHS": 6,
-                        "VISION_SCORE": 39.94133377075195,
+                        "VISION_SCORE": 32,
                         "MINIONS_KILLED": 13,
                         "CHAMPIONS_KILLED": 2
                     },
@@ -3598,7 +3602,7 @@ game3_data = {
                     "stats": {
                         "ASSISTS": 5,
                         "NUM_DEATHS": 2,
-                        "VISION_SCORE": 51.022335052490234,
+                        "VISION_SCORE": 32,
                         "MINIONS_KILLED": 302,
                         "CHAMPIONS_KILLED": 4
                     },
@@ -3609,7 +3613,7 @@ game3_data = {
                     "stats": {
                         "ASSISTS": 4,
                         "NUM_DEATHS": 2,
-                        "VISION_SCORE": 50.18354415893555,
+                        "VISION_SCORE": 32,
                         "MINIONS_KILLED": 310,
                         "CHAMPIONS_KILLED": 1
                     },
@@ -3620,7 +3624,7 @@ game3_data = {
                     "stats": {
                         "ASSISTS": 7,
                         "NUM_DEATHS": 6,
-                        "VISION_SCORE": 84.13357543945312,
+                        "VISION_SCORE": 32,
                         "MINIONS_KILLED": 31,
                         "CHAMPIONS_KILLED": 0
                     },
@@ -3629,10 +3633,53 @@ game3_data = {
             ]
         }
     ]
+    }
 }
 
+# Expected cumulative stats after just game 3
+game3_expected_cumulative_stats = {
+    team2_id: {
+        "region": "NORTH AMERICA",
+        "avg_kd_ratio": 21/10,
+        "barons_per_game": 2,
+        "dragons_per_game": 3,
+        "heralds_per_game": 2.0,
+        "gold_diff_at_14": 23961 - 20930,
+        "overall_winrate": 1,
+        "avg_time_per_win": 2105275 / 60000,
+        "first_blood_rate": 1,
+        "first_tower_rate": 1,
+        "turrets_per_game": 8.0,
+        "gold_diff_per_min": (72179 - 55774) / (2105275 / 60000),
+        "avg_assists_per_kill": 48 / 21,
+        "vision_score_per_minute": (32 * 5) / (2105275 / 60000)
+    },
+    team1_id: {
+        "region": "NORTH AMERICA",
+        "avg_kd_ratio": 10/21,
+        "barons_per_game": 0,
+        "dragons_per_game": 2,
+        "heralds_per_game": 0,
+        "gold_diff_at_14": 20930 - 23961,
+        "overall_winrate": 0,
+        "avg_time_per_loss": 2105275 / 60000,
+        "first_blood_rate": 0,
+        "first_tower_rate": 0.0,
+        "turrets_per_game": 0,
+        "gold_diff_per_min": - (72179 - 55774) / (2105275 / 60000),
+        "avg_assists_per_kill": 20/10,
+        "vision_score_per_minute": (32 * 5) / (2105275 / 60000)
+    },
+}
+
+
+############################################################################################################
+############################################################################################################
+############################################################################################################
+
+
 # Game between teams {100: 99566405128626825, 200: 99566405123587075}
-# team2 and tea1
+# team2 and team1
 game4_data = {
     'info': {
         "game_end": {
@@ -5098,7 +5145,8 @@ game4_data = {
             }
         ],
     },
-    "stats_update": [
+    "stats_update": {
+        "stats_update": [
         {
             "teams": [
                 {
@@ -5268,7 +5316,7 @@ game4_data = {
                     "stats": {
                         "ASSISTS": 14,
                         "NUM_DEATHS": 2,
-                        "VISION_SCORE": 19.43981170654297,
+                        "VISION_SCORE": 43,
                         "MINIONS_KILLED": 211,
                         "CHAMPIONS_KILLED": 6
                     },
@@ -5279,7 +5327,7 @@ game4_data = {
                     "stats": {
                         "ASSISTS": 8,
                         "NUM_DEATHS": 7,
-                        "VISION_SCORE": 88.2555160522461,
+                        "VISION_SCORE": 42,
                         "MINIONS_KILLED": 67,
                         "CHAMPIONS_KILLED": 14
                     },
@@ -5290,7 +5338,7 @@ game4_data = {
                     "stats": {
                         "ASSISTS": 12,
                         "NUM_DEATHS": 4,
-                        "VISION_SCORE": 21.582338333129883,
+                        "VISION_SCORE": 44,
                         "MINIONS_KILLED": 148,
                         "CHAMPIONS_KILLED": 2
                     },
@@ -5301,7 +5349,7 @@ game4_data = {
                     "stats": {
                         "ASSISTS": 11,
                         "NUM_DEATHS": 5,
-                        "VISION_SCORE": 30.795351028442383,
+                        "VISION_SCORE": 43,
                         "MINIONS_KILLED": 209,
                         "CHAMPIONS_KILLED": 4
                     },
@@ -5312,7 +5360,7 @@ game4_data = {
                     "stats": {
                         "ASSISTS": 16,
                         "NUM_DEATHS": 6,
-                        "VISION_SCORE": 64.43998718261719,
+                        "VISION_SCORE": 43,
                         "MINIONS_KILLED": 27,
                         "CHAMPIONS_KILLED": 1
                     },
@@ -5323,7 +5371,7 @@ game4_data = {
                     "stats": {
                         "ASSISTS": 6,
                         "NUM_DEATHS": 5,
-                        "VISION_SCORE": 21.74927520751953,
+                        "VISION_SCORE": 43,
                         "MINIONS_KILLED": 192,
                         "CHAMPIONS_KILLED": 8
                     },
@@ -5334,7 +5382,7 @@ game4_data = {
                     "stats": {
                         "ASSISTS": 10,
                         "NUM_DEATHS": 5,
-                        "VISION_SCORE": 35.75667953491211,
+                        "VISION_SCORE": 43,
                         "MINIONS_KILLED": 24,
                         "CHAMPIONS_KILLED": 5
                     },
@@ -5345,7 +5393,7 @@ game4_data = {
                     "stats": {
                         "ASSISTS": 7,
                         "NUM_DEATHS": 5,
-                        "VISION_SCORE": 26.07009506225586,
+                        "VISION_SCORE": 43,
                         "MINIONS_KILLED": 184,
                         "CHAMPIONS_KILLED": 1
                     },
@@ -5356,7 +5404,7 @@ game4_data = {
                     "stats": {
                         "ASSISTS": 5,
                         "NUM_DEATHS": 5,
-                        "VISION_SCORE": 24.666725158691406,
+                        "VISION_SCORE": 43,
                         "MINIONS_KILLED": 235,
                         "CHAMPIONS_KILLED": 6
                     },
@@ -5367,7 +5415,7 @@ game4_data = {
                     "stats": {
                         "ASSISTS": 8,
                         "NUM_DEATHS": 7,
-                        "VISION_SCORE": 49.59792709350586,
+                        "VISION_SCORE": 43,
                         "MINIONS_KILLED": 35,
                         "CHAMPIONS_KILLED": 4
                     },
@@ -5376,12 +5424,53 @@ game4_data = {
             ]
         }
     ]
+    }
+}
+
+# Expected cumulative stats after just game 3
+game4_expected_cumulative_stats = {
+    team2_id: {
+        "region": "NORTH AMERICA",
+        "avg_kd_ratio": 27/24,
+        "barons_per_game": 1,
+        "heralds_per_game": 2.0,
+        "dragons_per_game": 2,
+        "gold_diff_at_14": 24120 - 23584,
+        "overall_winrate": 1,
+        "avg_time_per_win": 1677716 / 60000,
+        "first_blood_rate": 1,
+        "first_tower_rate": 1,
+        "turrets_per_game": 11.0,
+        "gold_diff_per_min": (59991 - 49892) / (1677716 / 60000),
+        "avg_assists_per_kill": 61 / 27,
+        "vision_score_per_minute": (43 * 5) / (1677716 / 60000)
+    },
+    team1_id: {
+        "region": "NORTH AMERICA",
+        "avg_kd_ratio": 24/27,
+        "barons_per_game": 0,
+        "heralds_per_game": 0,
+        "dragons_per_game": 1,
+        "gold_diff_at_14": 23584 - 24120,
+        "overall_winrate": 0,
+        "avg_time_per_loss": 1677716 / 60000,
+        "first_blood_rate": 0,
+        "first_tower_rate": 0.0,
+        "turrets_per_game": 1,
+        "gold_diff_per_min": - (59991 - 49892) / (1677716 / 60000),
+        "avg_assists_per_kill": 36/24,
+        "vision_score_per_minute": (43 * 5) / (1677716 / 60000)
+    },
 }
 
 
+############################################################################################################
+############################################################################################################
+############################################################################################################
 
 
-def verifyStats(actual_stats, expected_stats):
+# Verify that two cumulative stats dicts have the same values
+def verifyStats(actual_stats: dict, expected_stats: dict):
     for key, value in expected_stats.items():
         if key not in actual_stats:
             error(f"Expected key {key} to be in cumulative stats, but key doesn't exist")
@@ -5391,6 +5480,22 @@ def verifyStats(actual_stats, expected_stats):
         else:
             if actual_stats[key] != value:
                 error(f"Expected {key} to equal {value}, but instead got {actual_stats[key]}")
+
+# Given a list of cumulative stats (parsed from games) (in chronological order)
+# Calculate the weighted cumulative stats
+def calculateNewWeightedStats(games_stats: List[dict]) -> dict:
+    ret = {}
+    prev_weight = 0
+    for game in games_stats:
+        curr_weight = prev_weight * 0.9 + 1
+        for key, value in game.items():
+            if (key not in ret) or not isinstance(value, (int, float)):
+                ret[key] = value
+            else:
+                ret[key] = (ret[key]*prev_weight*0.9 + value)/curr_weight
+        prev_weight = curr_weight
+    return ret
+
 
 if __name__=="__main__":
     # This chunk of code is used for finding example games to use in testing
@@ -5415,11 +5520,33 @@ if __name__=="__main__":
     cumulative_stats_builder.addGamePlayed(game_info=game1_data['info'], stats_info=game1_data['stats_update'])
     team1_stats = cumulative_stats_builder.getCumulativeStatsForTeam(team_id=team1_id)
     team2_stats = cumulative_stats_builder.getCumulativeStatsForTeam(team_id=team2_id)
-    verifyStats(team1_stats, game1_expected_cumulative_stats[team1_id])
-    verifyStats(team2_stats, game1_expected_cumulative_stats[team2_id])
+    team1_expected_stats = calculateNewWeightedStats([game1_expected_cumulative_stats[team1_id]])
+    team2_expected_stats = calculateNewWeightedStats([game1_expected_cumulative_stats[team2_id]])
+    verifyStats(team1_stats, team1_expected_stats)
+    verifyStats(team2_stats, team2_expected_stats )
 
     cumulative_stats_builder.addGamePlayed(game_info=game2_data['info'], stats_info=game2_data['stats_update'])
     team1_stats = cumulative_stats_builder.getCumulativeStatsForTeam(team_id=team1_id)
     team3_stats = cumulative_stats_builder.getCumulativeStatsForTeam(team_id=team3_id)
-    # Need to find new expected stats
+    team1_expected_stats = calculateNewWeightedStats([game1_expected_cumulative_stats[team1_id], game2_expected_cumulative_stats[team1_id]])
+    team3_expected_stats = calculateNewWeightedStats([game2_expected_cumulative_stats[team3_id]])
+    verifyStats(team1_stats, team1_expected_stats)
+    verifyStats(team3_stats, team3_expected_stats)
+
+    cumulative_stats_builder.addGamePlayed(game_info=game3_data['info'], stats_info=game3_data['stats_update'])
+    team1_stats = cumulative_stats_builder.getCumulativeStatsForTeam(team_id=team1_id)
+    team2_stats = cumulative_stats_builder.getCumulativeStatsForTeam(team_id=team2_id)
+    team1_expected_stats = calculateNewWeightedStats([game1_expected_cumulative_stats[team1_id], game2_expected_cumulative_stats[team1_id], game3_expected_cumulative_stats[team1_id]])
+    team2_expected_stats = calculateNewWeightedStats([game1_expected_cumulative_stats[team2_id], game3_expected_cumulative_stats[team2_id]])
+    verifyStats(team1_stats, team1_expected_stats)
+    verifyStats(team2_stats, team2_expected_stats)
+
+    cumulative_stats_builder.addGamePlayed(game_info=game4_data['info'], stats_info=game4_data['stats_update'])
+    team1_stats = cumulative_stats_builder.getCumulativeStatsForTeam(team_id=team1_id)
+    team2_stats = cumulative_stats_builder.getCumulativeStatsForTeam(team_id=team2_id)
+    team1_expected_stats = calculateNewWeightedStats([game1_expected_cumulative_stats[team1_id], game2_expected_cumulative_stats[team1_id], game3_expected_cumulative_stats[team1_id], game4_expected_cumulative_stats[team1_id]])
+    team2_expected_stats = calculateNewWeightedStats([game1_expected_cumulative_stats[team2_id], game3_expected_cumulative_stats[team2_id], game4_expected_cumulative_stats[team2_id]])
+    verifyStats(team1_stats, team1_expected_stats)
+    verifyStats(team2_stats, team2_expected_stats)
+
 
