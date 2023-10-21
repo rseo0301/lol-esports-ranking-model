@@ -43,8 +43,6 @@ class DeepNNModel(Ranking_Model):
         print(f"Validation Loss: {loss}")
         print(f"Validation Accuracy: {accuracy}")
 
-  
-
     def cross_validate(self, cv=10):
         skf = StratifiedKFold(n_splits=cv)
         scores = cross_val_score(self.model, self.X_train, self.y_train, cv=skf, scoring='accuracy')
