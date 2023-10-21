@@ -36,11 +36,12 @@ def getCumulativeStatsForTeams(db_accessor: Database_Accessor, team_ids: List[st
     return ret
 
 # Returns the latest cumulative stats for all teams
-def getCumulativeStatsForAllTeams(db_accessor: Database_Accessor, n_teams: int = 0) -> dict:
+# If n_teams is specified, will return 'n_teams' number of random teams
+def getCumulativeStatsForAllTeams(db_accessor: Database_Accessor, n_teams: int = None) -> dict:
     processed_teams = 0
     ret = {}
     while True:
-        if processed_teams >= n_teams:
+        if n_teams and processed_teams >= n_teams:
             break
         teams_data = db_accessor.getDataFromTable(tableName="teams", columns=["id", "latest_cumulative_stats"], limit=50, offset=processed_teams)
         if not teams_data:
@@ -52,7 +53,7 @@ def getCumulativeStatsForAllTeams(db_accessor: Database_Accessor, n_teams: int =
             team_id = team_data[0]
             team_stats = json.loads(team_data[1])
             ret[team_id] = team_stats
-            if len(ret) >= n_teams:
+            if n_teams and len(ret) >= n_teams:
                 break
     return ret
 
