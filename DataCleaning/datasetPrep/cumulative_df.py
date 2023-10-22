@@ -60,12 +60,13 @@ class CumulativeDataParser:
             for k in data_to_parse[team].keys():
                 new_key = f"{team}_{k}"
                 val = data_to_parse[team][k]
-                if isinstance(val, (int, float)):
+                if val == "region not found": # handle unknown regions
+                    self.raw_data_dict[new_key].append(None)
+                elif isinstance(val, (int, float, str)):
                     self.raw_data_dict[new_key].append(val) # handle numeric fields
                 elif isinstance(val, list):
                     self.raw_data_dict[new_key].append(val[0]) # handle regions
-                elif val == "region not found": # handle unknown regions
-                    self.raw_data_dict[new_key].append(None)
+                
     
     def contains_keys(self, obj: dict) -> bool:
         has_meta = "meta" in obj
