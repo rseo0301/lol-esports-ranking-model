@@ -171,14 +171,23 @@ class BayesModel(Ranking_Model):
     def _separate_xy(self, df: pd.DataFrame) -> tuple[pd.DataFrame, pd.Series]:
         return (df.drop(columns=["winner"]), df["winner"])
     
-    def fit_model(self, X_train: pd.DataFrame = None, y_train: pd.DataFrame = None) -> None:
-        # for speeding up development only; call self.get_training_testing_datasets() later.
-        with open("bruh-0.json", "r") as f:
-            self.raw_data_dict = json.loads(f.read())
-        df = pd.DataFrame(self.raw_data_dict)
-        df["winner"] = np.where(df["winner"] == 100, "BLUSIDE", "REDSIDE")
+    def fit(self, X, y):
+        self.pipeline.fit(X, y)
+    
+    def predict(self, X):
+        return self.pipeline.predict_proba(X)
+
+    def fit_model(self, X_train: pd.DataFrame = None, y_train: pd.DataFrame = None, use_cache = False) -> None:
+        # keep caching option to speed up predictions?
+        if use_cache:
+            with open("bruh-0.json", "r") as f:
+                self.raw_data_dict = json.loads(f.read())
+            df = pd.DataFrame(self.raw_data_dict)
+            df["winner"] = np.where(df["winner"] == 100, 1, 0)
+            train_df, test_df = train_test_split(df, test_size=0.2, random_state=123) # 80-20 split
+        else:
+            train_df, test_df = get_training_and_test_datasets(split_x_and_y=False)
         
-        train_df, test_df = train_test_split(df, test_size=0.2, random_state=123) # 80-20 split
         X_train, y_train = self._separate_xy(train_df)
         X_test, y_test = self._separate_xy(test_df)
 
@@ -208,8 +217,8 @@ class BayesModel(Ranking_Model):
 
 
 bm = BayesModel()
-bm.get_global_rankings(38)
-# bm.get_tournament_rankings("103462439438682788", "Playoffs")
+# bm.get_global_rankings(38)
+bm.get_tournament_rankings("103462439438682788", "Playoffs")
 # bm.get_custom_rankings([
 #     "103461966951059521", 
 #     "99566404585387054",
