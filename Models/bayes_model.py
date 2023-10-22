@@ -47,10 +47,6 @@ class BayesModel(Ranking_Model):
         # we should re-visit this and resolve this issue.
         cum_stats_all_teams = getCumulativeStatsForAllTeams(self.db_accessor)
 
-        # ISSUES WITH getCumulativeStatsForAllTeams?
-        # - when passed n_teams ranging from [23, 50], only returns 23 teams
-        # - doesn't seem to skip teams without a region (try running the method without specifying n_teams)
-
         return self._get_rankings(cum_stats_all_teams)[:n_teams]
     
     def get_tournament_rankings(self, tournament_id: str, stage: str) -> List[dict]:
@@ -218,7 +214,7 @@ class BayesModel(Ranking_Model):
 
 bm = BayesModel()
 # bm.get_global_rankings(38)
-bm.get_tournament_rankings("103462439438682788", "Playoffs")
+bm.get_tournament_rankings("103462439438682788", "Regular Season")
 # bm.get_custom_rankings([
 #     "103461966951059521", 
 #     "99566404585387054",
