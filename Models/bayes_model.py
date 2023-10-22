@@ -22,9 +22,9 @@ from DataCleaning.datasetPrep.cumulative_df import get_training_and_test_dataset
 
 class BayesModel(Ranking_Model):
     def __init__(self) -> None:
-        self.model_trained = False
-        self.pipeline: Pipeline = None
-        self.db_accessor = Database_Accessor(
+        self._model_trained = False
+        self._pipeline: Pipeline = None
+        self._db_accessor = Database_Accessor(
             db_name="games",
             db_host="riot-hackathon-db.c880zspfzfsi.us-west-2.rds.amazonaws.com",
             db_user="data_cleaner",
@@ -35,25 +35,30 @@ class BayesModel(Ranking_Model):
         """
         Return the top `n_teams` teams in the global rankings
         """
+        print("BayesModel::get_global_rankings()")
 
-        if not self.model_trained: self.fit_model()
+        if not self._model_trained: self._fit_model()
 
-        # to account for red-side/blue-side bias that might be picked up by 
-        # our training model, for each match involving team A and team B,
-        # we should assign team A to team 1 and team B to team 2 and predict,
-        # AND flip it around to assign team A -> team 2 and team B -> team 1.
-        # However, due to time constraints, we are only rolling with performing
-        # the first prediction outlined above. Should we have some time remaining,
-        # we should re-visit this and resolve this issue.
-        cum_stats_all_teams = getCumulativeStatsForAllTeams(self.db_accessor)
+        if not self._global_rankings:
+            # to account for red-side/blue-side bias that might be picked up by 
+            # our training model, for each match involving team A and team B,
+            # we should assign team A to team 1 and team B to team 2 and predict,
+            # AND flip it around to assign team A -> team 2 and team B -> team 1.
+            # However, due to time constraints, we are only rolling with performing
+            # the first prediction outlined above. Should we have some time remaining,
+            # we should re-visit this and resolve this issue.
+            cum_stats_all_teams = getCumulativeStatsForAllTeams(self._db_accessor)
 
-        return self._get_rankings(cum_stats_all_teams)[:n_teams]
+            self._global_rankings = self._get_rankings(cum_stats_all_teams)
+
+        return self._global_rankings[:n_teams]
     
     def get_tournament_rankings(self, tournament_id: str, stage: str) -> List[dict]:
-        if not self.model_trained: self.fit_model()
+        print("BayesModel::get_tournament_rankings()")
+        if not self._model_trained: self._fit_model()
 
         cum_stats_tourney = getCumulativeDataForTournament(
-            self.db_accessor,
+            self._db_accessor,
             tournament_id,
             stage,
         )
@@ -61,7 +66,8 @@ class BayesModel(Ranking_Model):
         return self._get_rankings(cum_stats_tourney)
     
     def get_custom_rankings(self, teams: dict) -> List[dict]:
-        if not self.model_trained: self.fit_model()
+        print("BayesModel::get_custom_rankings()")
+        if not self._model_trained: self._fit_model()
         if len(teams) < 2:
             res = []
             for i, t in enumerate(teams):
@@ -73,7 +79,7 @@ class BayesModel(Ranking_Model):
             return res
 
         cum_stats_for_teams = getCumulativeStatsForTeams(
-            self.db_accessor,
+            self._db_accessor,
             teams,
         )
 
@@ -90,7 +96,6 @@ class BayesModel(Ranking_Model):
         self._calculate_expected_wins(cum_stats_formatted, expected_wins)
         ret = self._sort_rankings(expected_wins)
 
-        print(ret)
         return ret
     
     def _sort_rankings(self, expected_wins: defaultdict[any, int]) -> List[dict]:
@@ -120,7 +125,7 @@ class BayesModel(Ranking_Model):
                 self._parse_team_cumulative_data(data_dict, team_2, "team_2")
                 data_df = pd.DataFrame(data_dict, index=[0])
 
-                predictions = self.pipeline.predict_proba(data_df)[0]
+                predictions = self._pipeline.predict_proba(data_df)[0]
                 print(f"expected outcome between {team_1['team_id']} and {team_2['team_id']}: {predictions}")
                 
                 expected_wins[team_1['team_id']] += predictions[0]
@@ -146,7 +151,7 @@ class BayesModel(Ranking_Model):
                 print(f"UNKNOWN VALUE TYPE! type: {type(v)}; value: {v}")
 
     def _fetch_team_info(self, team_id: str, expected_wins: float) -> dict:
-        db_data = self.db_accessor.getDataFromTable(
+        db_data = self._db_accessor.getDataFromTable(
             "teams",
             ["team"],
             where_clause=f"id = '{team_id}'",
@@ -167,18 +172,18 @@ class BayesModel(Ranking_Model):
     def _separate_xy(self, df: pd.DataFrame) -> tuple[pd.DataFrame, pd.Series]:
         return (df.drop(columns=["winner"]), df["winner"])
     
-    def fit(self, X, y):
-        self.pipeline.fit(X, y)
+    def _fit(self, X, y):
+        self._pipeline.fit(X, y)
     
-    def predict(self, X):
-        return self.pipeline.predict_proba(X)
+    def _predict(self, X):
+        return self._pipeline.predict_proba(X)
 
-    def fit_model(self, X_train: pd.DataFrame = None, y_train: pd.DataFrame = None, use_cache = False) -> None:
+    def _fit_model(self, X_train: pd.DataFrame = None, y_train: pd.DataFrame = None, use_cache = False) -> None:
         # keep caching option to speed up predictions?
         if use_cache:
             with open("bruh-0.json", "r") as f:
-                self.raw_data_dict = json.loads(f.read())
-            df = pd.DataFrame(self.raw_data_dict)
+                raw_data = json.loads(f.read())
+            df = pd.DataFrame(raw_data)
             df["winner"] = np.where(df["winner"] == 100, 1, 0)
             train_df, test_df = train_test_split(df, test_size=0.2, random_state=123) # 80-20 split
         else:
@@ -205,16 +210,16 @@ class BayesModel(Ranking_Model):
         print("CROSS VALIDATION RESULTS (TRAIN)\t ===> ", cv_score["train_score"].mean())
 
         pipeline.fit(X_train, y_train)
-        self.pipeline = pipeline
-        self.model_trained = True
+        self._pipeline = pipeline
+        self._model_trained = True
 
         print("---")
         print("FINAL TEST SCORE\t\t\t ===> ", pipeline.score(X_test, y_test))
 
 
-bm = BayesModel()
+# bm = BayesModel()
 # bm.get_global_rankings(38)
-bm.get_tournament_rankings("103462439438682788", "Regular Season")
+# bm.get_tournament_rankings("103462439438682788", "Regular Season")
 # bm.get_custom_rankings([
 #     "103461966951059521", 
 #     "99566404585387054",
@@ -225,6 +230,16 @@ bm.get_tournament_rankings("103462439438682788", "Regular Season")
 #     "98926509884398584",
 # ])
 # bm.fit_model()
+
+if __name__ == "__main__": 
+    bm = BayesModel()
+    keep_going = input("Fetch global rankings? (y/n)").lower()
+
+    while keep_going == 'y':
+        print(bm.get_global_rankings(20))
+        bm.
+        keep_going = input("Fetch again? (y/n)").lower()
+    
 
 # test tournament ID: 103462439438682788
 # test stage name: "groups" (for more, see: https://github.com/rseo0301/lol-esports-ranking-model/blob/regression-model/supplement-docs.md)
