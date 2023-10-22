@@ -59,23 +59,7 @@ class BayesModel(Ranking_Model):
             
         expected_wins = defaultdict(int)
 
-        total_matches_considered = 0
-        for i in range(len(cum_stats_formatted)):
-            team_1 = cum_stats_formatted[i]
-
-            for j in range(i + 1, len(cum_stats_formatted)):
-                team_2 = cum_stats_formatted[j]
-
-                data_dict = {}
-                self.parse_team_cumulative_data(data_dict, team_1, "team_1")
-                self.parse_team_cumulative_data(data_dict, team_2, "team_2")
-                data_df = pd.DataFrame(data_dict, index=[0])
-                predictions = self.pipeline.predict_proba(data_df)[0]
-                print(f"expected outcome between {team_1['team_id']} and {team_2['team_id']}: {predictions}")
-                
-                expected_wins[team_1['team_id']] += predictions[0]
-                expected_wins[team_2['team_id']] += predictions[1]
-                total_matches_considered += 1
+        self.calculate_expected_wins(cum_stats_formatted, expected_wins)
         
         ret = [
             self.fetch_team_info(k, v) 
@@ -105,24 +89,7 @@ class BayesModel(Ranking_Model):
             v["team_id"] = k
             cum_stats_formatted.append(v)
         
-        total_matches_considered = 0
-        for i in range(len(cum_stats_formatted)):
-            team_1 = cum_stats_formatted[i]
-
-            for j in range(i + 1, len(cum_stats_formatted)):
-                team_2 = cum_stats_formatted[j]
-
-                data_dict = {}
-                self.parse_team_cumulative_data(data_dict, team_1, "team_1")
-                self.parse_team_cumulative_data(data_dict, team_2, "team_2")
-                data_df = pd.DataFrame(data_dict, index=[0])
-
-                predictions = self.pipeline.predict_proba(data_df)[0]
-                print(f"expected outcome between {team_1['team_id']} and {team_2['team_id']}: {predictions}")
-                
-                expected_wins[team_1['team_id']] += predictions[0]
-                expected_wins[team_2['team_id']] += predictions[1]
-                total_matches_considered += 1
+        self.calculate_expected_wins(cum_stats_formatted, expected_wins)
         
         ret = [
             self.fetch_team_info(k, v) 
@@ -164,27 +131,8 @@ class BayesModel(Ranking_Model):
         for k, v in cum_stats_all_teams.items():
             v["team_id"] = k
             cum_stats_formatted.append(v)
-        
-        total_matches_considered = 0
 
-        print(cum_stats_formatted)
-        for i in range(len(cum_stats_formatted)):
-            team_1 = cum_stats_formatted[i]
-
-            for j in range(i + 1, len(cum_stats_formatted)):
-                team_2 = cum_stats_formatted[j]
-
-                data_dict = {}
-                self.parse_team_cumulative_data(data_dict, team_1, "team_1")
-                self.parse_team_cumulative_data(data_dict, team_2, "team_2")
-                data_df = pd.DataFrame(data_dict, index=[0])
-
-                predictions = self.pipeline.predict_proba(data_df)[0]
-                print(f"expected outcome between {team_1['team_id']} and {team_2['team_id']}: {predictions}")
-                
-                expected_wins[team_1['team_id']] += predictions[0]
-                expected_wins[team_2['team_id']] += predictions[1]
-                total_matches_considered += 1
+        self.calculate_expected_wins(cum_stats_formatted, expected_wins)
         
         ret = [
             self.fetch_team_info(k, v) 
@@ -200,6 +148,27 @@ class BayesModel(Ranking_Model):
         print(ret)
         return ret
     
+    def calculate_expected_wins(self, cum_stats: List[dict], expected_wins: defaultdict[any, int]) -> None:
+        total_matches_considered = 0
+        for i in range(len(cum_stats)):
+            team_1 = cum_stats[i]
+
+            for j in range(i + 1, len(cum_stats)):
+                team_2 = cum_stats[j]
+
+                data_dict = {}
+                self.parse_team_cumulative_data(data_dict, team_1, "team_1")
+                self.parse_team_cumulative_data(data_dict, team_2, "team_2")
+                data_df = pd.DataFrame(data_dict, index=[0])
+
+                predictions = self.pipeline.predict_proba(data_df)[0]
+                print(f"expected outcome between {team_1['team_id']} and {team_2['team_id']}: {predictions}")
+                
+                expected_wins[team_1['team_id']] += predictions[0]
+                expected_wins[team_2['team_id']] += predictions[1]
+                total_matches_considered += 1
+        print(f"total matches considered: {total_matches_considered}")
+        
     def parse_team_cumulative_data(
         self,
         container: dict, 
