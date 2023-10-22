@@ -15,11 +15,17 @@ class RegressionModel(Ranking_Model):
 
         X_train, X_val, y_train, y_val = super().get_training_test_datasets()
 
+        # extract one-hot encoded region columns
+        self.team_1_regions = [col for col in X_train.columns if col.startswith('team_1_region_')]
+        self.team_2_regions = [col for col in X_train.columns if col.startswith('team_2_region_')]
+        self.original_columns = X_train.columns.tolist()
+
         # scale data
         self.X_train = self.scaler.fit_transform(X_train)
         self.X_val = self.scaler.transform(X_val)
         self.y_train = y_train
         self.y_val = y_val
+
 
     def cross_validate(self, cv=10):
         skf = StratifiedKFold(n_splits=cv)
@@ -58,7 +64,30 @@ class RegressionModel(Ranking_Model):
         accuracy = accuracy_score(self.y_val, y_pred)
         report = classification_report(self.y_val, y_pred)
         print(f"Accuracy: {accuracy}")
-        print(report)
+        print(report)  
+    
+    def encode_regions(self, input_df, team1_region, team2_region):
+        # assign 0 to all other regions
+        team1_region_dict = {col: 0 for col in self.team_1_regions}
+        team2_region_dict = {col: 0 for col in self.team_2_regions}
+
+        # assign 1 to specified team1 and team2 regions
+        team1_region_dict[f'team_1_region_{team1_region}'] = 1
+        team2_region_dict[f'team_2_region_{team2_region}'] = 1
+
+        # add columns and values to dataframe
+        for col, value in team1_region_dict.items():
+            input_df[col] = value
+        for col, value in team2_region_dict.items():
+            input_df[col] = value
+
+        # drop unneeded columns
+        input_df.drop(columns=['team_1_region', 'team_2_region'], inplace=True)
+
+        # reorder columns according to X_train's columns before scaling
+        input_df = input_df[self.original_columns]
+   
+        return input_df    
 
     def create_teams_stat_df(self, teamA_stats, teamB_stats):
         # returns a DataFrame with the combined stats of both teams
@@ -70,13 +99,22 @@ class RegressionModel(Ranking_Model):
     def simulate_match(self, teamA_stats, teamB_stats):
         # prepare team stats for prediction
         input_df = self.create_teams_stat_df(teamA_stats, teamB_stats)
-        input_df = self.scaler.transform(input_df)  # Scale the input data
+
+        # one hot encode regions for both teams
+        team1_region = teamA_stats['region'][0]
+        team2_region = teamB_stats['region'][0]
+        input_df = self.encode_regions(input_df, team1_region, team2_region)
+
+        # scale input data
+        input_df = self.scaler.transform(input_df)
     
         # predict match outcome
+        print("predicting a game...")
         prediction = self.model.predict(input_df)[0]
     
         # return the winning team (either 'A' or 'B')
         return 'A' if prediction == 1 else 'B'
+    
     
     def rank_teams(self, teams):
         # win count per team
@@ -100,34 +138,29 @@ class RegressionModel(Ranking_Model):
         dao: Database_Accessor = Database_Accessor(db_host='riot-hackathon-db.c880zspfzfsi.us-west-2.rds.amazonaws.com')
         team_stats = getCumulativeStatsForAllTeams(dao)
         rankings = self.rank_teams(team_stats)
-        print(rankings)
-        
-
-        return super().get_global_rankings(n_teams)
+        return rankings[:20]
     
     def get_tournament_rankings(self, tournament_id: str, stage: str) -> List[dict]:
         dao: Database_Accessor = Database_Accessor(db_host='riot-hackathon-db.c880zspfzfsi.us-west-2.rds.amazonaws.com')
         team_stats = getCumulativeDataForTournament(dao, tournament_id, stage)
         rankings = self.rank_teams(team_stats)
-        print(rankings)
-        return super().get_tournament_rankings(dao, tournament_id, stage)
+        return rankings
     
     def get_custom_rankings(self, teams: dict) -> List[dict]:
         dao: Database_Accessor = Database_Accessor(db_host='riot-hackathon-db.c880zspfzfsi.us-west-2.rds.amazonaws.com')
         team_stats = getCumulativeStatsForTeams(dao, teams)
         rankings = self.rank_teams(team_stats)
-        print(rankings)
-        
-        return super().get_custom_rankings(teams)
+        return rankings
   
   
 
 # Testing
 model = RegressionModel()
-model.get_global_rankings()
+model.tune_hyperparameters()
+model.train()
+model.cross_validate() # 10 fold CV
+model.predict()
+model.evaluate()
 
-# model.tune_hyperparameters()
-# model.train()
-# model.cross_validate() # 10 fold CV
-# model.predict()
-# model.evaluate()
+ranks = model.get_global_rankings()
+print(ranks)
