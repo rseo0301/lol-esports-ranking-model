@@ -60,7 +60,7 @@ class CumulativeDataParser:
             for k in data_to_parse[team].keys():
                 new_key = f"{team}_{k}"
                 val = data_to_parse[team][k]
-                if isinstance(val, (int, float)):
+                if isinstance(val, (int, float, str)):
                     self.raw_data_dict[new_key].append(val) # handle numeric fields
                 elif isinstance(val, list):
                     self.raw_data_dict[new_key].append(val[0]) # handle regions
