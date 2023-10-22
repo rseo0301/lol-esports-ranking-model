@@ -51,7 +51,7 @@ class BayesModel(Ranking_Model):
         # - when passed n_teams ranging from [23, 50], only returns 23 teams
         # - doesn't seem to skip teams without a region (try running the method without specifying n_teams)
 
-        return self._get_rankings(cum_stats_all_teams)
+        return self._get_rankings(cum_stats_all_teams)[:n_teams]
     
     def get_tournament_rankings(self, tournament_id: str, stage: str) -> List[dict]:
         if not self.model_trained: self.fit_model()
@@ -208,17 +208,17 @@ class BayesModel(Ranking_Model):
 
 
 bm = BayesModel()
-# bm.get_global_rankings(38)
+bm.get_global_rankings(38)
 # bm.get_tournament_rankings("103462439438682788", "Playoffs")
-bm.get_custom_rankings([
-    "103461966951059521", 
-    "99566404585387054",
-    "98767991853197861",
-    "98767991926151025",
-    "98767991866488695",
-    "100725845018863243",
-    "98926509884398584",
-])
+# bm.get_custom_rankings([
+#     "103461966951059521", 
+#     "99566404585387054",
+#     "98767991853197861",
+#     "98767991926151025",
+#     "98767991866488695",
+#     "100725845018863243",
+#     "98926509884398584",
+# ])
 # bm.fit_model()
 
 # test tournament ID: 103462439438682788
