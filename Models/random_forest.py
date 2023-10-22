@@ -8,7 +8,7 @@ from Models.ranking_model_interface import Ranking_Model
 from API.main import *
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.model_selection import GridSearchCV, RandomizedSearchCV
-from dao.util import getCumulativeDataForTournament, getCumulativeStatsForTeams
+from dao.util import getCumulativeDataForTournament, getCumulativeStatsForAllTeams, getCumulativeStatsForTeams
 
 class RandomForest(Ranking_Model):
 
@@ -16,7 +16,17 @@ class RandomForest(Ranking_Model):
     dao: Database_Accessor = Database_Accessor(db_host='riot-hackathon-db.c880zspfzfsi.us-west-2.rds.amazonaws.com')
 
     def get_global_rankings(self, n_teams: int = 20) -> List[dict]:
-        return super().get_global_rankings(n_teams)
+        cumulative_data: getCumulativeStatsForAllTeams(db_accessor= self.dao)
+        if cumulative_data:
+            print(f"Cumulative data found for all teams")
+            data = self.create_dataframe(cumulative_data)
+            predictions = self.predict(data[0])
+            wins = self.calculate_wins(predictions=predictions, matchups=data[1])
+
+            return [wins]
+
+        print("No data found")
+        return []
     
     def get_tournament_rankings(self, tournament_id: str, stage: str) -> List[dict]:
         cumulative_data_for_tournament = getCumulativeDataForTournament(db_accessor=self.dao, tournament_id=tournament_id, stage_name=stage)
@@ -34,7 +44,7 @@ class RandomForest(Ranking_Model):
     def get_custom_rankings(self, teams: List) -> List[dict]:
         cumulative_data_for_teams: getCumulativeStatsForTeams(db_accessor= self.dao, team_ids=teams)
         if cumulative_data_for_teams:
-            print(f"Cumulative data found for games in list")
+            print(f"Cumulative data found for teams in list")
             data = self.create_dataframe(cumulative_data_for_teams)
             predictions = self.predict(data[0])
             wins = self.calculate_wins(predictions=predictions, matchups=data[1])
@@ -103,56 +113,6 @@ class RandomForest(Ranking_Model):
         result = self.predict(df)
         self.calculate_wins(result, matchups)   
         
-    def calculate_wins(self, predictions, matchups):
-        wins = {}
-        for i, pred in enumerate(predictions):
-            team_1 = matchups.iloc[i].iloc[0]
-            team_2 = matchups.iloc[i].iloc[1]
-            if team_1 in wins:
-                wins[team_1] = wins[team_1] + pred[1]
-            else:
-                wins[team_1] = pred[1]
-            
-            if team_2 in wins:
-                wins[team_2] = wins[team_2] + pred[0]
-            else:
-                wins[team_2] = pred[0]
-            
-        sorted_wins = sorted(wins.items(), key=lambda x:x[1], reverse=True)
-        sorted_dict = dict(sorted_wins)
-        for key in sorted_dict:
-            print(key, " : ", "{:.2f}".format(sorted_dict[key]))
-        return sorted_dict
-
-    def create_matchups(self, data) -> List:
-        teams = list(data.keys())
-
-        matchups = pd.DataFrame(columns=['team_1_name', 'team_2_name'])
-        matchup_data = []
-
-        for i in range(len(teams) - 1):
-            team_1: dict = data[teams[i]] # dict containing data of first team
-            t1_edited = {}
-
-            for key, value in team_1.items():
-                t1_edited["team_1_" + key] = team_1[key]
-
-            for j in range(i+1,len(teams)):
-                team_2: dict = data[teams[j]] # dict containing data of second team
-
-                t2_edited = {}
-                
-                for key, value in team_2.items():
-                    t2_edited["team_2_" + key] = team_2[key]
-
-                new_row = {'team_1_name': teams[i], 'team_2_name': teams[j]}
-                print(new_row)
-                matchups.loc[len(matchups)] = new_row
-                t2_edited.update(t1_edited)
-                matchup_data.append(t2_edited)
-        
-        return [matchups, matchup_data]
-
     def optimal_parameters(self):
         # Number of trees in random forest
         n_estimators = [10,20,30,40,50,60,70,80,90,100,110,120,130,140,150]
