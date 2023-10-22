@@ -51,7 +51,7 @@ class BayesModel(Ranking_Model):
         # - when passed n_teams ranging from [23, 50], only returns 23 teams
         # - doesn't seem to skip teams without a region (try running the method without specifying n_teams)
 
-        return self.get_rankings(cum_stats_all_teams)
+        return self._get_rankings(cum_stats_all_teams)
     
     def get_tournament_rankings(self, tournament_id: str, stage: str) -> List[dict]:
         if not self.model_trained: self.fit_model()
@@ -62,14 +62,14 @@ class BayesModel(Ranking_Model):
             stage,
         )
 
-        return self.get_rankings(cum_stats_tourney)
+        return self._get_rankings(cum_stats_tourney)
     
     def get_custom_rankings(self, teams: dict) -> List[dict]:
         if not self.model_trained: self.fit_model()
         if len(teams) < 2:
             res = []
             for i, t in enumerate(teams):
-                team_info = self.fetch_team_info(t, -1)
+                team_info = self._fetch_team_info(t, -1)
                 del team_info["expected_wins"]
                 team_info["rank"] = i + 1
                 res.append(team_info)
@@ -81,9 +81,9 @@ class BayesModel(Ranking_Model):
             teams,
         )
 
-        return self.get_rankings(cum_stats_for_teams)
+        return self._get_rankings(cum_stats_for_teams)
 
-    def get_rankings(self, cumulative_stats: dict) -> List[dict]:
+    def _get_rankings(self, cumulative_stats: dict) -> List[dict]:
         cum_stats_formatted = []
         expected_wins = defaultdict(int)
 
@@ -91,15 +91,15 @@ class BayesModel(Ranking_Model):
             v["team_id"] = k
             cum_stats_formatted.append(v)
 
-        self.calculate_expected_wins(cum_stats_formatted, expected_wins)
-        ret = self.sort_rankings(expected_wins)
+        self._calculate_expected_wins(cum_stats_formatted, expected_wins)
+        ret = self._sort_rankings(expected_wins)
 
         print(ret)
         return ret
     
-    def sort_rankings(self, expected_wins: defaultdict[any, int]) -> List[dict]:
+    def _sort_rankings(self, expected_wins: defaultdict[any, int]) -> List[dict]:
         ret = [
-            self.fetch_team_info(k, v) 
+            self._fetch_team_info(k, v) 
             for k, v in sorted(
                 expected_wins.items(), 
                 key=lambda i: i[1], 
@@ -111,7 +111,7 @@ class BayesModel(Ranking_Model):
 
         return ret
 
-    def calculate_expected_wins(self, cum_stats: List[dict], expected_wins: defaultdict[any, int]) -> None:
+    def _calculate_expected_wins(self, cum_stats: List[dict], expected_wins: defaultdict[any, int]) -> None:
         total_matches_considered = 0
         for i in range(len(cum_stats)):
             team_1 = cum_stats[i]
@@ -120,8 +120,8 @@ class BayesModel(Ranking_Model):
                 team_2 = cum_stats[j]
 
                 data_dict = {}
-                self.parse_team_cumulative_data(data_dict, team_1, "team_1")
-                self.parse_team_cumulative_data(data_dict, team_2, "team_2")
+                self._parse_team_cumulative_data(data_dict, team_1, "team_1")
+                self._parse_team_cumulative_data(data_dict, team_2, "team_2")
                 data_df = pd.DataFrame(data_dict, index=[0])
 
                 predictions = self.pipeline.predict_proba(data_df)[0]
@@ -132,7 +132,7 @@ class BayesModel(Ranking_Model):
                 total_matches_considered += 1
         print(f"total matches considered: {total_matches_considered}")
         
-    def parse_team_cumulative_data(
+    def _parse_team_cumulative_data(
         self,
         container: dict, 
         raw_data: dict, 
@@ -149,7 +149,7 @@ class BayesModel(Ranking_Model):
             else:
                 print(f"UNKNOWN VALUE TYPE! type: {type(v)}; value: {v}")
 
-    def fetch_team_info(self, team_id: str, expected_wins: float) -> dict:
+    def _fetch_team_info(self, team_id: str, expected_wins: float) -> dict:
         db_data = self.db_accessor.getDataFromTable(
             "teams",
             ["team"],
@@ -168,7 +168,7 @@ class BayesModel(Ranking_Model):
             "expected_wins": expected_wins
         }
     
-    def separate_xy(self, df: pd.DataFrame) -> tuple[pd.DataFrame, pd.Series]:
+    def _separate_xy(self, df: pd.DataFrame) -> tuple[pd.DataFrame, pd.Series]:
         return (df.drop(columns=["winner"]), df["winner"])
     
     def fit_model(self, X_train: pd.DataFrame = None, y_train: pd.DataFrame = None) -> None:
@@ -179,8 +179,8 @@ class BayesModel(Ranking_Model):
         df["winner"] = np.where(df["winner"] == 100, "BLUSIDE", "REDSIDE")
         
         train_df, test_df = train_test_split(df, test_size=0.2, random_state=123) # 80-20 split
-        X_train, y_train = self.separate_xy(train_df)
-        X_test, y_test = self.separate_xy(test_df)
+        X_train, y_train = self._separate_xy(train_df)
+        X_test, y_test = self._separate_xy(test_df)
 
         scaler = StandardScaler()
         ohe = OneHotEncoder(dtype=int, sparse_output=False)
