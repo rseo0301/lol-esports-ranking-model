@@ -7,6 +7,7 @@ from sklearn.preprocessing import StandardScaler
 from dao.util import getCumulativeStatsForTeams, getCumulativeDataForTournament, getCumulativeStatsForAllTeams
 from dao.database_accessor import Database_Accessor
 import pandas as pd
+import json
 
 class RegressionModel(Ranking_Model):
     def __init__(self):
@@ -87,7 +88,29 @@ class RegressionModel(Ranking_Model):
         # reorder columns according to X_train's columns before scaling
         input_df = input_df[self.original_columns]
    
-        return input_df    
+        return input_df
+
+    def fetch_team_info(self, team_id: str, expected_wins: float) -> dict:
+        dao: Database_Accessor = Database_Accessor(db_host='riot-hackathon-db.c880zspfzfsi.us-west-2.rds.amazonaws.com')
+        db_data = dao.getDataFromTable(
+            "teams",
+            ["team"],
+            where_clause=f"id = '{team_id}'",
+        )
+
+        if not db_data[0][0]:
+            print(f"team with team id {team_id} doesn't exist in Teams table")
+            return { "expected_wins": expected_wins }
+
+        team_data = json.loads(db_data[0][0])
+
+        return {
+            "team_id": team_id,
+            "team_code": team_data["acronym"],
+            "team_name": team_data["name"],
+            "rank": None,                           # placeholder, will be updated in rank_teams function
+            "expected_wins": expected_wins
+        }    
 
     def create_teams_stat_df(self, teamA_stats, teamB_stats):
         # returns a DataFrame with the combined stats of both teams
@@ -131,14 +154,39 @@ class RegressionModel(Ranking_Model):
                         wins[teamB_id] += 1
 
         # create rankings by sorting by team win counts
-        ranked_teams = sorted(wins.keys(), key=lambda x: wins[x], reverse=True)
-        return ranked_teams
+        ranked_teams = sorted(wins.items(), key=lambda x: x[1], reverse=True)
+
+        # handling ranks and ties
+        rank = 0
+        prev_wins = None
+
+        # initialize list to rebuild ranking info
+        ranked_teams_info = []
+        for idx, (team_id, win_count) in enumerate(ranked_teams):
+            # update rank only if win count is different from previous
+            if win_count != prev_wins:
+                rank = idx + 1
+            prev_wins = win_count
+
+            # fetch team info and update rank
+            team_info = self.fetch_team_info(team_id, win_count)
+            team_info['rank'] = rank
+            ranked_teams_info.append(team_info)
+
+        return ranked_teams_info
   
     def get_global_rankings(self, n_teams: int = 20) -> List[dict]:
         dao: Database_Accessor = Database_Accessor(db_host='riot-hackathon-db.c880zspfzfsi.us-west-2.rds.amazonaws.com')
+        # check if model has been trained, if not train model
+        try:
+            # if coef_ attribute doesn't exist, the model hasn't been trained.
+            _ = self.model.coef_
+        except AttributeError:
+            # train model
+            self.train()
         team_stats = getCumulativeStatsForAllTeams(dao)
         rankings = self.rank_teams(team_stats)
-        return rankings[:20]
+        return rankings[:n_teams]
     
     def get_tournament_rankings(self, tournament_id: str, stage: str) -> List[dict]:
         dao: Database_Accessor = Database_Accessor(db_host='riot-hackathon-db.c880zspfzfsi.us-west-2.rds.amazonaws.com')
@@ -146,9 +194,9 @@ class RegressionModel(Ranking_Model):
         rankings = self.rank_teams(team_stats)
         return rankings
     
-    def get_custom_rankings(self, teams: dict) -> List[dict]:
+    def get_custom_rankings(self, team_ids: List[str]) -> List[dict]:
         dao: Database_Accessor = Database_Accessor(db_host='riot-hackathon-db.c880zspfzfsi.us-west-2.rds.amazonaws.com')
-        team_stats = getCumulativeStatsForTeams(dao, teams)
+        team_stats = getCumulativeStatsForTeams(dao, team_ids)
         rankings = self.rank_teams(team_stats)
         return rankings
   
@@ -162,5 +210,8 @@ model.cross_validate() # 10 fold CV
 model.predict()
 model.evaluate()
 
-ranks = model.get_global_rankings()
-print(ranks)
+test_tournament_ranks = model.get_tournament_rankings('103462439438682788', 'Playoffs')
+test_custom_ranks = model.get_custom_rankings(['98767991877340524', '103461966951059521', '99294153828264740', '99294153824386385', '98767991860392497', '98926509892121852'])
+#ranks = model.get_global_rankings()
+print(f"tourney ranks: {test_tournament_ranks}")
+print(f"custom ranks: {test_custom_ranks}")
