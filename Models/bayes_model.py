@@ -52,25 +52,15 @@ class BayesModel(Ranking_Model):
         # - doesn't seem to skip teams without a region (try running the method without specifying n_teams)
 
         cum_stats_formatted = []
+        expected_wins = defaultdict(int)
 
         for k, v in cum_stats_all_teams.items():
             v["team_id"] = k
             cum_stats_formatted.append(v)
             
-        expected_wins = defaultdict(int)
 
         self.calculate_expected_wins(cum_stats_formatted, expected_wins)
-        
-        ret = [
-            self.fetch_team_info(k, v) 
-            for k, v in sorted(
-                expected_wins.items(), 
-                key=lambda i: i[1], 
-                reverse=True,
-            )
-        ]
-            
-        for i in range(len(ret)): ret[i]["rank"] = i + 1
+        ret = self.sort_rankings(expected_wins)
         return ret
     
     def get_tournament_rankings(self, tournament_id: str, stage: str) -> List[dict]:
@@ -90,17 +80,7 @@ class BayesModel(Ranking_Model):
             cum_stats_formatted.append(v)
         
         self.calculate_expected_wins(cum_stats_formatted, expected_wins)
-        
-        ret = [
-            self.fetch_team_info(k, v) 
-            for k, v in sorted(
-                expected_wins.items(), 
-                key=lambda i: i[1], 
-                reverse=True,
-            )
-        ]
-            
-        for i in range(len(ret)): ret[i]["rank"] = i + 1
+        ret = self.sort_rankings(expected_wins)
 
         print(ret)
         return ret
@@ -123,8 +103,6 @@ class BayesModel(Ranking_Model):
             teams,
         )
 
-        print(cum_stats_all_teams)
-
         cum_stats_formatted = []
         expected_wins = defaultdict(int)
 
@@ -133,7 +111,12 @@ class BayesModel(Ranking_Model):
             cum_stats_formatted.append(v)
 
         self.calculate_expected_wins(cum_stats_formatted, expected_wins)
-        
+        ret = self.sort_rankings(expected_wins)
+
+        print(ret)
+        return ret
+    
+    def sort_rankings(self, expected_wins: defaultdict[any, int]) -> List[dict]:
         ret = [
             self.fetch_team_info(k, v) 
             for k, v in sorted(
@@ -142,12 +125,11 @@ class BayesModel(Ranking_Model):
                 reverse=True,
             )
         ]
-            
+
         for i in range(len(ret)): ret[i]["rank"] = i + 1
 
-        print(ret)
         return ret
-    
+
     def calculate_expected_wins(self, cum_stats: List[dict], expected_wins: defaultdict[any, int]) -> None:
         total_matches_considered = 0
         for i in range(len(cum_stats)):
