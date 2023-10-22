@@ -51,39 +51,18 @@ class BayesModel(Ranking_Model):
         # - when passed n_teams ranging from [23, 50], only returns 23 teams
         # - doesn't seem to skip teams without a region (try running the method without specifying n_teams)
 
-        cum_stats_formatted = []
-        expected_wins = defaultdict(int)
-
-        for k, v in cum_stats_all_teams.items():
-            v["team_id"] = k
-            cum_stats_formatted.append(v)
-            
-
-        self.calculate_expected_wins(cum_stats_formatted, expected_wins)
-        ret = self.sort_rankings(expected_wins)
-        return ret
+        return self.get_rankings(cum_stats_all_teams)
     
     def get_tournament_rankings(self, tournament_id: str, stage: str) -> List[dict]:
         if not self.model_trained: self.fit_model()
 
-        cum_stats_all_teams = getCumulativeDataForTournament(
+        cum_stats_tourney = getCumulativeDataForTournament(
             self.db_accessor,
             tournament_id,
             stage,
         )
 
-        cum_stats_formatted = []
-        expected_wins = defaultdict(int)
-
-        for k, v in cum_stats_all_teams.items():
-            v["team_id"] = k
-            cum_stats_formatted.append(v)
-        
-        self.calculate_expected_wins(cum_stats_formatted, expected_wins)
-        ret = self.sort_rankings(expected_wins)
-
-        print(ret)
-        return ret
+        return self.get_rankings(cum_stats_tourney)
     
     def get_custom_rankings(self, teams: dict) -> List[dict]:
         if not self.model_trained: self.fit_model()
@@ -97,16 +76,18 @@ class BayesModel(Ranking_Model):
             print(res)
             return res
 
-
-        cum_stats_all_teams = getCumulativeStatsForTeams(
+        cum_stats_for_teams = getCumulativeStatsForTeams(
             self.db_accessor,
             teams,
         )
 
+        return self.get_rankings(cum_stats_for_teams)
+
+    def get_rankings(self, cumulative_stats: dict) -> List[dict]:
         cum_stats_formatted = []
         expected_wins = defaultdict(int)
 
-        for k, v in cum_stats_all_teams.items():
+        for k, v in cumulative_stats.items():
             v["team_id"] = k
             cum_stats_formatted.append(v)
 
