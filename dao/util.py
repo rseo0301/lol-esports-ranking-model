@@ -118,12 +118,21 @@ def getCumulativeDataForTournament(db_accessor: Database_Accessor, tournament_id
     teams_cumulative_stats = getCumulativeStatsForTeamsGames(teams_games=first_games)
     return teams_cumulative_stats
 
+# Returns the list of stages avaialable for a tournament
+def getStagesForTournament(db_accessor: Database_Accessor, tournament_id: str) -> List[str]:
+    tournament_data = db_accessor.getDataFromTable(tableName="tournaments", columns=["tournament"], where_clause=f"id='{tournament_id}'")
+    if not tournament_data:
+        error(f"Could not find tournament with id '{tournament_id}'")
+        return None
+    tournament = json.loads(tournament_data[0][0])
+    return [stage['name'] for stage in tournament['stages']]
 
 # Debugging and testing:
 if __name__ == "__main__":
     dao: Database_Accessor = Database_Accessor(db_host='riot-hackathon-db.c880zspfzfsi.us-west-2.rds.amazonaws.com')
     # dao: Database_Accessor = Database_Accessor()
     # cumulative_data_for_teams = getCumulativeStatsForTeams(db_accessor=dao, team_ids=["107580483738977500", "109981647134921596"])
+    print(getStagesForTournament(db_accessor=dao, tournament_id='103462439438682788'))
 
     tournaments_data = dao.getDataFromTable(tableName="tournaments", columns=["tournament"])
     for tournament_data in tournaments_data:
