@@ -25,6 +25,32 @@ CORS(app)
 
 __dao: Database_Accessor = None
 
+# Database accessor
+def get_dao():
+    global __dao
+    if not __dao:
+        __dao = Database_Accessor(
+            db_name="games",
+            db_host="riot-hackathon-db.c880zspfzfsi.us-west-2.rds.amazonaws.com",
+            db_user="data_cleaner",
+            )
+    return __dao
+
+# Will return the appropriate model, given the model anem
+def get_model(model_name: str):
+    if not model_name:
+        return Mock_Ranking_Model()
+    match model_name.lower():
+        case "bayesian":
+            return Mock_Ranking_Model()
+        case "logisticregression":
+            return Mock_Ranking_Model()
+        case "randomforest":
+            return Mock_Ranking_Model()
+        case _:
+            return Mock_Ranking_Model()
+
+
 # Get icons from Leaguepedia API
 def get_filename_url_to_open(site: EsportsClient, filename, team, width=None):
     response = site.client.api(
@@ -47,6 +73,7 @@ def get_filename_url_to_open(site: EsportsClient, filename, team, width=None):
     urllib.request.urlretrieve(url, f"icons/{team}.png")
     return url +".jpg"
 
+
 # Get icon for team
 @app.route('/api/icon/<team>', methods=['GET'])
 def get_icon(team):
@@ -63,32 +90,6 @@ def get_icon(team):
         return send_file(f"icons/{team}.png", mimetype='image/png')
     except Exception as e:
         return jsonify({"error": str(e)})
-
- 
-# Database accessor
-def get_dao():
-    global __dao
-    if not __dao:
-        __dao = Database_Accessor(
-            db_name="games",
-            db_host="riot-hackathon-db.c880zspfzfsi.us-west-2.rds.amazonaws.com",
-            db_user="data_cleaner",
-            )
-    return __dao
-
-
-def get_model(model_name: str):
-    if not model_name:
-        return Mock_Ranking_Model()
-    match model_name.lower():
-        case "bayesian":
-            return Mock_Ranking_Model()
-        case "logisticregression":
-            return Mock_Ranking_Model()
-        case "randomforest":
-            return Mock_Ranking_Model()
-        case _:
-            return Mock_Ranking_Model()
 
 
 # Fetching leagues data from db
@@ -212,7 +213,8 @@ def generate_leagues():
         
     sorted_leagueArr = sorted(leagueArr, key=lambda x: x["priority"])
     return jsonify(sorted_leagueArr)
-  
+
+
 @app.route("/leagueTournaments/<league_id>", methods=["GET"])
 def generate_league_tournaments(league_id: str):
     dao = get_dao()
@@ -236,20 +238,20 @@ def generate_league_tournaments(league_id: str):
         'tournaments': ret
     }
 
-"""
-    ML mock endpoints
-"""
-machineLearningModel=["Bayesian Model","Logistic Regression", "Random Forest"]
-
 
 @app.route("/model/tournamentsStandings/<tournament_id>")
+@app.route("/tournament_rankings/<tournament_id>")
 def generate_tournament_standings_by_model(tournament_id):
      model_name = request.args.get("model")
+     stage = request.args.get("stage")
+     if not stage:
+         return "Please provide a tournament 'stage' as a query parameter", 400
      model = get_model(model_name=model_name)
-     return model.get_tournament_rankings(tournament_id,"test")
+     return model.get_tournament_rankings(tournament_id=tournament_id, stage=stage)
 
 
 @app.route("/model/globalRankings", methods=["GET"])
+@app.route("/globalRankings", methods=["GET"])
 def generate_model_global_rankings():
     model_name = request.args.get('model')
     n_teams = request.args.get('n_teams')
@@ -257,13 +259,18 @@ def generate_model_global_rankings():
     return model.get_global_rankings(n_teams=int(n_teams))
 
 
-@app.route("/model/customRankings", methods=["POST"])
+@app.route("/model/customRankings", methods=["GET"])
+@app.route("/team_rankings", methods=["GET"])
 def generate_custom_rankings():
     model_name = request.args.get('model')
-    json_data = request.get_json()
-    if json_data is None:
-        return "Expecting a list of team ids as input. Example: {'teams': ['team1_id', 'team2_id', ...]", 400
-    team_ids = json_data['teams']
+    team_ids = request.args.get('team_ids')
+    if not team_ids:
+        return "Expecting 'team_ids' as a list of team ids in query", 400
+    try:
+        team_ids = json.loads(team_ids)
+    except json.JSONDecodeError as e:
+        return 'Error parsing "team_ids". Please ensure it is a properly json formatted array (eg. ["team1_id", "team2_id", ...]', 400
+    
     model = get_model(model_name=model_name)
     return model.get_custom_rankings(team_ids=team_ids)
 
