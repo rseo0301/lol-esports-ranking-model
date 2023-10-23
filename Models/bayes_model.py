@@ -143,7 +143,7 @@ class BayesModel(Ranking_Model):
             new_key = f"{key_prefix}_{k}"
 
             if isinstance(v, (int, float, str)):
-                container[new_key] = v
+                container[new_key] = None if v == "region not found" else v
             elif isinstance(v, list):
                 container[new_key] = v[0]
             else:
@@ -221,6 +221,7 @@ if __name__ == "__main__":
     #     "100725845018863243",
     #     "98926509884398584",
     # ]))
+    # print(bm.get_tournament_rankings("103462439438682788", "Playoffs"))
     # keep_going = input("Fetch global rankings? (y/n)").lower()
 
     # while keep_going == 'y':
