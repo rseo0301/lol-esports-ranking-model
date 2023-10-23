@@ -98,6 +98,7 @@ def getCumulativeDataForTournament(db_accessor: Database_Accessor, tournament_id
     # Expects an input of {team1_id: game1_id, team2_id: game2_id, ...}
     # Will return the associated cumulative stats for each game as {team1_id: cumulative_stats1, team2_id: cumulative_stats2, ...}
     def getCumulativeStatsForTeamsGames(teams_games: dict) -> dict:
+        from DataCleaning.cumulativeStats.cumulative_data_builder import Cumulative_Stats_Builder
         where_clause = " OR ".join([f"games.id='{game_id}'" for game_id in teams_games.values()])
         cumulative_stats_data = db_accessor.getDataFromTable(
             tableName="cumulative_data", 
@@ -107,18 +108,19 @@ def getCumulativeDataForTournament(db_accessor: Database_Accessor, tournament_id
             order_clause="eventTime DESC",
         )
         teams_cumulative_stats = {}
-        from DataCleaning.cumulativeStats.cumulative_data_builder import Cumulative_Stats_Builder
         csb = Cumulative_Stats_Builder(db_accessor)
 
-        for cumulative_data in cumulative_stats_data:
-            stats = json.loads(cumulative_data[3])
+        for data in cumulative_stats_data:
+            game_info = json.loads(data[1])
+            stats_info = json.loads(data[2])
+            stats = json.loads(data[3])
             team1_id, team2_id = stats['meta']['team1_id'], stats['meta']['team2_id']
+            
             team_1_stats, team_2_stats = stats.get('team_1'), stats.get('team_2')
-
-            if not (team_1_stats and team_2_stats):
-                game_info = json.loads(cumulative_data[1])
-                stats_info = json.loads(cumulative_data[2])
-                team_1_stats, team_2_stats = csb.addGamePlayed(game_info, stats_info)
+            if (not team_1_stats) or (not team_2_stats):
+                new_t1_stats, new_t2_stats = csb.addGamePlayed(game_info, stats_info)
+                team_1_stats = team_1_stats if team_1_stats else new_t1_stats
+                team_2_stats = team_2_stats if team_2_stats else new_t2_stats
                 
             teams_cumulative_stats[team1_id] = team_1_stats
             teams_cumulative_stats[team2_id] = team_2_stats
