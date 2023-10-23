@@ -28,7 +28,7 @@ class BayesModel(Ranking_Model):
             db_host="riot-hackathon-db.c880zspfzfsi.us-west-2.rds.amazonaws.com",
             db_user="data_cleaner",
         )
-        self._fit_model(use_cache=False)
+        self._fit_model()
         super().__init__()
     
     def get_global_rankings(self, n_teams: int = 20) -> List[dict]:
@@ -175,16 +175,12 @@ class BayesModel(Ranking_Model):
     def _predict(self, X):
         return self._pipeline.predict_proba(X)
 
-    def _fit_model(self, X_train: pd.DataFrame = None, y_train: pd.DataFrame = None, use_cache = False) -> None:
-        # keep caching option to speed up predictions?
-        if use_cache:
-            with open("bruh-0.json", "r") as f:
-                raw_data = json.loads(f.read())
-            df = pd.DataFrame(raw_data)
-            df["winner"] = np.where(df["winner"] == 100, 1, 0)
-            train_df, test_df = train_test_split(df, test_size=0.2, random_state=123) # 80-20 split
-        else:
-            train_df, test_df = get_training_and_test_datasets(split_x_and_y=False)
+    def _fit_model(self, X_train: pd.DataFrame = None, y_train: pd.DataFrame = None) -> None:
+        train_df, test_df = get_training_and_test_datasets(split_x_and_y=False)
+
+        weights = train_df[["weights"]].values.flatten()
+        train_df = train_df.drop(columns=["weights"])
+        test_df = test_df.drop(columns=["weights"])
         
         X_train, y_train = self._separate_xy(train_df)
         X_test, y_test = self._separate_xy(test_df)
@@ -206,34 +202,28 @@ class BayesModel(Ranking_Model):
         print("CROSS VALIDATION RESULTS (VALIDATION)\t ===> ", cv_score["test_score"].mean())
         print("CROSS VALIDATION RESULTS (TRAIN)\t ===> ", cv_score["train_score"].mean())
 
-        pipeline.fit(X_train, y_train)
+        pipeline.fit(X_train, y_train, **{ 'gaussiannb__sample_weight': weights })
         self._pipeline = pipeline
 
         print("---")
         print("FINAL TEST SCORE\t\t\t ===> ", pipeline.score(X_test, y_test))
 
-
-# bm = BayesModel()
-# bm.get_global_rankings(38)
-# bm.get_tournament_rankings("103462439438682788", "Regular Season")
-# bm.get_custom_rankings([
-#     "103461966951059521", 
-#     "99566404585387054",
-#     "98767991853197861",
-#     "98767991926151025",
-#     "98767991866488695",
-#     "100725845018863243",
-#     "98926509884398584",
-# ])
-# bm.fit_model()
-
 if __name__ == "__main__": 
     bm = BayesModel()
-    keep_going = input("Fetch global rankings? (y/n)").lower()
+    # print(bm.get_custom_rankings([
+    #     "103461966951059521", 
+    #     "99566404585387054",
+    #     "98767991853197861",
+    #     "98767991926151025",
+    #     "98767991866488695",
+    #     "100725845018863243",
+    #     "98926509884398584",
+    # ]))
+    # keep_going = input("Fetch global rankings? (y/n)").lower()
 
-    while keep_going == 'y':
-        print(bm.get_global_rankings(20))
-        keep_going = input("Fetch again? (y/n)").lower()
+    # while keep_going == 'y':
+    #     print(bm.get_global_rankings(580))
+    #     keep_going = input("Fetch again? (y/n)").lower()
     
 
 # test tournament ID: 103462439438682788
