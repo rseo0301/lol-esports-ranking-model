@@ -174,8 +174,8 @@ class Cumulative_Stats_Builder:
             return team1_dragons, team2_dragons
 
         def get_heralds_per_game() -> Tuple[int, int]:
-            team1_heralds = len([event for event in game_info['epic_monster_kill'] if event['monsterType'].lower() == 'riftHerald'.lower() and event['killerTeamID'] == 100])
-            team2_heralds = len([event for event in game_info['epic_monster_kill'] if event['monsterType'].lower() == 'riftHerald'.lower() and event['killerTeamID'] == 200])
+            team1_heralds = len([event for event in game_info['epic_monster_kill'] if event.get('monsterType', "").lower() == 'riftHerald'.lower() and event['killerTeamID'] == 100])
+            team2_heralds = len([event for event in game_info['epic_monster_kill'] if event.get('monsterType', "").lower() == 'riftHerald'.lower() and event['killerTeamID'] == 200])
             return team1_heralds, team2_heralds
         
         def get_turrets_per_game() -> Tuple[int, int]:

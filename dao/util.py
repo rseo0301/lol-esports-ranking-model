@@ -98,14 +98,33 @@ def getCumulativeDataForTournament(db_accessor: Database_Accessor, tournament_id
     # Expects an input of {team1_id: game1_id, team2_id: game2_id, ...}
     # Will return the associated cumulative stats for each game as {team1_id: cumulative_stats1, team2_id: cumulative_stats2, ...}
     def getCumulativeStatsForTeamsGames(teams_games: dict) -> dict:
+        from DataCleaning.cumulativeStats.cumulative_data_builder import Cumulative_Stats_Builder
         where_clause = " OR ".join([f"games.id='{game_id}'" for game_id in teams_games.values()])
-        cumulative_stats_data = db_accessor.getDataFromTable(tableName="cumulative_data", join_clause="games AS games ON cumulative_data.id = games.id", columns=["scale_by_90"], where_clause=where_clause, order_clause="eventTime DESC")
+        cumulative_stats_data = db_accessor.getDataFromTable(
+            tableName="cumulative_data", 
+            join_clause="games AS games ON cumulative_data.id = games.id", 
+            columns=["games.id", "games.info", "games.stats_update", "scale_by_90"], 
+            where_clause=where_clause, 
+            order_clause="eventTime DESC",
+        )
         teams_cumulative_stats = {}
-        for cumulative_data in cumulative_stats_data:
-            stats = json.loads(cumulative_data[0])
+        csb = Cumulative_Stats_Builder(db_accessor)
+
+        for data in cumulative_stats_data:
+            game_info = json.loads(data[1])
+            stats_info = json.loads(data[2])
+            stats = json.loads(data[3])
             team1_id, team2_id = stats['meta']['team1_id'], stats['meta']['team2_id']
-            teams_cumulative_stats[team1_id] = stats.get('team_1')
-            teams_cumulative_stats[team2_id] = stats.get('team_2')
+            
+            team_1_stats, team_2_stats = stats.get('team_1'), stats.get('team_2')
+            if (not team_1_stats) or (not team_2_stats):
+                new_t1_stats, new_t2_stats = csb.addGamePlayed(game_info, stats_info)
+                team_1_stats = team_1_stats if team_1_stats else new_t1_stats
+                team_2_stats = team_2_stats if team_2_stats else new_t2_stats
+                
+            teams_cumulative_stats[team1_id] = team_1_stats
+            teams_cumulative_stats[team2_id] = team_2_stats
+            
         return teams_cumulative_stats
             
     esports_game_ids = getStageEsportsGameIds()
