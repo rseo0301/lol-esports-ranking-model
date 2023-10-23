@@ -237,7 +237,6 @@ if __name__ == "__main__":
 
     while keep_going == 'y':
         print(bm.get_global_rankings(20))
-        bm.
         keep_going = input("Fetch again? (y/n)").lower()
     
 
