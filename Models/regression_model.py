@@ -1,5 +1,5 @@
 from typing import List
-from ranking_model_interface import Ranking_Model
+from .ranking_model_interface import Ranking_Model
 from sklearn.linear_model import LogisticRegression
 from sklearn.model_selection import StratifiedKFold, cross_val_score, GridSearchCV
 from sklearn.metrics import accuracy_score, classification_report
@@ -26,6 +26,10 @@ class RegressionModel(Ranking_Model):
         self.X_val = self.scaler.transform(X_val)
         self.y_train = y_train
         self.y_val = y_val
+
+        # Train
+        self.tune_hyperparameters()
+        self.train()
 
 
     def cross_validate(self, cv=10):
@@ -128,8 +132,8 @@ class RegressionModel(Ranking_Model):
         input_df = self.create_teams_stat_df(teamA_stats, teamB_stats)
 
         # one hot encode regions for both teams
-        team1_region = teamA_stats['region'][0]
-        team2_region = teamB_stats['region'][0]
+        team1_region = teamA_stats['region']
+        team2_region = teamB_stats['region']
         input_df = self.encode_regions(input_df, team1_region, team2_region)
 
         # scale input data
@@ -203,15 +207,16 @@ class RegressionModel(Ranking_Model):
   
 
 # Testing
-model = RegressionModel()
-model.tune_hyperparameters()
-model.train()
-model.cross_validate() # 10 fold CV
-model.predict()
-model.evaluate()
+if __name__=="__main__":
+    model = RegressionModel()
+    model.tune_hyperparameters()
+    model.train()
+    model.cross_validate() # 10 fold CV
+    model.predict()
+    model.evaluate()
 
-test_tournament_ranks = model.get_tournament_rankings('103462439438682788', 'Playoffs')
-test_custom_ranks = model.get_custom_rankings(['98767991877340524', '103461966951059521', '99294153828264740', '99294153824386385', '98767991860392497', '98926509892121852'])
-#ranks = model.get_global_rankings()
-print(f"tourney ranks: {test_tournament_ranks}")
-print(f"custom ranks: {test_custom_ranks}")
+    test_tournament_ranks = model.get_tournament_rankings('103462439438682788', 'Playoffs')
+    test_custom_ranks = model.get_custom_rankings(['98767991877340524', '103461966951059521', '99294153828264740', '99294153824386385', '98767991860392497', '98926509892121852'])
+    #ranks = model.get_global_rankings()
+    print(f"tourney ranks: {test_tournament_ranks}")
+    print(f"custom ranks: {test_custom_ranks}")

@@ -2,7 +2,7 @@ import numpy as np
 import tensorflow as tf
 import keras
 from keras import layers
-from ranking_model_interface import Ranking_Model
+from .ranking_model_interface import Ranking_Model
 from sklearn.preprocessing import StandardScaler
 from typing import List
 from sklearn.model_selection import StratifiedKFold, cross_val_score
@@ -59,9 +59,9 @@ class DeepNNModel(Ranking_Model):
         return super().get_custom_rankings(teams)
 
   
-
-model = DeepNNModel()
-model.train()
-#model.cross_validate() # 10 fold CV
-model.predict()
-model.evaluate()
+if __name__=="__main__":
+    model = DeepNNModel()
+    model.train()
+    #model.cross_validate() # 10 fold CV
+    model.predict()
+    model.evaluate()
