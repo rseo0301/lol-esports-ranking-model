@@ -11,7 +11,7 @@ import json
 
 class RandomForest(Ranking_Model):
 
-    model = RandomForestClassifier(n_estimators=100, min_samples_split=2, min_samples_leaf=1, max_features='sqrt', max_depth=6, bootstrap=True)
+    model = RandomForestClassifier(n_estimators=100, min_samples_split=2, min_samples_leaf=1, max_features='sqrt', max_depth=6, bootstrap=True, random_state=42)
 
     def __init__(self) -> None:
         self._dao = Database_Accessor(db_host='riot-hackathon-db.c880zspfzfsi.us-west-2.rds.amazonaws.com')
@@ -75,6 +75,7 @@ class RandomForest(Ranking_Model):
         
         # reorganize order of array as in model
         df = pd.DataFrame(matchup_data)
+        print(len(df.index))
         cols = ["team_1_avg_kd_ratio","team_2_avg_kd_ratio","team_1_barons_per_game","team_2_barons_per_game","team_1_gold_diff_at_14",
                 "team_2_gold_diff_at_14","team_1_overall_winrate","team_2_overall_winrate","team_1_avg_time_per_win",
                 "team_2_avg_time_per_win","team_1_dragons_per_game","team_2_dragons_per_game","team_1_first_blood_rate","team_2_first_blood_rate",
@@ -82,6 +83,21 @@ class RandomForest(Ranking_Model):
                 "team_2_turrets_per_game","team_1_avg_time_per_loss","team_2_avg_time_per_loss","team_1_gold_diff_per_min","team_2_gold_diff_per_min",
                 "team_1_avg_assists_per_kill","team_2_avg_assists_per_kill","team_1_vision_score_per_minute","team_2_vision_score_per_minute","team_1_region", "team_2_region"]
         df = df[cols]
+        column_swap_map = {}
+        for key in cols:
+            if key[5:6] == "2":
+                column_swap_map[key] = key[:5] + "1" + key[6:]
+            else:
+                column_swap_map[key] = key[:5] + "2" + key[6:]
+        
+        swapped_df = df.rename(columns=column_swap_map)
+        swapped_df = swapped_df[cols]
+
+        df = pd.concat([df, swapped_df])
+        df = df.reset_index(drop=True)
+
+        print(df)
+        print(df.groupby(['team_1_region'])['team_1_region'].count())
 
         region_one = self.parse_region(df[['team_1_region']].values.reshape(-1, 1))
         region_two = self.parse_region(df[['team_2_region']].values.reshape(-1, 1))
@@ -192,15 +208,14 @@ class RandomForest(Ranking_Model):
 if __name__ == "__main__":
     rfc = RandomForest()
     # rfc._optimal_parameters()
-    rfc.get_global_rankings()
-    rfc.worlds_predictions()
-    tournament_rankings = rfc.get_tournament_rankings("108206581962155974", "Regular Season")
-    custom_rankings = rfc.get_custom_rankings([
-        "103461966951059521",
-        "99566404585387054",
-        "98767991853197861",
-        "98767991926151025",
-        "98767991866488695",
-        "100725845018863243",
-        "98926509884398584",
-    ])
+    # rfc.worlds_predictions()
+    # tournament_rankings = rfc.get_tournament_rankings("108206581962155974", "Regular Season")
+    # custom_rankings = rfc.get_custom_rankings([
+    #     "103461966951059521",
+    #     "99566404585387054",
+    #     "98767991853197861",
+    #     "98767991926151025",
+    #     "98767991866488695",
+    #     "100725845018863243",
+    #     "98926509884398584",
+    # ])

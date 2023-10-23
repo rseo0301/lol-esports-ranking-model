@@ -79,6 +79,7 @@ class Ranking_Model(ABC):
         teams = list(data.keys())
 
         matchups = pd.DataFrame(columns=['team_1_name', 'team_2_name'])
+        matchups_swapped = pd.DataFrame(columns=['team_1_name', 'team_2_name'])
         matchup_data = []
 
         for i in range(len(teams) - 1):
@@ -96,9 +97,11 @@ class Ranking_Model(ABC):
                 for key, value in team_2.items():
                     t2_edited["team_2_" + key] = team_2[key]
 
-                new_row = {'team_1_name': teams[i], 'team_2_name': teams[j]}
-                matchups.loc[len(matchups)] = new_row
+                matchup = {'team_1_name': teams[i], 'team_2_name': teams[j]}
+                matchups.loc[len(matchups)] = matchup
+                matchup_swapped = {'team_1_name': teams[j], 'team_2_name': teams[i]}
+                matchups_swapped.loc[len(matchups_swapped)] = matchup_swapped
                 t2_edited.update(t1_edited)
                 matchup_data.append(t2_edited)
-        
-        return [matchups, matchup_data]
+
+        return [pd.concat([matchups, matchups_swapped]), matchup_data]
