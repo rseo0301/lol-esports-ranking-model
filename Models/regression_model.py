@@ -43,7 +43,7 @@ class RegressionModel(Ranking_Model):
         }
 
         # grid search with cross-validation
-        grid_search = GridSearchCV(self.model, param_grid, cv=10, scoring='accuracy', n_jobs=-1) # n_jobs=-1 uses all cores
+        grid_search = GridSearchCV(self.model, param_grid, cv=10, scoring='accuracy', n_jobs=-1)
         grid_search.fit(self.X_train, self.y_train)
         # update the model with best found parameters
         self.model = grid_search.best_estimator_
@@ -51,11 +51,15 @@ class RegressionModel(Ranking_Model):
         print(f"Best cross-validation score: {grid_search.best_score_}")
 
     def train(self):
-        self.model.fit(self.X_train, self.y_train)
+        weights = self.X_train['weights'].values
+        weights = weights.flatten()
+        X_train = X_train.drop(columns=['weights'])
+        self.model.fit(self.X_train, self.y_train, sample_weight=weights)
 
     def predict(self, X=None):
         if X is None:
             X = self.X_val
+            X = X.drop(columns=['weights'])
         else:
             X = self.scaler.transform(X)
         return self.model.predict(X)
