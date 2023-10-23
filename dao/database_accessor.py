@@ -145,10 +145,34 @@ class Database_Accessor:
             (
                 id VARCHAR(128) PRIMARY KEY,
                 team JSON,
+                region VARCHAR(128),
+                league VARCHAR(128),
                 latest_cumulative_stats JSON
             )
             """
             self.executeSqlCommand(command=command)
+            command = """
+                SELECT NULL FROM INFORMATION_SCHEMA.STATISTICS
+                WHERE table_schema = DATABASE() AND table_name = 'teams' AND index_name = 'region'
+            """
+            esportsGameIdIndexExists = self.executeSqlCommand(command=command)
+            if not esportsGameIdIndexExists:
+                command = """
+                    ALTER TABLE teams
+                    ADD INDEX region (region);
+                """
+                self.executeSqlCommand(command=command)
+            command = """
+                SELECT NULL FROM INFORMATION_SCHEMA.STATISTICS
+                WHERE table_schema = DATABASE() AND table_name = 'teams' AND index_name = 'league'
+            """
+            esportsGameIdIndexExists = self.executeSqlCommand(command=command)
+            if not esportsGameIdIndexExists:
+                command = """
+                    ALTER TABLE teams
+                    ADD INDEX league (league);
+                """
+                self.executeSqlCommand(command=command)
 
         def _createTournamentsTable():
             command = """
