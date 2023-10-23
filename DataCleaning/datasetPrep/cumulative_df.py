@@ -60,12 +60,13 @@ class CumulativeDataParser:
             for k in data_to_parse[team].keys():
                 new_key = f"{team}_{k}"
                 val = data_to_parse[team][k]
-                if isinstance(val, (int, float, str)):
+                if val == 'region not found': # handle unknown regions
+                    self.raw_data_dict[new_key].append(None)
+                elif isinstance(val, (int, float, str)):
                     self.raw_data_dict[new_key].append(val) # handle numeric fields
                 elif isinstance(val, list):
                     self.raw_data_dict[new_key].append(val[0]) # handle regions
-                elif val == "region not found": # handle unknown regions
-                    self.raw_data_dict[new_key].append(None)
+                
     
     def contains_keys(self, obj: dict) -> bool:
         has_meta = "meta" in obj
@@ -118,10 +119,18 @@ class CumulativeDataParser:
         print(f"total: {rows_parsed + len(skipped_row_ids)} rows observed")
 
         df = pd.DataFrame(self.raw_data_dict)
+        region = df[['team_1_region', 'team_2_region']].values.reshape(-1, 2)
+        weights = []
+        for matchup in region:
+            if matchup[0] != matchup[1] and matchup[0] is not None and matchup[1] is not None:
+                weights.append({'weights':100})
+            else:
+                weights.append({'weights':1})
+        weights_df = pd.DataFrame(weights)
+
 
         if split_x_and_y:
             # initialize encoder and fit data
-            region = df[['team_1_region', 'team_2_region']].values.reshape(-1, 2)
             enc = OneHotEncoder()
             enc.fit(region)
             # transform data
@@ -129,7 +138,7 @@ class CumulativeDataParser:
             # turn one hot into dataframe
             one_hot_df = pd.DataFrame(one_hot, columns=enc.get_feature_names_out(["team_1_region", "team_2_region"]))
             # add one_hot features and remove initial region features
-            X = pd.concat([df, one_hot_df], axis=1)
+            X = pd.concat([df, one_hot_df, weights_df], axis=1)
             X = X.drop(columns=["team_1_region", "team_2_region", "winner"])
 
             df["winner"] = np.where(df["winner"] == 100, 1, 0)
@@ -138,7 +147,7 @@ class CumulativeDataParser:
             return train_test_split(X, y, test_size=0.2, random_state=self.shuffle_state)
         
         # return training and testing sets; X and y are attached together (2-item list)
-        return train_test_split(df, test_size=0.2, random_state=self.shuffle_state)
+        return train_test_split(pd.concat[df, weights], test_size=0.2, random_state=self.shuffle_state)
     
 
 
