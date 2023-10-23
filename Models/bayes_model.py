@@ -4,7 +4,7 @@ import sys, os
 current_directory = os.path.dirname(os.path.abspath(__file__))
 sys.path.append(os.path.join(current_directory, ".."))
 
-from .ranking_model_interface import Ranking_Model
+from Models.ranking_model_interface import Ranking_Model
 from sklearn.naive_bayes import GaussianNB
 from sklearn.model_selection import train_test_split, cross_validate
 from sklearn.preprocessing import OneHotEncoder, StandardScaler
