@@ -107,6 +107,8 @@ class BayesModel(Ranking_Model):
             )
         ]
 
+        ret = list(filter(lambda i: i.get("team_id", None) != None, ret))
+
         for i in range(len(ret)): ret[i]["rank"] = i + 1
 
         return ret
