@@ -9,10 +9,11 @@ from API.main import *
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.model_selection import RandomizedSearchCV
 from dao.util import getCumulativeDataForTournament, getCumulativeStatsForAllTeams, getCumulativeStatsForTeams
+import json
 
 class RandomForest(Ranking_Model):
 
-    model = RandomForestClassifier(n_estimators=120, min_samples_split=2, min_samples_leaf=2, max_features='sqrt', max_depth=5, bootstrap=False)
+    model = RandomForestClassifier(n_estimators=100, min_samples_split=2, min_samples_leaf=1, max_features='sqrt', max_depth=6, bootstrap=True)
 
     def __init__(self) -> None:
         self._dao = Database_Accessor(db_host='riot-hackathon-db.c880zspfzfsi.us-west-2.rds.amazonaws.com')
@@ -88,8 +89,8 @@ class RandomForest(Ranking_Model):
         region_two = self.parse_region(df[['team_2_region']].values.reshape(-1, 1))
 
         # initialize and fit encoder
-        enc = OneHotEncoder(categories=[["BRAZIL", "CHINA", "COMMONWEALTH OF INDEPENDENT STATES", "EMEA", "HONG KONG, MACAU, TAIWAN", "JAPAN",
-                                        'KOREA', "LATIN AMERICA", "LATIN AMERICA NORTH", "LATIN AMERICA SOUTH", "NORTH AMERICA", "OCEANIA", "VIETNAM", "None"]])
+        enc = OneHotEncoder(categories=[["BRAZIL", "CHINA", "EMEA", "HONG KONG, MACAU, TAIWAN", "JAPAN",
+                                        'KOREA', "LATIN AMERICA", "NORTH AMERICA", "VIETNAM", "None"]])
         enc.fit(region_one)
         # transform data and turn into dataframe
         one_hot = enc.transform(region_one).todense()
@@ -154,6 +155,7 @@ class RandomForest(Ranking_Model):
         self.datasets[0] = self.datasets[0].drop(columns=["weights"])
         search.fit(self.datasets[0], self.datasets[2], sample_weight=weights)
         print(search.best_params_)
+        self.datasets[1] = self.datasets[1].drop(columns=["weights"])
         print(search.score(self.datasets[1], self.datasets[3]))
 
     def _sort_rankings(self, expected_wins: defaultdict[any, int]) -> List[dict]:
@@ -191,7 +193,7 @@ class RandomForest(Ranking_Model):
 
 if __name__ == "__main__":
     rfc = RandomForest()
-    # rfc.optimal_parameters()
+    # rfc._optimal_parameters()
     rfc.get_global_rankings()
     rfc.worlds_predictions()
     tournament_rankings = rfc.get_tournament_rankings("108206581962155974", "Regular Season")
