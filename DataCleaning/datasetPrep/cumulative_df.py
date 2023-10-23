@@ -126,7 +126,7 @@ class CumulativeDataParser:
             weights = []
             for matchup in region:
                 if matchup[0] != matchup[1] and matchup[0] is not None and matchup[1] is not None:
-                    weights.append({'weights':100})
+                    weights.append({'weights':1000})
                 else:
                     weights.append({'weights':1})
             

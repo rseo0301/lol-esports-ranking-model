@@ -104,7 +104,6 @@ class RandomForest(Ranking_Model):
         for i, value in enumerate(region):
             if value[0] == 'region not found':
                 region[i][0] = 'None'
-                print(f"region not found, {region[i][0]}")
         return region
 
     def fit(self, X, y):
