@@ -65,9 +65,15 @@ def addGamesToDb(games_directory: str):
             addGameToDb(game=game, stats=stats, eventTime=eventTime)
 
 
-def addEsportsDataToDb(esports_data_directory: str, shortlist_only: bool = False):
+def addEsportsDataToDb(esports_data_directory: str, league_shortlist_only: bool = False):
     db_accessor: Database_Accessor = getDbAccessor()
+    directory_path = Path(esports_data_directory)
+    esports_data_cleaner: Esports_Cleaner = Esports_Cleaner()
     shortlist_tournaments: List[str] = []
+    tournament_league_mapping: dict = {}
+    tournament_region_mapping: dict = {}
+    team_to_region: dict = {}
+    team_to_league: dict = {}
 
     def inLeagueShortlist(league: str) -> bool:
         for x in LEAGUES_SHORTLIST:
@@ -75,14 +81,17 @@ def addEsportsDataToDb(esports_data_directory: str, shortlist_only: bool = False
                 return True
         return False
     
-    def addLeaguesToDb(data: dict):
+    def addLeaguesToDb(league_data: dict):
         nonlocal shortlist_tournaments
-        primary_key = data["id"]
-        if shortlist_only and not inLeagueShortlist(data['name']):
+        primary_key = league_data["id"]
+        if league_shortlist_only and not inLeagueShortlist(league_data['name']):
             return
-        print(f"Adding League {data['name']} ({primary_key}) to database")
-        shortlist_tournaments += [obj['id'] for obj in data['tournaments']]
-        db_accessor.addRowToTable(tableName="leagues", columns=["id", "league"], values=[primary_key, data])
+        print(f"Adding League {league_data['name']} ({primary_key}) to database")
+        shortlist_tournaments += [obj['id'] for obj in league_data['tournaments']]
+        for tournament in league_data['tournaments']:
+            tournament_league_mapping[tournament['id']] = league_data['name']
+            tournament_region_mapping[tournament['id']] = league_data['region']
+        db_accessor.addRowToTable(tableName="leagues", columns=["id", "league"], values=[primary_key, league_data])
 
     def addMappingToDb(data: dict):
         primary_key = data["platformGameId"]
@@ -94,25 +103,55 @@ def addEsportsDataToDb(esports_data_directory: str, shortlist_only: bool = False
         print(f"Adding player {data['handle']} ({primary_key}) to database")
         db_accessor.addRowToTable(tableName="players", columns=["id", "player"], values=[primary_key, data])
 
-    # TODO find a way to filter out teams from shortlist
+    # Expects that team_to_region and team_to_league are already built
     def addTeamToDb(data: dict):
-        primary_key = data["team_id"]
-        print(f"Adding team {data['name']} ({primary_key}) to database")
-        db_accessor.addRowToTable(tableName="teams", columns=["id", "team"], values=[primary_key, data])
+        team_id = data["team_id"]
+        if league_shortlist_only and not (team_id in team_to_league):
+            return
+        print(f"Adding team {data['name']} ({team_id}) to database")
+        league = team_to_league.get(team_id)
+        region = team_to_region.get(team_id)
+        db_accessor.addRowToTable(tableName="teams", columns=["id", "team", "league", "region"], values=[team_id, data, league, region])
 
     def addTournamentToDb(data: dict):
         primary_key = data["id"]
-        if shortlist_only and not (primary_key in shortlist_tournaments):
+        if league_shortlist_only and not (primary_key in shortlist_tournaments):
             return
         print(f"Adding tournament {data['name']} ({primary_key}) to database")
         db_accessor.addRowToTable(tableName="tournaments", columns=["id", "tournament"], values=[primary_key, data])
 
+    # Expects tournament_league_mapping and tournament_region_mapping to already be built, and tournaments to be uploaded to db
+    def buildRegionLeagueMapping() -> None:
+        n_tournaments: int = 0
+        while(True):
+            tournaments_data = db_accessor.getDataFromTable(tableName="tournaments", columns=["tournament"], limit=10, offset=n_tournaments)
+            if len(tournaments_data) == 0:
+                break
+            n_tournaments += len(tournaments_data)
+            for tournament_data in tournaments_data:
+                tournament = json.loads(tournament_data[0])
+                if tournament['id'] not in tournament_region_mapping:
+                    warning(f"Can not find region/league associated with tournament:\n   Tournament ID: {tournament['id']}\n   Tournament name: {tournament['name']}")
+                    continue
+                region = tournament_region_mapping[tournament['id']]
+                league = tournament_league_mapping[tournament['id']]
+                if region.lower() == "international":
+                    continue
+                for stage in tournament['stages']:
+                    for section in stage['sections']:
+                        for matches in section['matches']:
+                            for team in matches['teams']:
+                                team_to_region[team['id']] = region
+                                team_to_league[team['id']] = league
+            
+        # Lastly, write to database
+        for id, region in team_to_region.items():
+            if not id:
+                continue
+            db_accessor.addRowToTable(tableName="team_region_mapping", columns=["id", "region"], values=[id, region])
 
-    directory_path = Path(esports_data_directory)
-    esports_data_cleaner: Esports_Cleaner = Esports_Cleaner()
-    file_processing_order = ["leagues.json", "mapping_data.json", "players.json", "teams.json", "tournaments.json",]
-   
-    for file_name in file_processing_order:
+    # Given a file name, reads it, calls the appropriate cleaner, and calls the appropriate handler to add it to the database
+    def processFile(file_name: str):
         file_path = os.path.join(directory_path, file_name)
         with open(file_path, "r") as json_file:
             data = json.load(json_file)
@@ -120,7 +159,7 @@ def addEsportsDataToDb(esports_data_directory: str, shortlist_only: bool = False
                 case 'leagues.json':
                     cleaned_data = esports_data_cleaner.cleanLeaguesData(data)
                     for entry in cleaned_data:
-                        addLeaguesToDb(data=entry)
+                        addLeaguesToDb(league_data=entry)
                 case 'mapping_data.json':
                     cleaned_data = esports_data_cleaner.cleanMappingData(data)
                     for entry in cleaned_data:
@@ -139,48 +178,17 @@ def addEsportsDataToDb(esports_data_directory: str, shortlist_only: bool = False
                         addTournamentToDb(data=entry)
 
 
-def buildTeamRegionMapping() -> None:
-    db_accessor = getDbAccessor()
-    # First, build up mapping from tournament -> region
-    league_to_region: dict = {}
-    n_leagues: int = 0
-    print("Starting to build league-to-region mapping table")
-    while(True):
-        leagues_data = db_accessor.getDataFromTable(tableName="leagues", columns=["league"], limit=10, offset=n_leagues)
-        if len(leagues_data) == 0:
-            break
-        n_leagues += len(leagues_data)
-        for league_data in leagues_data:
-            league = json.loads(league_data[0])
-            region = league['region']
-            league_to_region[league['id']] = region
-        
-    # Second, build up mapping from team -> region
-    team_to_region: dict = {}
-    n_tournaments: int = 0
-    while(True):
-        tournaments_data = db_accessor.getDataFromTable(tableName="tournaments", columns=["tournament"], limit=10, offset=n_tournaments)
-        if len(tournaments_data) == 0:
-            break
-        n_tournaments += len(tournaments_data)
-        for tournament_data in tournaments_data:
-            tournament = json.loads(tournament_data[0])
-            if tournament['leagueId'] not in league_to_region:
-                warning(f"Can not find region/league associated with tournament:\n   Tournament ID: {tournament['id']}\n   Tournament name: {tournament['name']}")
-                continue
-            region = league_to_region[tournament['leagueId']]
-            if region.lower() == "international":
-                continue
-            for stage in tournament['stages']:
-                for section in stage['sections']:
-                    for matches in section['matches']:
-                        for team in matches['teams']:
-                            team_to_region[team['id']] = region
-        
-    # Lastly, write {teamID: region} to database
-    for id, region in team_to_region.items():
-        db_accessor.addRowToTable(tableName="team_region_mapping", columns=["id", "region"], values=[id, region])
-    print("Finished building region mapping table")
+    processFile("leagues.json")
+    processFile("mapping_data.json")
+    processFile("players.json")
+    processFile("tournaments.json")
+    buildRegionLeagueMapping()
+    processFile("teams.json")
+
+
+
+
+
 
 
 def buildCumulativeStats():
@@ -271,7 +279,6 @@ if __name__ == '__main__':
     parser.add_argument('--download_and_clean', help='Will automatically download and clean all data. Deletes data after processing to save memory.', action="store_true", default=False)
     parser.add_argument('--download_and_clean_esports', help='Will automatically download and clean esports data (not game data).', action="store_true", default=False)
     parser.add_argument('--download_and_clean_games', help='Will automatically download and clean game data (not esports data. Assumed esports data is already set up).', action="store_true", default=False)
-    parser.add_argument('--build_region_mapping', help='Build the region mapping table, using the data available in the database.', action="store_true", default=False)
     parser.add_argument('--build_cumulative_stats', help='Build the cumulative stats using the data available in the database.', action="store_true", default=False)
     parser.add_argument('--league_shortlist_only', help='Only process leagues in the league shortlist (specified by hackathon) when processing esports data', action="store_true", default=False)
     args = parser.parse_args()
@@ -307,14 +314,14 @@ if __name__ == '__main__':
         # Clean and upload esports data in specified esports data directory
         if args.esports_data_dir:
             start_time = time.time()
-            addEsportsDataToDb(esports_data_directory=args.esports_data_dir, shortlist_only=args.league_shortlist_only)
+            addEsportsDataToDb(esports_data_directory=args.esports_data_dir, league_shortlist_only=args.league_shortlist_only)
             timings['Clean esports data directory'] = time.time() - start_time
         
         # Automatically download and clean esports data
         if args.download_and_clean_esports or args.download_and_clean:
             start_time = time.time()
             download_esports_files(destinationDirectory=download_directory)
-            addEsportsDataToDb(esports_data_directory=f"{download_directory}/esports-data")
+            addEsportsDataToDb(esports_data_directory=f"{download_directory}/esports-data", league_shortlist_only=args.league_shortlist_only)
             timings['Download and clean esports data'] = time.time() - start_time
         
 
@@ -325,12 +332,6 @@ if __name__ == '__main__':
 
             timings['Download and clean game data'] = time.time() - start_time
 
-
-        # Build region mapping table (map each team to a region)
-        if args.build_region_mapping:
-            start_time = time.time()
-            buildTeamRegionMapping()
-            timings['Build team-to-region mapping table'] = time.time() - start_time
 
         # Build cumulative stats
         if args.build_cumulative_stats:
