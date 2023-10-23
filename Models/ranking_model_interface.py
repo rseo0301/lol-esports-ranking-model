@@ -21,6 +21,11 @@ class Ranking_Model(ABC):
     _global_rankings: List[dict] = []
 
 
+    _global_rankings: List[dict] = []
+
+    def __init__(self):
+        self._global_rankings = self.get_global_rankings(9999)
+
     @abstractmethod
     def get_tournament_rankings(self, tournament_id: str, stage: str) -> List[dict]:
         pass

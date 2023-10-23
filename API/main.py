@@ -8,9 +8,13 @@ sys.path.append(os.path.join(current_directory, ".."))
 
 from flask.json import dump
 
+from dao.database_accessor import Database_Accessor
 from Models.ranking_model_interface import Ranking_Model
 from Models.mock_ranking_model import Mock_Ranking_Model
-from dao.database_accessor import Database_Accessor
+from Models.bayes_model import BayesModel
+from Models.deepNN_model import DeepNNModel
+from Models.random_forest import RandomForest
+from Models.regression_model import RegressionModel
 
 import json
 from flask import Flask, request, jsonify
@@ -24,6 +28,30 @@ app = Flask(__name__)
 CORS(app) 
 
 __dao: Database_Accessor = None
+__mock_model: Ranking_Model = Mock_Ranking_Model()
+__bayes_model: Ranking_Model = BayesModel()
+__deepNN_model: Ranking_Model = DeepNNModel()
+__random_forest_model: Ranking_Model = RandomForest()
+__regression_model: Ranking_Model = RegressionModel()
+
+
+# Will return the appropriate model, given the model anem
+def get_model(model_name: str) -> Ranking_Model:
+    model_name = model_name.lower().strip().replace("-","").replace("_","")
+    if not model_name:
+        return __regression_model
+    match model_name:
+        case "bayesian":
+            return __bayes_model
+        case "logisticregression":
+            return __regression_model
+        case "randomforest":
+            return __random_forest_model
+        case "deepnn":
+            return __deepNN_model
+        case _:
+            return __regression_model
+
 
 # Database accessor
 def get_dao():
@@ -35,20 +63,6 @@ def get_dao():
             db_user="data_cleaner",
             )
     return __dao
-
-# Will return the appropriate model, given the model anem
-def get_model(model_name: str):
-    if not model_name:
-        return Mock_Ranking_Model()
-    match model_name.lower():
-        case "bayesian":
-            return Mock_Ranking_Model()
-        case "logisticregression":
-            return Mock_Ranking_Model()
-        case "randomforest":
-            return Mock_Ranking_Model()
-        case _:
-            return Mock_Ranking_Model()
 
 
 # Get icons from Leaguepedia API
@@ -97,7 +111,7 @@ def fetch_leagues_data(db_accessors, leagues_id):
     league_data = db_accessors.getDataFromTable(
         tableName="leagues",
         columns=["league"],
-         where_clause=f"id={leagues_id}"
+        where_clause=f"id={leagues_id}"
     )
     return json.loads(league_data[0][0])
 
