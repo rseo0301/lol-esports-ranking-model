@@ -22,13 +22,13 @@ from DataCleaning.datasetPrep.cumulative_df import get_training_and_test_dataset
 
 class BayesModel(Ranking_Model):
     def __init__(self) -> None:
-        self._model_trained = False
         self._pipeline: Pipeline = None
         self._db_accessor = Database_Accessor(
             db_name="games",
             db_host="riot-hackathon-db.c880zspfzfsi.us-west-2.rds.amazonaws.com",
             db_user="data_cleaner",
         )
+        self._fit_model(use_cache=False)
         super().__init__()
     
     def get_global_rankings(self, n_teams: int = 20) -> List[dict]:
@@ -36,8 +36,6 @@ class BayesModel(Ranking_Model):
         Return the top `n_teams` teams in the global rankings
         """
         print("BayesModel::get_global_rankings()")
-
-        if not self._model_trained: self._fit_model()
 
         if not self._global_rankings:
             # to account for red-side/blue-side bias that might be picked up by 
@@ -55,7 +53,6 @@ class BayesModel(Ranking_Model):
     
     def get_tournament_rankings(self, tournament_id: str, stage: str) -> List[dict]:
         print("BayesModel::get_tournament_rankings()")
-        if not self._model_trained: self._fit_model()
 
         cum_stats_tourney = getCumulativeDataForTournament(
             self._db_accessor,
@@ -67,7 +64,7 @@ class BayesModel(Ranking_Model):
     
     def get_custom_rankings(self, teams: dict) -> List[dict]:
         print("BayesModel::get_custom_rankings()")
-        if not self._model_trained: self._fit_model()
+
         if len(teams) < 2:
             res = []
             for i, t in enumerate(teams):
@@ -211,7 +208,6 @@ class BayesModel(Ranking_Model):
 
         pipeline.fit(X_train, y_train)
         self._pipeline = pipeline
-        self._model_trained = True
 
         print("---")
         print("FINAL TEST SCORE\t\t\t ===> ", pipeline.score(X_test, y_test))
