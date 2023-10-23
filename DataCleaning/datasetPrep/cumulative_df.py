@@ -119,19 +119,18 @@ class CumulativeDataParser:
         print(f"total: {rows_parsed + len(skipped_row_ids)} rows observed")
 
         df = pd.DataFrame(self.raw_data_dict)
+        region = df[['team_1_region', 'team_2_region']].values.reshape(-1, 2)
+        weights = []
+        for matchup in region:
+            if matchup[0] != matchup[1] and matchup[0] is not None and matchup[1] is not None:
+                weights.append({'weights':100})
+            else:
+                weights.append({'weights':1})
+        weights_df = pd.DataFrame(weights)
+
 
         if split_x_and_y:
             # initialize encoder and fit data
-            region = df[['team_1_region', 'team_2_region']].values.reshape(-1, 2)
-            weights = []
-            for matchup in region:
-                if matchup[0] != matchup[1] and matchup[0] is not None and matchup[1] is not None:
-                    weights.append({'weights':1000})
-                else:
-                    weights.append({'weights':1})
-            
-            weights_df = pd.DataFrame(weights)
-            print(weights_df)
             enc = OneHotEncoder()
             enc.fit(region)
             # transform data
@@ -148,7 +147,7 @@ class CumulativeDataParser:
             return train_test_split(X, y, test_size=0.2, random_state=self.shuffle_state)
         
         # return training and testing sets; X and y are attached together (2-item list)
-        return train_test_split(df, test_size=0.2, random_state=self.shuffle_state)
+        return train_test_split(pd.concat[df, weights], test_size=0.2, random_state=self.shuffle_state)
     
 
 

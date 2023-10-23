@@ -18,6 +18,8 @@ class Ranking_Model(ABC):
         ...
     ]
     """
+    _global_rankings: List[dict] = []
+
 
     @abstractmethod
     def get_tournament_rankings(self, tournament_id: str, stage: str) -> List[dict]:

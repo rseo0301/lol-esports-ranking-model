@@ -1,6 +1,5 @@
 from collections import defaultdict
 from typing import List
-
 import numpy as np
 import pandas as pd
 import requests
@@ -14,25 +13,31 @@ from dao.util import getCumulativeDataForTournament, getCumulativeStatsForAllTea
 class RandomForest(Ranking_Model):
 
     model = RandomForestClassifier(n_estimators=120, min_samples_split=2, min_samples_leaf=2, max_features='sqrt', max_depth=5, bootstrap=False)
-    dao: Database_Accessor = Database_Accessor(db_host='riot-hackathon-db.c880zspfzfsi.us-west-2.rds.amazonaws.com')
+
+    def __init__(self) -> None:
+        self._dao = Database_Accessor(db_host='riot-hackathon-db.c880zspfzfsi.us-west-2.rds.amazonaws.com')
+        self.get_training_test_datasets()
+        self.fit(self.datasets[0], self.datasets[2])
+        super().__init__()
 
     def get_global_rankings(self, n_teams: int = 20) -> List[dict]:
-        cumulative_data = getCumulativeStatsForAllTeams(db_accessor= self.dao)
-        if cumulative_data:
-            print(f"Cumulative data found for all teams")
-            data = self.create_dataframe(cumulative_data)
-            predictions = self.predict(data[0])
-            wins = self.calculate_wins(predictions=predictions, matchups=data[1])
-            output = self._sort_rankings(wins)
 
-            print(output)
-            return output
+        # checks if global rankings have already been calculated
+        if not self._global_rankings:
+            cumulative_data = getCumulativeStatsForAllTeams(db_accessor= self._dao)
+            if cumulative_data:
+                print(f"Cumulative data found for all teams")
+                data = self.create_dataframe(cumulative_data)
+                predictions = self.predict(data[0])
+                wins = self.calculate_wins(predictions=predictions, matchups=data[1])
+                self._global_rankings = self._sort_rankings(wins)
 
-        print("No data found")
-        return []
+                print(self._global_rankings[:n_teams])
+
+        return self._global_rankings[:n_teams]
     
     def get_tournament_rankings(self, tournament_id: str, stage: str) -> List[dict]:
-        cumulative_data_for_tournament = getCumulativeDataForTournament(db_accessor=self.dao, tournament_id=tournament_id, stage_name=stage)
+        cumulative_data_for_tournament = getCumulativeDataForTournament(db_accessor=self._dao, tournament_id=tournament_id, stage_name=stage)
         if cumulative_data_for_tournament:
             print(f"Cumulative data found for games in {tournament_id}")
             data = self.create_dataframe(cumulative_data_for_tournament)
@@ -43,11 +48,10 @@ class RandomForest(Ranking_Model):
             print(output)
             return output
 
-        print("No data found")
         return []
     
     def get_custom_rankings(self, teams: List) -> List[dict]:
-        cumulative_data_for_teams = getCumulativeStatsForTeams(db_accessor= self.dao, team_ids=teams)
+        cumulative_data_for_teams = getCumulativeStatsForTeams(db_accessor= self._dao, team_ids=teams)
         if cumulative_data_for_teams:
             print(f"Cumulative data found for teams in list")
             data = self.create_dataframe(cumulative_data_for_teams)
@@ -125,7 +129,7 @@ class RandomForest(Ranking_Model):
         results = self.calculate_wins(predictions, matchups)
         print(results)   
         
-    def optimal_parameters(self):
+    def _optimal_parameters(self):
         # Number of trees in random forest
         n_estimators = [10,20,30,40,50,60,70,80,90,100,110,120,130,140,150]
         max_features = ['log2', 'sqrt']
@@ -167,7 +171,7 @@ class RandomForest(Ranking_Model):
         return ret
 
     def _fetch_team_info(self, team_id: str, expected_wins: float) -> dict:
-        db_data = self.dao.getDataFromTable(
+        db_data = self._dao.getDataFromTable(
             "teams",
             ["team"],
             where_clause=f"id = '{team_id}'",
@@ -185,20 +189,18 @@ class RandomForest(Ranking_Model):
             "expected_wins": expected_wins
         }
 
-rfc = RandomForest()
-rfc.get_training_test_datasets()
-rfc.fit(rfc.datasets[0], rfc.datasets[2])
-rfc.datasets[1] = rfc.datasets[1].drop(columns=["weights"])
-# rfc.optimal_parameters()
-# rfc.worlds_predictions()
-# tournament_rankings = rfc.get_tournament_rankings("108206581962155974", "Regular Season")
-# custom_rankings = rfc.get_custom_rankings([
-#     "103461966951059521",
-#     "99566404585387054",
-#     "98767991853197861",
-#     "98767991926151025",
-#     "98767991866488695",
-#     "100725845018863243",
-#     "98926509884398584",
-# ])
-global_rankings = rfc.get_global_rankings()
+if __name__ == "__main__":
+    rfc = RandomForest()
+    # rfc.optimal_parameters()
+    rfc.get_global_rankings()
+    rfc.worlds_predictions()
+    tournament_rankings = rfc.get_tournament_rankings("108206581962155974", "Regular Season")
+    custom_rankings = rfc.get_custom_rankings([
+        "103461966951059521",
+        "99566404585387054",
+        "98767991853197861",
+        "98767991926151025",
+        "98767991866488695",
+        "100725845018863243",
+        "98926509884398584",
+    ])
