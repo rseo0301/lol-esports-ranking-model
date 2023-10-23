@@ -74,8 +74,6 @@ class Ranking_Model(ABC):
             
         sorted_wins = sorted(wins.items(), key=lambda x:x[1], reverse=True)
         sorted_dict = dict(sorted_wins)
-        for key in sorted_dict:
-            print(key, " : ", "{:.2f}".format(sorted_dict[key]))
         return sorted_dict
 
     def create_matchups(self, data) -> List:
@@ -100,7 +98,6 @@ class Ranking_Model(ABC):
                     t2_edited["team_2_" + key] = team_2[key]
 
                 new_row = {'team_1_name': teams[i], 'team_2_name': teams[j]}
-                print(new_row)
                 matchups.loc[len(matchups)] = new_row
                 t2_edited.update(t1_edited)
                 matchup_data.append(t2_edited)

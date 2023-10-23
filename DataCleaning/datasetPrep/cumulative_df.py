@@ -60,7 +60,7 @@ class CumulativeDataParser:
             for k in data_to_parse[team].keys():
                 new_key = f"{team}_{k}"
                 val = data_to_parse[team][k]
-                if val == "region not found": # handle unknown regions
+                if val == 'region not found': # handle unknown regions
                     self.raw_data_dict[new_key].append(None)
                 elif isinstance(val, (int, float, str)):
                     self.raw_data_dict[new_key].append(val) # handle numeric fields
@@ -123,6 +123,15 @@ class CumulativeDataParser:
         if split_x_and_y:
             # initialize encoder and fit data
             region = df[['team_1_region', 'team_2_region']].values.reshape(-1, 2)
+            weights = []
+            for matchup in region:
+                if matchup[0] != matchup[1] and matchup[0] is not None and matchup[1] is not None:
+                    weights.append({'weights':100})
+                else:
+                    weights.append({'weights':1})
+            
+            weights_df = pd.DataFrame(weights)
+            print(weights_df)
             enc = OneHotEncoder()
             enc.fit(region)
             # transform data
@@ -130,7 +139,7 @@ class CumulativeDataParser:
             # turn one hot into dataframe
             one_hot_df = pd.DataFrame(one_hot, columns=enc.get_feature_names_out(["team_1_region", "team_2_region"]))
             # add one_hot features and remove initial region features
-            X = pd.concat([df, one_hot_df], axis=1)
+            X = pd.concat([df, one_hot_df, weights_df], axis=1)
             X = X.drop(columns=["team_1_region", "team_2_region", "winner"])
 
             df["winner"] = np.where(df["winner"] == 100, 1, 0)

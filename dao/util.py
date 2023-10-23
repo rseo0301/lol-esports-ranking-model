@@ -108,7 +108,6 @@ def getCumulativeDataForTournament(db_accessor: Database_Accessor, tournament_id
             teams_cumulative_stats[team2_id] = stats.get('team_2')
         return teams_cumulative_stats
             
-
     esports_game_ids = getStageEsportsGameIds()
     if not esports_game_ids:
         return {}
