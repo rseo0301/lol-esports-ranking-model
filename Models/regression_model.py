@@ -177,16 +177,12 @@ class RegressionModel(Ranking_Model):
   
     def get_global_rankings(self, n_teams: int = 20) -> List[dict]:
         dao: Database_Accessor = Database_Accessor(db_host='riot-hackathon-db.c880zspfzfsi.us-west-2.rds.amazonaws.com')
-        # check if model has been trained, if not train model
-        try:
-            # if coef_ attribute doesn't exist, the model hasn't been trained.
-            _ = self.model.coef_
-        except AttributeError:
-            # train model
-            self.train()
-        team_stats = getCumulativeStatsForAllTeams(dao)
-        rankings = self.rank_teams(team_stats)
-        return rankings[:n_teams]
+        # check cache for rankings. if not cached then rank teams.
+        if not self._global_rankings:
+            team_stats = getCumulativeStatsForAllTeams(dao)
+            self._global_rankings = self.rank_teams(team_stats)
+
+        return self._global_rankings[:n_teams]
     
     def get_tournament_rankings(self, tournament_id: str, stage: str) -> List[dict]:
         dao: Database_Accessor = Database_Accessor(db_host='riot-hackathon-db.c880zspfzfsi.us-west-2.rds.amazonaws.com')
