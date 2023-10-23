@@ -147,7 +147,7 @@ class CumulativeDataParser:
             return train_test_split(X, y, test_size=0.2, random_state=self.shuffle_state)
         
         # return training and testing sets; X and y are attached together (2-item list)
-        return train_test_split(pd.concat([df, weights_df]), test_size=0.2, random_state=self.shuffle_state)
+        return train_test_split(pd.concat([df, weights_df], axis=1), test_size=0.2, random_state=self.shuffle_state)
     
 
 
