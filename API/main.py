@@ -97,7 +97,7 @@ def fetch_leagues_data(db_accessors, leagues_id):
     league_data = db_accessors.getDataFromTable(
         tableName="leagues",
         columns=["league"],
-         where_clause=f"id={leagues_id}"
+        where_clause=f"id={leagues_id}"
     )
     return json.loads(league_data[0][0])
 

@@ -4,6 +4,7 @@
 # See arguments for usage, or run 'python main.py --help'
 import os
 import sys
+from typing import List
 current_directory = os.path.dirname(os.path.abspath(__file__))
 sys.path.append(os.path.join(current_directory, ".."))
 from distutils.log import error
@@ -23,6 +24,19 @@ from dao.database_accessor import Database_Accessor
 from dataRetrieval.getData import download_esports_files, download_games
 
 _db_accessor: Database_Accessor = None
+LEAGUES_SHORTLIST = [
+    "LPL",
+    "LEC",
+    "LCK",
+    "LCS",
+    "PCS",
+    "VCS",
+    "CBLOL",
+    "LJL",
+    "LLA",
+    "MSI",
+    "Worlds",
+]
 
 # Assuming that dbAccessor will be initialized in "main" (after command line args are parsed)
 def getDbAccessor() -> Database_Accessor:
@@ -51,47 +65,58 @@ def addGamesToDb(games_directory: str):
             addGameToDb(game=game, stats=stats, eventTime=eventTime)
 
 
-def addEsportsDataToDb(esports_data_directory: str):
+def addEsportsDataToDb(esports_data_directory: str, shortlist_only: bool = False):
+    db_accessor: Database_Accessor = getDbAccessor()
+    shortlist_tournaments: List[str] = []
+
+    def inLeagueShortlist(league: str) -> bool:
+        for x in LEAGUES_SHORTLIST:
+            if league.capitalize().strip().replace('-','').replace('_','') == x.capitalize().strip().replace('-','').replace('_',''):
+                return True
+        return False
+    
     def addLeaguesToDb(data: dict):
-        db_accessor: Database_Accessor = getDbAccessor()
+        nonlocal shortlist_tournaments
         primary_key = data["id"]
-        print(f"Adding League {primary_key} to database")
+        if shortlist_only and not inLeagueShortlist(data['name']):
+            return
+        print(f"Adding League {data['name']} ({primary_key}) to database")
+        shortlist_tournaments += [obj['id'] for obj in data['tournaments']]
         db_accessor.addRowToTable(tableName="leagues", columns=["id", "league"], values=[primary_key, data])
 
     def addMappingToDb(data: dict):
-        db_accessor: Database_Accessor = getDbAccessor()
         primary_key = data["platformGameId"]
         print(f"Adding mapping {primary_key} to database")
         db_accessor.addRowToTable(tableName="mapping_data", columns=["id", "mapping"], values=[primary_key, data])
 
     def addPlayerToDb(data: dict):
-        db_accessor: Database_Accessor = getDbAccessor()
         primary_key = data["player_id"]
-        print(f"Adding player {primary_key} to database")
+        print(f"Adding player {data['handle']} ({primary_key}) to database")
         db_accessor.addRowToTable(tableName="players", columns=["id", "player"], values=[primary_key, data])
 
+    # TODO find a way to filter out teams from shortlist
     def addTeamToDb(data: dict):
-        db_accessor: Database_Accessor = getDbAccessor()
         primary_key = data["team_id"]
-        print(f"Adding team {primary_key} to database")
+        print(f"Adding team {data['name']} ({primary_key}) to database")
         db_accessor.addRowToTable(tableName="teams", columns=["id", "team"], values=[primary_key, data])
 
     def addTournamentToDb(data: dict):
-        db_accessor: Database_Accessor = getDbAccessor()
         primary_key = data["id"]
-        print(f"Adding tournament {primary_key} to database")
+        if shortlist_only and not (primary_key in shortlist_tournaments):
+            return
+        print(f"Adding tournament {data['name']} ({primary_key}) to database")
         db_accessor.addRowToTable(tableName="tournaments", columns=["id", "tournament"], values=[primary_key, data])
-
 
 
     directory_path = Path(esports_data_directory)
     esports_data_cleaner: Esports_Cleaner = Esports_Cleaner()
-    for file_path in directory_path.iterdir():
-        if not file_path.is_file():
-            continue
+    file_processing_order = ["leagues.json", "mapping_data.json", "players.json", "teams.json", "tournaments.json",]
+   
+    for file_name in file_processing_order:
+        file_path = os.path.join(directory_path, file_name)
         with open(file_path, "r") as json_file:
             data = json.load(json_file)
-            match (file_path.name):
+            match (file_name):
                 case 'leagues.json':
                     cleaned_data = esports_data_cleaner.cleanLeaguesData(data)
                     for entry in cleaned_data:
@@ -202,14 +227,20 @@ def buildCumulativeStats():
         db_accessor.addRowToTable(tableName="teams", columns=["id", "latest_cumulative_stats"], values=[team_id, stats], replaceOnDuplicate=True)
     print(f"Processed cumulative stats for {gameCount} games.\n   Cumulative stats for {gameCount - skippedGamesCount} games successfully written.\n   {skippedGamesCount} games skipped.")
 
-
+# Expects that tournament data is already uploaded to db
 def downloadAndCleanGames(download_directory: str) -> None:
     download_esports_files(destinationDirectory=download_directory)
-    with open(f"{download_directory}/esports-data/tournaments.json", "r") as json_file:
-        tournament_data = json.load(json_file)
-            # Process games one tournament at a time, then remove them to save space
-        for tournament in tournament_data:
-            for year in range(2009, 2024):
+    db_accessor: Database_Accessor = getDbAccessor()
+    n_tournaments = 0
+    while True:
+        tournaments_data = db_accessor.getDataFromTable(tableName="tournaments", columns=["tournament"], limit=10, offset=n_tournaments)
+        if len(tournaments_data) == 0:
+            break
+        n_tournaments += len(tournaments_data)
+        # Process games one tournament at a time, then remove them to save space
+        for tournament_data in tournaments_data:
+            tournament = json.loads(tournament_data[0])
+            for year in range(2019, 2024):
                 n_retries = 0
                 max_retries = 3
                 while(n_retries < max_retries):
@@ -226,6 +257,7 @@ def downloadAndCleanGames(download_directory: str) -> None:
                         if n_retries >= max_retries:
                             error(f"Max retries exceeded. Skipping tournament {tournament['id']}")
 
+
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument('--db_host', help='database host')
@@ -241,6 +273,7 @@ if __name__ == '__main__':
     parser.add_argument('--download_and_clean_games', help='Will automatically download and clean game data (not esports data. Assumed esports data is already set up).', action="store_true", default=False)
     parser.add_argument('--build_region_mapping', help='Build the region mapping table, using the data available in the database.', action="store_true", default=False)
     parser.add_argument('--build_cumulative_stats', help='Build the cumulative stats using the data available in the database.', action="store_true", default=False)
+    parser.add_argument('--league_shortlist_only', help='Only process leagues in the league shortlist (specified by hackathon) when processing esports data', action="store_true", default=False)
     args = parser.parse_args()
     
     _db_accessor = Database_Accessor(db_name = args.db_name, 
@@ -274,7 +307,7 @@ if __name__ == '__main__':
         # Clean and upload esports data in specified esports data directory
         if args.esports_data_dir:
             start_time = time.time()
-            addEsportsDataToDb(esports_data_directory=args.esports_data_dir)
+            addEsportsDataToDb(esports_data_directory=args.esports_data_dir, shortlist_only=args.league_shortlist_only)
             timings['Clean esports data directory'] = time.time() - start_time
         
         # Automatically download and clean esports data
