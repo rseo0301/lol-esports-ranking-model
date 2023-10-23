@@ -1,13 +1,11 @@
 from collections import defaultdict
 from typing import List
-import numpy as np
 import pandas as pd
-import requests
 from sklearn.preprocessing import OneHotEncoder
 from Models.ranking_model_interface import Ranking_Model
-from API.main import *
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.model_selection import RandomizedSearchCV
+from dao.database_accessor import Database_Accessor
 from dao.util import getCumulativeDataForTournament, getCumulativeStatsForAllTeams, getCumulativeStatsForTeams
 import json
 
