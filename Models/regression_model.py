@@ -67,7 +67,7 @@ class RegressionModel(Ranking_Model):
             X = self.X_val
         else:
             X = self.scaler.transform(X)
-        return self.model.predict(X)
+        return self.model.predict_proba(X)
 
     def evaluate(self):
         y_pred = self.predict()
@@ -204,20 +204,30 @@ class RegressionModel(Ranking_Model):
         team_stats = getCumulativeStatsForTeams(dao, team_ids)
         rankings = self.rank_teams(team_stats)
         return rankings
+
+    def get_worlds_predictions(self):
+        df = pd.read_csv("../worlds_2023.csv")
+        matchups = df[["team_1_name", "team_2_name"]]
+        df = df.drop(columns=["team_1_name", "team_2_name"])
+        predictions = self.predict(df)
+        results = self.calculate_wins(predictions, matchups)
+        print(results)
+
   
   
 
 # Testing
 if __name__=="__main__":
     model = RegressionModel()
-    model.tune_hyperparameters()
-    model.train()
-    model.cross_validate() # 10 fold CV
+    model.get_worlds_predictions()
+    # model.tune_hyperparameters()
+    # model.train()
+    # model.cross_validate() # 10 fold CV
 
-    test_tournament_ranks = model.get_tournament_rankings('103462439438682788', 'Playoffs')
-    test_custom_ranks = model.get_custom_rankings(['98767991877340524', '103461966951059521', '99294153828264740', '99294153824386385', '98767991860392497', '98926509892121852'])
+    # test_tournament_ranks = model.get_tournament_rankings('103462439438682788', 'Playoffs')
+    # test_custom_ranks = model.get_custom_rankings(['98767991877340524', '103461966951059521', '99294153828264740', '99294153824386385', '98767991860392497', '98926509892121852'])
 
-    ranks = model.get_global_rankings(580)
-    print(f"tourney ranks: {test_tournament_ranks}")
-    print(f"custom ranks: {test_custom_ranks}")
-    print(ranks)
+    # ranks = model.get_global_rankings(580)
+    # print(f"tourney ranks: {test_tournament_ranks}")
+    # print(f"custom ranks: {test_custom_ranks}")
+    # print(ranks)
