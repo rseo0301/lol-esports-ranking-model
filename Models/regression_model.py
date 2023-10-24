@@ -171,14 +171,15 @@ class RegressionModel(Ranking_Model):
         ranked_teams_info = []
         for idx, (team_id, win_sum) in enumerate(ranked_teams):
             # update rank only if win count is different from previous
-            if win_sum != prev_wins:
-                rank = idx + 1
-            prev_wins = win_sum
+            if team_id not in self.non_existent_teams:
+                if win_sum != prev_wins:
+                    rank += 1
+                prev_wins = win_sum
 
-            # fetch team info and update rank
-            team_info = self.fetch_team_info(team_id, win_sum)
-            team_info['rank'] = rank
-            ranked_teams_info.append(team_info)
+                # fetch team info and update rank
+                team_info = self.fetch_team_info(team_id, win_sum)
+                team_info['rank'] = rank
+                ranked_teams_info.append(team_info)
 
         return ranked_teams_info
   
