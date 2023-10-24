@@ -64,12 +64,12 @@ class BayesModel(Ranking_Model):
 
         return self._get_rankings(cum_stats_tourney)
     
-    def get_custom_rankings(self, teams: dict) -> List[dict]:
+    def get_custom_rankings(self, team_ids: dict) -> List[dict]:
         print("BayesModel::get_custom_rankings()")
 
-        if len(teams) < 2:
+        if len(team_ids) < 2:
             res = []
-            for i, t in enumerate(teams):
+            for i, t in enumerate(team_ids):
                 team_info = self._fetch_team_info(t, -1)
                 del team_info["expected_wins"]
                 team_info["rank"] = i + 1
@@ -79,7 +79,7 @@ class BayesModel(Ranking_Model):
 
         cum_stats_for_teams = getCumulativeStatsForTeams(
             self._db_accessor,
-            teams,
+            team_ids,
         )
 
         return self._get_rankings(cum_stats_for_teams)

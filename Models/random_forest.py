@@ -50,8 +50,8 @@ class RandomForest(Ranking_Model):
 
         return []
     
-    def get_custom_rankings(self, teams: List) -> List[dict]:
-        cumulative_data_for_teams = getCumulativeStatsForTeams(db_accessor= self._dao, team_ids=teams)
+    def get_custom_rankings(self, team_ids: List) -> List[dict]:
+        cumulative_data_for_teams = getCumulativeStatsForTeams(db_accessor= self._dao, team_ids=team_ids)
         if cumulative_data_for_teams:
             print(f"Cumulative data found for teams in list")
             data = self.create_dataframe(cumulative_data_for_teams)
