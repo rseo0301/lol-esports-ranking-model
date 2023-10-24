@@ -1,5 +1,5 @@
 from typing import List
-from ranking_model_interface import Ranking_Model
+from .ranking_model_interface import Ranking_Model
 from sklearn.linear_model import LogisticRegression
 from sklearn.model_selection import StratifiedKFold, cross_val_score, GridSearchCV
 from sklearn.metrics import accuracy_score, classification_report
