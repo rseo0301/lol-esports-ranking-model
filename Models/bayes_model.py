@@ -105,9 +105,8 @@ class BayesModel(Ranking_Model):
                 key=lambda i: i[1], 
                 reverse=True,
             )
-        ]
-
-        ret = list(filter(lambda i: i.get("team_id", None) != None, ret))
+        ]   
+        # ret = list(filter(lambda i: i.get("team_id", None) != None, ret))
 
         for i in range(len(ret)): ret[i]["rank"] = i + 1
 
@@ -120,6 +119,11 @@ class BayesModel(Ranking_Model):
 
             for j in range(i + 1, len(cum_stats)):
                 team_2 = cum_stats[j]
+
+                t1_id, t2_id = team_1['team_id'], team_2['team_id']
+                if self.match_includes_nonexistent_teams(t1_id, t2_id): 
+                    print(f"skipping match between {t1_id} vs. {t2_id}; one or more of these teams are DNE")
+                    continue
 
                 data_dict = {}
                 self._parse_team_cumulative_data(data_dict, team_1, "team_1")
@@ -214,21 +218,21 @@ class BayesModel(Ranking_Model):
 
 if __name__ == "__main__": 
     bm = BayesModel()
-    # print(bm.get_custom_rankings([
-    #     "103461966951059521", 
-    #     "99566404585387054",
-    #     "98767991853197861",
-    #     "98767991926151025",
-    #     "98767991866488695",
-    #     "100725845018863243",
-    #     "98926509884398584",
-    # ]))
-    # print(bm.get_tournament_rankings("103462439438682788", "Playoffs"))
-    # keep_going = input("Fetch global rankings? (y/n)").lower()
+    print(bm.get_custom_rankings([
+        "103461966951059521", 
+        "99566404585387054",
+        "98767991853197861",
+        "98767991926151025",
+        "98767991866488695",
+        "100725845018863243",
+        "98926509884398584",
+    ]))
+    print(bm.get_tournament_rankings("103462439438682788", "Playoffs"))
+    keep_going = input("Fetch global rankings? (y/n)").lower()
 
-    # while keep_going == 'y':
-    #     print(bm.get_global_rankings(580))
-    #     keep_going = input("Fetch again? (y/n)").lower()
+    while keep_going == 'y':
+        print(bm.get_global_rankings(580))
+        keep_going = input("Fetch again? (y/n)").lower()
     
 
 # test tournament ID: 103462439438682788
