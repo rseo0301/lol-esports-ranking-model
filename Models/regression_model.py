@@ -34,6 +34,7 @@ class RegressionModel(Ranking_Model):
         # Train
         self.tune_hyperparameters()
         self.train()
+        super().__init__()
 
 
     def cross_validate(self, cv=10):
@@ -154,7 +155,7 @@ class RegressionModel(Ranking_Model):
         # round-robin, play every team against every other team
         for teamA_id, teamA_stats in teams.items():
             for teamB_id, teamB_stats in teams.items():
-                if teamA_id != teamB_id:
+                if teamA_id != teamB_id and self.match_includes_nonexistent_teams(teamA_id, teamB_id):
                     win_probability = self.simulate_match(teamA_stats, teamB_stats)
                     expected_wins[teamA_id] += win_probability
                     expected_wins[teamB_id] += (1 - win_probability)
@@ -170,14 +171,15 @@ class RegressionModel(Ranking_Model):
         ranked_teams_info = []
         for idx, (team_id, win_sum) in enumerate(ranked_teams):
             # update rank only if win count is different from previous
-            if win_sum != prev_wins:
-                rank = idx + 1
-            prev_wins = win_sum
+            if team_id not in self.non_existent_teams:
+                if win_sum != prev_wins:
+                    rank += 1
+                prev_wins = win_sum
 
-            # fetch team info and update rank
-            team_info = self.fetch_team_info(team_id, win_sum)
-            team_info['rank'] = rank
-            ranked_teams_info.append(team_info)
+                # fetch team info and update rank
+                team_info = self.fetch_team_info(team_id, win_sum)
+                team_info['rank'] = rank
+                ranked_teams_info.append(team_info)
 
         return ranked_teams_info
   
@@ -215,7 +217,7 @@ if __name__=="__main__":
 
     test_tournament_ranks = model.get_tournament_rankings('103462439438682788', 'Playoffs')
     test_custom_ranks = model.get_custom_rankings(['98767991877340524', '103461966951059521', '99294153828264740', '99294153824386385', '98767991860392497', '98926509892121852'])
-    ranks = model.get_global_rankings()
+    ranks = model.get_global_rankings(580)
     print(f"tourney ranks: {test_tournament_ranks}")
     print(f"custom ranks: {test_custom_ranks}")
     print(ranks)
