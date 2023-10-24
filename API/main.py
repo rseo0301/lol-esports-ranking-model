@@ -1,6 +1,7 @@
 
 import argparse
 from enum import Enum
+from logging import error, warn
 import sys
 import os
 current_directory = os.path.dirname(os.path.abspath(__file__))
@@ -27,7 +28,6 @@ from flask import send_file
 app = Flask(__name__)
 CORS(app) 
 
-__dao: Database_Accessor = None
 __mock_model: Ranking_Model = Mock_Ranking_Model()
 __bayes_model: Ranking_Model = BayesModel()
 __deepNN_model: Ranking_Model = DeepNNModel()
@@ -55,14 +55,27 @@ def get_model(model_name: str) -> Ranking_Model:
 
 # Database accessor
 def get_dao():
-    global __dao
-    if not __dao:
-        __dao = Database_Accessor(
+    def new_dao():
+        return Database_Accessor(
             db_name="games",
             db_host="riot-hackathon-db.c880zspfzfsi.us-west-2.rds.amazonaws.com",
             db_user="data_cleaner",
             )
-    return __dao
+
+    n_tries = 0
+    dao = new_dao()
+    while(n_tries <= 4):
+        try:
+            dao.getDataFromTable(tableName="leagues", columns=["id"], limit=1)
+            break
+        except Exception as e:
+            n_tries += 1
+            if n_tries > 4:
+                error("Error connecting to database. Maximum retries exceeded")
+                raise e
+            warn(f"Failed connecting to database. Retrying (attempt {n_tries})")
+            dao = new_dao()
+    return dao
 
 
 # Get icons from Leaguepedia API
