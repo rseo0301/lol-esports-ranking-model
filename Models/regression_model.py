@@ -141,28 +141,26 @@ class RegressionModel(Ranking_Model):
     
         # predict match outcome
         print("predicting a game...")
-        prediction = self.model.predict(input_df)[0]
+        win_probabilites = self.model.predict_proba(input_df)[0]
     
-        # return the winning team (either 'A' or 'B')
-        return 'A' if prediction == 1 else 'B'
+        # return the probability that team A wins
+        return win_probabilites[1]
     
     
     def rank_teams(self, teams):
-        # win count per team
-        wins = {team: 0 for team in teams.keys()}
+        # sum of expected wins per team
+        expected_wins = {team: 0 for team in teams.keys()}
     
         # round-robin, play every team against every other team
         for teamA_id, teamA_stats in teams.items():
             for teamB_id, teamB_stats in teams.items():
                 if teamA_id != teamB_id:
-                    winner = self.simulate_match(teamA_stats, teamB_stats)
-                    if winner == 'A':
-                        wins[teamA_id] += 1
-                    else:
-                        wins[teamB_id] += 1
+                    win_probability = self.simulate_match(teamA_stats, teamB_stats)
+                    expected_wins[teamA_id] += win_probability
+                    expected_wins[teamB_id] += (1 - win_probability)
 
         # create rankings by sorting by team win counts
-        ranked_teams = sorted(wins.items(), key=lambda x: x[1], reverse=True)
+        ranked_teams = sorted(expected_wins.items(), key=lambda x: x[1], reverse=True)
 
         # handling ranks and ties
         rank = 0
@@ -170,14 +168,14 @@ class RegressionModel(Ranking_Model):
 
         # initialize list to rebuild ranking info
         ranked_teams_info = []
-        for idx, (team_id, win_count) in enumerate(ranked_teams):
+        for idx, (team_id, win_sum) in enumerate(ranked_teams):
             # update rank only if win count is different from previous
-            if win_count != prev_wins:
+            if win_sum != prev_wins:
                 rank = idx + 1
-            prev_wins = win_count
+            prev_wins = win_sum
 
             # fetch team info and update rank
-            team_info = self.fetch_team_info(team_id, win_count)
+            team_info = self.fetch_team_info(team_id, win_sum)
             team_info['rank'] = rank
             ranked_teams_info.append(team_info)
 
@@ -217,6 +215,7 @@ if __name__=="__main__":
 
     test_tournament_ranks = model.get_tournament_rankings('103462439438682788', 'Playoffs')
     test_custom_ranks = model.get_custom_rankings(['98767991877340524', '103461966951059521', '99294153828264740', '99294153824386385', '98767991860392497', '98926509892121852'])
-    #ranks = model.get_global_rankings()
+    ranks = model.get_global_rankings()
     print(f"tourney ranks: {test_tournament_ranks}")
     print(f"custom ranks: {test_custom_ranks}")
+    print(ranks)
