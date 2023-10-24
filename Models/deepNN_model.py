@@ -56,8 +56,8 @@ class DeepNNModel(Ranking_Model):
     def get_tournament_rankings(self, tournament_id: str, stage: str) -> List[dict]:
         return super().get_tournament_rankings(tournament_id, stage)
     
-    def get_custom_rankings(self, teams: dict) -> List[dict]:
-        return super().get_custom_rankings(teams)
+    def get_custom_rankings(self, team_ids: dict) -> List[dict]:
+        return super().get_custom_rankings(team_ids)
 
   
 if __name__=="__main__":

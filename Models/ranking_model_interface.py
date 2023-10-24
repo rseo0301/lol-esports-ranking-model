@@ -20,10 +20,14 @@ class Ranking_Model(ABC):
     """
     _global_rankings: List[dict] = []
 
-
-    _global_rankings: List[dict] = []
-
     def __init__(self):
+        self.non_existent_teams = set([
+            '99566404845279652', '99566404847770461', '98767991887166787', 
+            '101388912911039804', '99566404856367466', '101388912914513220', 
+            '103461966986776720', '101422616509070746', '102235771678061291', 
+            '103535282124208038', '105709099258505657', '99322214684939974', 
+            '99566406064558732', '99566406334639907', '99566406338282437',
+        ])
         self._global_rankings = self.get_global_rankings(9999)
 
     @abstractmethod
@@ -61,6 +65,9 @@ class Ranking_Model(ABC):
         for i, pred in enumerate(predictions):
             team_1 = matchups.iloc[i].iloc[0]
             team_2 = matchups.iloc[i].iloc[1]
+
+            if self.match_includes_nonexistent_teams(team_1, team_2): continue
+            
             if team_1 in wins:
                 wins[team_1] = wins[team_1] + pred[1] / 2
             else:
@@ -106,3 +113,6 @@ class Ranking_Model(ABC):
                 matchup_data.append(t2_edited)
 
         return [pd.concat([matchups, matchups_swapped]), matchup_data]
+    
+    def match_includes_nonexistent_teams(self, team1_id: str, team2_id: str) -> bool:
+        return (team1_id in self.non_existent_teams) or (team2_id in self.non_existent_teams)
