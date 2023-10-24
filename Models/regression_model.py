@@ -1,5 +1,5 @@
 from typing import List
-from .ranking_model_interface import Ranking_Model
+from Models.ranking_model_interface import Ranking_Model
 from sklearn.linear_model import LogisticRegression
 from sklearn.model_selection import StratifiedKFold, cross_val_score, GridSearchCV
 from sklearn.metrics import accuracy_score, classification_report
@@ -34,6 +34,7 @@ class RegressionModel(Ranking_Model):
         # Train
         self.tune_hyperparameters()
         self.train()
+        super().__init__()
 
 
     def cross_validate(self, cv=10):
@@ -146,7 +147,7 @@ class RegressionModel(Ranking_Model):
         # return the winning team (either 'A' or 'B')
         return 'A' if prediction == 1 else 'B'
     
-    
+
     def rank_teams(self, teams):
         # win count per team
         wins = {team: 0 for team in teams.keys()}
@@ -212,11 +213,10 @@ if __name__=="__main__":
     model.tune_hyperparameters()
     model.train()
     model.cross_validate() # 10 fold CV
-    model.predict()
-    model.evaluate()
 
     test_tournament_ranks = model.get_tournament_rankings('103462439438682788', 'Playoffs')
     test_custom_ranks = model.get_custom_rankings(['98767991877340524', '103461966951059521', '99294153828264740', '99294153824386385', '98767991860392497', '98926509892121852'])
-    #ranks = model.get_global_rankings()
+    ranks = model.get_global_rankings()
     print(f"tourney ranks: {test_tournament_ranks}")
     print(f"custom ranks: {test_custom_ranks}")
+    print(f"global rankings: {ranks}")

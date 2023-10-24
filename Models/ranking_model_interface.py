@@ -62,20 +62,21 @@ class Ranking_Model(ABC):
             team_1 = matchups.iloc[i].iloc[0]
             team_2 = matchups.iloc[i].iloc[1]
             if team_1 in wins:
-                wins[team_1] = wins[team_1] + pred[1]
+                wins[team_1] = wins[team_1] + pred[1] / 2
             else:
-                wins[team_1] = pred[1]
+                wins[team_1] = pred[1] / 2
             
             if team_2 in wins:
-                wins[team_2] = wins[team_2] + pred[0]
+                wins[team_2] = wins[team_2] + pred[0] / 2
             else:
-                wins[team_2] = pred[0]
+                wins[team_2] = pred[0] / 2
             
         sorted_wins = sorted(wins.items(), key=lambda x:x[1], reverse=True)
         sorted_dict = dict(sorted_wins)
         return sorted_dict
 
     def create_matchups(self, data) -> List:
+ 
         teams = list(data.keys())
 
         matchups = pd.DataFrame(columns=['team_1_name', 'team_2_name'])

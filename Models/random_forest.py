@@ -2,6 +2,7 @@ from collections import defaultdict
 from typing import List
 import numpy as np
 import pandas as pd
+from sklearn.feature_selection import SelectFromModel
 from sklearn.preprocessing import OneHotEncoder
 from Models.ranking_model_interface import Ranking_Model
 from sklearn.ensemble import RandomForestClassifier
@@ -12,7 +13,8 @@ import json
 
 class RandomForest(Ranking_Model):
 
-    model = RandomForestClassifier(n_estimators=100, min_samples_split=5, min_samples_leaf=2, max_features='log2', max_depth=14, bootstrap=True, random_state=42)
+    model = RandomForestClassifier(n_estimators=100, min_samples_split=5, min_samples_leaf=2, max_features=1, bootstrap=True, random_state=42)
+    sel = SelectFromModel(model)
 
     def __init__(self) -> None:
         self._dao = Database_Accessor(db_host='riot-hackathon-db.c880zspfzfsi.us-west-2.rds.amazonaws.com')
@@ -126,7 +128,11 @@ class RandomForest(Ranking_Model):
         weights = X[['weights']].values
         weights = weights.flatten()
         X = X.drop(columns=['weights'])
-        self.model.fit(X, y, sample_weight=weights)
+        self.model.fit(X, y, sample_weight = weights)
+        self.sel.fit(X,y, sample_weight = weights)
+        selected_feat= X.columns[(self.sel.get_support())]
+        print(self.model.feature_importances_)
+        print(f"selected indices: {selected_feat}")
 
     def predict(self, X):
         result = self.model.predict_proba(X)
@@ -205,15 +211,15 @@ class RandomForest(Ranking_Model):
 if __name__ == "__main__":
     rfc = RandomForest()
     # rfc._optimal_parameters()
-    rfc.worlds_predictions()
+    # rfc.worlds_predictions()
     # tournament_rankings = rfc.get_tournament_rankings("110371551277508787", "Regular Season")
-    # custom_rankings = rfc.get_custom_rankings([
-    #     "103461966951059521",
-    #     "99566404585387054",
-    #     "98767991853197861",
-    #     "98767991926151025",
-    #     "98767991866488695",
-    #     "100725845018863243",
-    #     "98926509884398584",
-    # ])
+    custom_rankings = rfc.get_custom_rankings([
+        "103461966951059521",
+        "99566404585387054",
+        "98767991853197861",
+        "98767991926151025",
+        "98767991866488695",
+        "100725845018863243",
+        "98926509884398584",
+    ])
     

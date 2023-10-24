@@ -26,6 +26,7 @@ class DeepNNModel(Ranking_Model):
             layers.Dense(1, activation='sigmoid')
         ])
         self.model.compile(optimizer='adam', loss='binary_crossentropy', metrics=['accuracy'])
+        super().__init__()
 
     def train(self, epochs=10, batch_size=32):
         self.model.fit(self.X_train, self.y_train, validation_data=(self.X_val, self.y_val), epochs=epochs, batch_size=batch_size)
