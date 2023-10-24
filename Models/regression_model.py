@@ -1,5 +1,5 @@
 from typing import List
-from .ranking_model_interface import Ranking_Model
+from ranking_model_interface import Ranking_Model
 from sklearn.linear_model import LogisticRegression
 from sklearn.model_selection import StratifiedKFold, cross_val_score, GridSearchCV
 from sklearn.metrics import accuracy_score, classification_report
@@ -15,6 +15,10 @@ class RegressionModel(Ranking_Model):
         self.scaler = StandardScaler() # init scaler
 
         X_train, X_val, y_train, y_val = super().get_training_test_datasets()
+        self.weights = X_train['weights'].values
+        self.weights = self.weights.flatten()
+        X_train = X_train.drop(columns=['weights'])
+        X_val = X_val.drop(columns=['weights'])
 
         # extract one-hot encoded region columns
         self.team_1_regions = [col for col in X_train.columns if col.startswith('team_1_region_')]
@@ -55,15 +59,11 @@ class RegressionModel(Ranking_Model):
         print(f"Best cross-validation score: {grid_search.best_score_}")
 
     def train(self):
-        weights = self.X_train['weights'].values
-        weights = weights.flatten()
-        X_train = X_train.drop(columns=['weights'])
-        self.model.fit(self.X_train, self.y_train, sample_weight=weights)
+        self.model.fit(self.X_train, self.y_train, sample_weight=self.weights)
 
     def predict(self, X=None):
         if X is None:
             X = self.X_val
-            X = X.drop(columns=['weights'])
         else:
             X = self.scaler.transform(X)
         return self.model.predict(X)
