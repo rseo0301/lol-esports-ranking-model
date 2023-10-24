@@ -1,7 +1,7 @@
 
 import argparse
 from enum import Enum
-from logging import error, warn
+from logging import error, warning
 import sys
 import os
 current_directory = os.path.dirname(os.path.abspath(__file__))
@@ -63,9 +63,10 @@ def get_dao():
             )
 
     n_tries = 0
-    dao = new_dao()
+    dao = None
     while(n_tries <= 4):
         try:
+            dao = new_dao()
             dao.getDataFromTable(tableName="leagues", columns=["id"], limit=1)
             break
         except Exception as e:
@@ -73,8 +74,7 @@ def get_dao():
             if n_tries > 4:
                 error("Error connecting to database. Maximum retries exceeded")
                 raise e
-            warn(f"Failed connecting to database. Retrying (attempt {n_tries})")
-            dao = new_dao()
+            warning(f"Failed connecting to database. Retrying (attempt {n_tries})")
     return dao
 
 
