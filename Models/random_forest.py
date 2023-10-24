@@ -2,7 +2,6 @@ from collections import defaultdict
 from typing import List
 import numpy as np
 import pandas as pd
-from sklearn.feature_selection import SelectFromModel
 from sklearn.preprocessing import OneHotEncoder
 from Models.ranking_model_interface import Ranking_Model
 from sklearn.ensemble import RandomForestClassifier
@@ -13,8 +12,7 @@ import json
 
 class RandomForest(Ranking_Model):
 
-    model = RandomForestClassifier(n_estimators=100, min_samples_split=5, min_samples_leaf=2, max_features=1, bootstrap=True, random_state=42)
-    sel = SelectFromModel(model)
+    model = RandomForestClassifier(n_estimators=100, min_samples_split=5, min_samples_leaf=2, bootstrap=True, random_state=42)
 
     def __init__(self) -> None:
         self._dao = Database_Accessor(db_host='riot-hackathon-db.c880zspfzfsi.us-west-2.rds.amazonaws.com')
@@ -129,10 +127,6 @@ class RandomForest(Ranking_Model):
         weights = weights.flatten()
         X = X.drop(columns=['weights'])
         self.model.fit(X, y, sample_weight = weights)
-        self.sel.fit(X,y, sample_weight = weights)
-        selected_feat= X.columns[(self.sel.get_support())]
-        print(self.model.feature_importances_)
-        print(f"selected indices: {selected_feat}")
 
     def predict(self, X):
         result = self.model.predict_proba(X)

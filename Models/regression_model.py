@@ -146,7 +146,6 @@ class RegressionModel(Ranking_Model):
     
         # return the winning team (either 'A' or 'B')
         return 'A' if prediction == 1 else 'B'
-    
 
     def rank_teams(self, teams):
         # win count per team
