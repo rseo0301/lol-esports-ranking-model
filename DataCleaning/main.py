@@ -44,13 +44,21 @@ def getDbAccessor() -> Database_Accessor:
     return _db_accessor
 
 
+# Assumes that esports data exists on database
 def addGamesToDb(games_directory: str):
+    from dao.util import getTeamIdsFromGameInfo
+    # Keep track of the game ids of the last game played by each team
+    teams_last_game: dict = {}
+
     def addGameToDb(game: dict, stats: dict, eventTime: datetime) -> None:
         db_accessor: Database_Accessor = getDbAccessor()
         primary_key = game["game_info"]["platformGameId"]
         gameName = game["game_info"]["gameName"]
         mapping_data = db_accessor.getDataFromTable(tableName="mapping_data", columns=["mapping"], where_clause=f"id='{primary_key}'")
         esportsGameId = json.loads(mapping_data[0][0])['esportsGameId']
+        team1_id, team2_id = getTeamIdsFromGameInfo(db_accessor=db_accessor, game_info=game)
+        teams_last_game[team1_id] = primary_key
+        teams_last_game[team2_id] = primary_key
         print(f"Adding game {primary_key} to database")
         db_accessor.addRowToTable(tableName="games", columns=["id", "gameName", "esportsGameId", "info", "stats_update", "eventTime"], values=[primary_key, gameName, esportsGameId, game, stats, eventTime])
 
@@ -63,6 +71,11 @@ def addGamesToDb(games_directory: str):
             game_data = json.load(json_file)
             game, stats, eventTime = game_cleaner.cleanGameData(game_data)
             addGameToDb(game=game, stats=stats, eventTime=eventTime)
+
+    # Update teams last played game
+    for team_id, game_id in teams_last_game.items():
+        print(f"Updating latest game played for {team_id}")
+        db_accessor.addRowToTable(tableName="teams", columns=["id", "latest_game"], values=[team_id, game_id])
 
 
 def addEsportsDataToDb(esports_data_directory: str, league_shortlist_only: bool = False):
@@ -304,13 +317,8 @@ if __name__ == '__main__':
                 case 'down':
                     db_accessor.resetDatabase()
             timings['Migration'] = time.time() - start_time
-                
-        # Clean and upload games data in specified games data directory
-        if args.game_data_dir:
-            start_time = time.time()
-            addGamesToDb(games_directory=args.game_data_dir)
-            timings['Clean game data directory'] = time.time() - start_time
-        
+ 
+
         # Clean and upload esports data in specified esports data directory
         if args.esports_data_dir:
             start_time = time.time()
@@ -324,7 +332,14 @@ if __name__ == '__main__':
             addEsportsDataToDb(esports_data_directory=f"{download_directory}/esports-data", league_shortlist_only=args.league_shortlist_only)
             timings['Download and clean esports data'] = time.time() - start_time
         
-
+               
+        # Clean and upload games data in specified games data directory
+        if args.game_data_dir:
+            start_time = time.time()
+            addGamesToDb(games_directory=args.game_data_dir)
+            timings['Clean game data directory'] = time.time() - start_time
+        
+        
         # Automatically download and clean game data
         if args.download_and_clean or args.download_and_clean_games:
             start_time = time.time()

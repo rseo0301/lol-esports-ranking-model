@@ -147,7 +147,8 @@ class Database_Accessor:
                 team JSON,
                 region VARCHAR(128),
                 league VARCHAR(128),
-                latest_cumulative_stats JSON
+                latest_cumulative_stats JSON,
+                latest_game VARCHAR(128)
             )
             """
             self.executeSqlCommand(command=command)
