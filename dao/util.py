@@ -145,11 +145,21 @@ def getStagesForTournament(db_accessor: Database_Accessor, tournament_id: str) -
     tournament = json.loads(tournament_data[0][0])
     return [stage['name'] for stage in tournament['stages']]
 
+# Returns a list of all teams ids that have played a game on, or later than the given year
+def getTeamsInYear(db_accessor: Database_Accessor, year: int = 2023) -> List:
+    teams_data = db_accessor.getDataFromTable(
+        tableName="teams",
+        columns=["teams.id"],
+        join_clause="games AS games ON teams.latest_game = games.id", 
+        where_clause=f"YEAR(games.eventTime) >= {year}")
+    return [team_data[0] for team_data in teams_data]
+
 # Debugging and testing:
 if __name__ == "__main__":
-    dao: Database_Accessor = Database_Accessor(db_host='riot-hackathon-db.c880zspfzfsi.us-west-2.rds.amazonaws.com')
-    # dao: Database_Accessor = Database_Accessor()
+    # dao: Database_Accessor = Database_Accessor(db_host='riot-hackathon-db.c880zspfzfsi.us-west-2.rds.amazonaws.com')
+    dao: Database_Accessor = Database_Accessor()
     # cumulative_data_for_teams = getCumulativeStatsForTeams(db_accessor=dao, team_ids=["107580483738977500", "109981647134921596"])
+    '''
     print(getStagesForTournament(db_accessor=dao, tournament_id='103462439438682788'))
 
     tournaments_data = dao.getDataFromTable(tableName="tournaments", columns=["tournament"])
@@ -159,5 +169,8 @@ if __name__ == "__main__":
         if cumulative_data_for_tournament:
             print(f"Cumulative data found for games in f{tournament['id']}")
             sys.exit(1)
+    '''
+
+    print(getTeamsInYear(db_accessor=dao, year=2009))
 
     print("Hello World")
